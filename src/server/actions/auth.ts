@@ -50,7 +50,9 @@ export async function loginAction(
 
   revalidatePath("/", "layout");
   if (await getPendingInvite()) {
-    redirect("/invite/continue");
+    // Angemeldete Benutzer bestätigen eine geprüfte Einladung im
+    // geschützten Verbindungsbereich.
+    redirect("/connect");
   }
   const session = await getSessionContext();
   redirect(session ? homeRouteFor(session) : "/login");
@@ -61,6 +63,7 @@ export async function registerAction(
   formData: FormData
 ): Promise<AuthFormState> {
   const parsed = registerSchema.safeParse({
+    fullName: formData.get("fullName"),
     email: formData.get("email"),
     password: formData.get("password"),
   });
@@ -68,16 +71,16 @@ export async function registerAction(
     return { error: parsed.error.issues[0].message };
   }
 
-  const invite = await getPendingInvite();
-  if (!invite) return { error: de.connect.sessionExpired };
-
+  // Registrierung ist ohne Einladung möglich. Sie erzeugt ausschließlich
+  // ein unverbundenes Patientenkonto ohne jede Praxis- oder Mitarbeiterrolle;
+  // die Praxisverbindung entsteht erst später über einen geprüften Code.
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      data: { full_name: invite.patientDisplayName, locale: "de" },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/auth/confirm?next=/invite/continue`,
+      data: { full_name: parsed.data.fullName, locale: "de" },
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/auth/confirm?next=/connect`,
     },
   });
 

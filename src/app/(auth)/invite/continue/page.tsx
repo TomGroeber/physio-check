@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { acceptInviteAction } from "@/server/actions/invites";
 import { getPendingInvite } from "@/server/services/invites";
 import { getSessionContext } from "@/server/services/session";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { de } from "@/messages/de";
 
 export const metadata: Metadata = { title: de.connect.continueTitle };
 
+/**
+ * Zwischenschritt nach geprüftem Code für nicht angemeldete Besucher:
+ * Konto erstellen oder anmelden. Angemeldete Benutzer bestätigen die
+ * Einladung im geschützten Verbindungsbereich (/connect).
+ */
 export default async function ContinueInvitePage() {
   const [invite, session] = await Promise.all([
     getPendingInvite(),
@@ -17,9 +20,7 @@ export default async function ContinueInvitePage() {
   ]);
   if (!invite) redirect("/invite?error=expired");
   if (session?.memberships.length) redirect("/practice");
-
-  const changesPractice =
-    session?.patientLink && session.patientLink.practiceId !== invite.practiceId;
+  if (session) redirect("/connect");
 
   return (
     <div className="flex flex-col gap-5">
@@ -33,31 +34,14 @@ export default async function ContinueInvitePage() {
         </p>
       </div>
 
-      {changesPractice ? (
-        <Alert className="border-warning bg-warning/15">
-          <AlertDescription className="text-base text-foreground">
-            {de.connect.changeWarning(session.patientLink!.practiceName)}
-          </AlertDescription>
-        </Alert>
-      ) : null}
-
-      {session ? (
-        <form action={acceptInviteAction}>
-          <Button type="submit" className="h-12 w-full text-lg">
-            {de.connect.accept}
-          </Button>
-        </form>
-      ) : (
-        <div className="flex flex-col gap-3">
-          <Button asChild className="h-12 text-lg">
-            <Link href="/register">{de.connect.createAccount}</Link>
-          </Button>
-          <Button asChild variant="outline" className="h-12 text-lg">
-            <Link href="/login?invite=1">{de.connect.useExistingAccount}</Link>
-          </Button>
-        </div>
-      )}
+      <div className="flex flex-col gap-3">
+        <Button asChild className="h-12 text-lg">
+          <Link href="/register">{de.connect.createAccount}</Link>
+        </Button>
+        <Button asChild variant="outline" className="h-12 text-lg">
+          <Link href="/login?invite=1">{de.connect.useExistingAccount}</Link>
+        </Button>
+      </div>
     </div>
   );
 }
-

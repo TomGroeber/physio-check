@@ -15,8 +15,8 @@ export function RegisterForm({
   practiceName,
   patientDisplayName,
 }: {
-  practiceName: string;
-  patientDisplayName: string;
+  practiceName: string | null;
+  patientDisplayName: string | null;
 }) {
   const [state, formAction, isPending] = useActionState<AuthFormState, FormData>(
     registerAction,
@@ -43,11 +43,30 @@ export function RegisterForm({
   return (
     <form action={formAction} className="flex flex-col gap-5">
       <h1 className="text-2xl font-bold">{t.title}</h1>
-      <p className="text-base text-muted-foreground">{t.intro(practiceName)}</p>
-      <p className="rounded-lg bg-muted p-3 text-base font-semibold">
-        {t.invitedAs(patientDisplayName)}
+      <p className="text-base text-muted-foreground">
+        {practiceName ? t.introInvited(practiceName) : t.intro}
       </p>
+      {patientDisplayName ? (
+        <p className="rounded-lg bg-muted p-3 text-base font-semibold">
+          {t.invitedAs(patientDisplayName)}
+        </p>
+      ) : null}
       <FormMessage error={state.error} />
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="fullName" className="text-base">
+          {t.fullName}
+        </Label>
+        <Input
+          id="fullName"
+          name="fullName"
+          type="text"
+          autoComplete="name"
+          required
+          minLength={2}
+          defaultValue={patientDisplayName ?? ""}
+          className="h-12 text-lg"
+        />
+      </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="email" className="text-base">
           {t.email}

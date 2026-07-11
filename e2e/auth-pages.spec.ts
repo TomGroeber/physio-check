@@ -6,9 +6,11 @@ import { expect, test } from "@playwright/test";
  * Der datenbankgestützte Einladungsablauf benötigt die lokale Supabase-Instanz.
  */
 
-test("Startseite leitet unangemeldete Besucher zum Login", async ({ page }) => {
+test("Startseite bietet Registrierung, Anmeldung und Codeeingabe", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Ihre Übungen und Termine an einem Ort" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Neues Konto erstellen" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Ich habe bereits ein Konto" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Ich habe einen Einladungscode" })).toBeVisible();
 });
 
@@ -31,10 +33,17 @@ test("Falsche Zugangsdaten zeigen verständlichen Fehler", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("Registrierung ist ohne geprüfte Einladung nicht erreichbar", async ({ page }) => {
+test("Registrierung ist ohne Einladung erreichbar", async ({ page }) => {
   await page.goto("/register");
-  await expect(page).toHaveURL(/\/invite$/);
-  await expect(page.getByRole("heading", { name: "Einladung Ihrer Praxis" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Konto erstellen" })).toBeVisible();
+  await expect(page.getByLabel("Vor- und Nachname")).toBeVisible();
+  await expect(page.getByLabel("E-Mail-Adresse")).toBeVisible();
+  await expect(page.getByLabel("Passwort")).toBeVisible();
+});
+
+test("Verbindungsbereich verlangt Anmeldung", async ({ page }) => {
+  await page.goto("/connect");
+  await expect(page).toHaveURL(/\/login$/);
 });
 
 test("Geschützter Bereich leitet zum Login um", async ({ page }) => {

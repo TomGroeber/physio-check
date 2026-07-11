@@ -30,11 +30,12 @@ export const de = {
   landing: {
     title: "Ihre Übungen und Termine an einem Ort",
     intro:
-      "PhysioCheck verbindet Sie sicher mit Ihrer Physiotherapiepraxis. Für die erste Verbindung benötigen Sie eine Einladung Ihrer Praxis.",
+      "PhysioCheck verbindet Sie sicher mit Ihrer Physiotherapiepraxis. Erstellen Sie ein Konto – Ihre Übungen und Termine sehen Sie, sobald Sie Ihr Konto mit dem Code Ihrer Praxis verbunden haben.",
+    createAccount: "Neues Konto erstellen",
     haveCode: "Ich habe einen Einladungscode",
     signIn: "Ich habe bereits ein Konto",
     noInvite:
-      "Noch keine Einladung? Bitte wenden Sie sich an Ihre Physiotherapiepraxis.",
+      "Den Verbindungscode erhalten Sie direkt von Ihrer Physiotherapiepraxis.",
   },
 
   auth: {
@@ -44,8 +45,8 @@ export const de = {
       password: "Passwort",
       submit: "Anmelden",
       forgotPassword: "Passwort vergessen?",
-      noAccount: "Sie haben eine Einladung erhalten?",
-      registerLink: "Einladung verwenden",
+      noAccount: "Noch kein Konto?",
+      registerLink: "Konto erstellen",
       inviteIntro:
         "Melden Sie sich an. Anschließend können Sie die Einladung Ihrer Praxis bestätigen.",
       errorInvalidCredentials:
@@ -55,7 +56,9 @@ export const de = {
     },
     register: {
       title: "Konto erstellen",
-      intro: (practiceName: string) =>
+      intro:
+        "Erstellen Sie Ihr kostenloses Patientenkonto. Den Verbindungscode Ihrer Praxis geben Sie danach ein.",
+      introInvited: (practiceName: string) =>
         `Erstellen Sie Ihr Konto, um die Einladung von ${practiceName} anzunehmen.`,
       invitedAs: (name: string) => `Einladung für ${name}`,
       fullName: "Vor- und Nachname",
@@ -122,6 +125,15 @@ export const de = {
       `Sie sind derzeit mit ${practiceName} verbunden. Wenn Sie fortfahren, wird diese Verbindung beendet und die neue Praxis wird aktiv. Ihre bisherigen Daten bleiben bei der bisherigen Praxis gespeichert.`,
     sessionExpired:
       "Die Sicherheitsprüfung ist abgelaufen. Bitte geben Sie den Einladungscode erneut ein.",
+    hubTitle: "Mit Ihrer Praxis verbinden",
+    hubIntro:
+      "Ihr Konto ist noch mit keiner Praxis verbunden. Geben Sie den Code ein, den Sie von Ihrer Physiotherapiepraxis erhalten haben. Danach sehen Sie hier Ihre Übungen und Termine.",
+    hubIntroConnected: (practiceName: string) =>
+      `Sie sind derzeit mit ${practiceName} verbunden. Mit einem neuen Code können Sie zu einer anderen Praxis wechseln.`,
+    accountHeading: "Ihr Konto",
+    enterOtherCode: "Anderen Code eingeben",
+    legalHint:
+      "Hinweis: PhysioCheck verarbeitet Ihre Daten nur für die Zusammenarbeit mit Ihrer Physiotherapiepraxis. Ohne Praxisverbindung sind keine Übungs- oder Termindaten sichtbar.",
   },
 
   patient: {

@@ -62,7 +62,7 @@ export function LoginForm({ hasPendingInvite = false }: { hasPendingInvite?: boo
       <p className="text-center text-base text-muted-foreground">
         {t.noAccount}{" "}
         <Link
-          href="/invite"
+          href="/register"
           className="font-semibold text-primary underline underline-offset-4"
         >
           {t.registerLink}

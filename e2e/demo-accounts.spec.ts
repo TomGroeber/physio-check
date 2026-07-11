@@ -55,3 +55,21 @@ test("Therapeutin sieht die Übungsbibliothek der Praxis", async ({ page }) => {
   await page.getByRole("link", { name: "Übungsbibliothek" }).click();
   await expect(page.getByText("Wandsitz")).toBeVisible();
 });
+
+test("Unverbundenes Konto sieht nur den Verbindungsbereich", async ({
+  page,
+}) => {
+  await login(page, "eingeladen@demo.physiocheck.test");
+  await expect(page).toHaveURL(/\/connect$/);
+  await expect(
+    page.getByRole("heading", { name: "Mit Ihrer Praxis verbinden" })
+  ).toBeVisible();
+  // Basisdaten und Abmeldung sind sichtbar, aber keine Patientenbereiche
+  await expect(page.getByRole("heading", { name: "Ihr Konto" })).toBeVisible();
+  await page.goto("/today");
+  await expect(page).toHaveURL(/\/connect$/);
+  await page.goto("/practice");
+  await expect(page).not.toHaveURL(/\/practice/);
+  await page.goto("/appointments");
+  await expect(page).toHaveURL(/\/connect$/);
+});

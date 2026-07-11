@@ -37,7 +37,7 @@ export default async function ProfilePage() {
       </Card>
 
       <Button asChild variant="outline" className="h-12 w-full text-lg">
-        <Link href="/invite">{t.changePractice}</Link>
+        <Link href="/connect">{t.changePractice}</Link>
       </Button>
 
       <form action={signOutAction}>

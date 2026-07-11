@@ -8,9 +8,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { de } from "@/messages/de";
 
-export function InviteCodeForm({ defaultCode = "" }: { defaultCode?: string }) {
+export function InviteCodeForm({
+  defaultCode = "",
+  action: serverAction = startInviteAction,
+}: {
+  defaultCode?: string;
+  /** Alternative Server Action, z. B. für den angemeldeten Verbindungsbereich. */
+  action?: (state: InviteEntryState, formData: FormData) => Promise<InviteEntryState>;
+}) {
   const [state, action, pending] = useActionState<InviteEntryState, FormData>(
-    startInviteAction,
+    serverAction,
     {}
   );
 

@@ -82,6 +82,7 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
 export function homeRouteFor(session: SessionContext): string {
   if (session.memberships.length > 0) return "/practice";
   if (session.patientLink) return "/today";
-  // Patient ohne Praxisverknüpfung: Einladung prüfen
-  return "/invite";
+  // Angemeldet, aber ohne Praxisverknüpfung: Codeeingabe im
+  // geschützten Verbindungsbereich (kein Zugriff auf Patientendaten).
+  return "/connect";
 }

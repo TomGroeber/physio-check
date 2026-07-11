@@ -23,7 +23,14 @@ export const loginSchema = z.object({
   password: z.string().min(1, de.common.requiredField),
 });
 
+export const fullNameSchema = z
+  .string()
+  .trim()
+  .min(2, "Bitte geben Sie Ihren Vor- und Nachnamen ein.")
+  .max(200, "Der Name ist zu lang.");
+
 export const registerSchema = z.object({
+  fullName: fullNameSchema,
   email: emailSchema,
   password: passwordSchema,
 });

@@ -29,10 +29,10 @@ export type CreatePatientInviteState = {
   patientDisplayName?: string;
 };
 
-export async function startInviteAction(
-  _previousState: InviteEntryState,
+/** Gemeinsame Codeprüfung; gibt bei Erfolg null zurück und setzt die Sitzung. */
+async function checkCodeAndStoreSession(
   formData: FormData
-): Promise<InviteEntryState> {
+): Promise<InviteEntryState | null> {
   const parsed = inviteCodeSchema.safeParse(formData.get("code"));
   await ensureInviteClientCookie();
 
@@ -46,7 +46,36 @@ export async function startInviteAction(
   }
 
   await storeInviteSession(inspection.token);
+  return null;
+}
+
+/** Öffentliche Codeeingabe (Startseite/Einladungslink). */
+export async function startInviteAction(
+  _previousState: InviteEntryState,
+  formData: FormData
+): Promise<InviteEntryState> {
+  const failure = await checkCodeAndStoreSession(formData);
+  if (failure) return failure;
   redirect("/invite/continue");
+}
+
+/** Codeeingabe eines angemeldeten, (noch) unverbundenen Kontos. */
+export async function connectCodeAction(
+  _previousState: InviteEntryState,
+  formData: FormData
+): Promise<InviteEntryState> {
+  const session = await getSessionContext();
+  if (!session) redirect("/login");
+
+  const failure = await checkCodeAndStoreSession(formData);
+  if (failure) return failure;
+  redirect("/connect");
+}
+
+/** Verwirf die geprüfte Einladung, z. B. um einen anderen Code einzugeben. */
+export async function discardPendingInviteAction(): Promise<void> {
+  await clearInviteSession();
+  redirect("/connect");
 }
 
 export async function acceptInviteAction(): Promise<void> {
@@ -56,7 +85,7 @@ export async function acceptInviteAction(): Promise<void> {
   const success = await redeemPendingInvite();
   if (!success) {
     await clearInviteSession();
-    redirect("/invite?error=expired");
+    redirect("/connect?error=expired");
   }
 
   await clearInviteSession();
