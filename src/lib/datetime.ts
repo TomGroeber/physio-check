@@ -61,6 +61,21 @@ function timeZoneOffsetMs(date: Date, timeZone: string): number {
 }
 
 /**
+ * UTC-Zeitpunkt für "Kalendertag + Uhrzeit" in einer Zeitzone –
+ * sommerzeitsicher (zweiter Durchlauf fängt DST-Grenzen ab).
+ * Beispiel: zonedTimeToUtc("2026-07-15", "14:30", "Europe/Luxembourg").
+ */
+export function zonedTimeToUtc(
+  isoDate: string,
+  time: string,
+  timeZone: string
+): Date {
+  const guess = new Date(`${isoDate}T${time}:00Z`);
+  const first = new Date(guess.getTime() - timeZoneOffsetMs(guess, timeZone));
+  return new Date(guess.getTime() - timeZoneOffsetMs(first, timeZone));
+}
+
+/**
  * UTC-Zeitpunkte für Beginn und Ende (exklusiv) eines Kalendertags in
  * einer Zeitzone – sommerzeitsicher, für Abfragen wie "Termine heute".
  */

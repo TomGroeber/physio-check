@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDateLong, formatTime } from "@/lib/datetime";
 import { de } from "@/messages/de";
+import { CancellationRequestForm } from "@/components/patient/cancellation-request-form";
 
 export type AppointmentView = {
   id: string;
@@ -77,6 +78,9 @@ export function AppointmentCard({
             </a>
           </Button>
         )}
+        {showMapLink && appointment.status === "scheduled" ? (
+          <CancellationRequestForm appointmentId={appointment.id} />
+        ) : null}
       </CardContent>
     </Card>
   );

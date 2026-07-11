@@ -6,6 +6,7 @@ import {
   isoDateInTimeZone,
   isoWeekdayInTimeZone,
   todayInTimeZone,
+  zonedTimeToUtc,
 } from "./datetime";
 
 const TZ = "Europe/Luxembourg";
@@ -58,6 +59,13 @@ describe("dayRangeUtc", () => {
     const { start, end } = dayRangeUtc("2026-10-25", TZ);
     const hours = (end.getTime() - start.getTime()) / 3_600_000;
     expect(hours).toBe(25);
+  });
+});
+
+describe("zonedTimeToUtc", () => {
+  it("rechnet Sommer- und Wintertermine in UTC um", () => {
+    expect(zonedTimeToUtc("2026-07-11", "10:30", TZ).toISOString()).toBe("2026-07-11T08:30:00.000Z");
+    expect(zonedTimeToUtc("2026-01-15", "10:30", TZ).toISOString()).toBe("2026-01-15T09:30:00.000Z");
   });
 });
 

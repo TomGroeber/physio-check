@@ -17,7 +17,7 @@ const items = [
   { href: "/practice", label: de.practice.nav.dashboard, icon: DashboardSquare01Icon, exact: true },
   { href: "/practice/patients", label: de.practice.nav.patients, icon: UserGroupIcon },
   { href: "/practice/exercises", label: de.practice.nav.exercises, icon: Dumbbell01Icon },
-  { href: "/practice/appointments", label: de.practice.nav.appointments, icon: Calendar03Icon },
+  { href: "/practice/calendar", label: de.practice.nav.calendar, icon: Calendar03Icon },
   { href: "/practice/settings", label: de.practice.nav.settings, icon: Settings01Icon },
 ] as const;
 

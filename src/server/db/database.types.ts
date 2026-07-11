@@ -37,6 +37,10 @@ export type Database = {
       appointments: {
         Row: {
           address: string
+          cancellation_reason: string
+          cancelled_at: string | null
+          cancelled_by_profile_id: string | null
+          completed_at: string | null
           created_at: string
           ends_at: string
           id: string
@@ -52,6 +56,10 @@ export type Database = {
         }
         Insert: {
           address?: string
+          cancellation_reason?: string
+          cancelled_at?: string | null
+          cancelled_by_profile_id?: string | null
+          completed_at?: string | null
           created_at?: string
           ends_at: string
           id?: string
@@ -67,6 +75,10 @@ export type Database = {
         }
         Update: {
           address?: string
+          cancellation_reason?: string
+          cancelled_at?: string | null
+          cancelled_by_profile_id?: string | null
+          completed_at?: string | null
           created_at?: string
           ends_at?: string
           id?: string
@@ -81,6 +93,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "appointments_cancelled_by_profile_id_fkey"
+            columns: ["cancelled_by_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "appointments_patient_profile_id_fkey"
             columns: ["patient_profile_id"]
@@ -888,11 +907,11 @@ export type Database = {
         Returns: string
       }
       renew_patient_invite: {
-        Args: {
-          p_code_hash: string
-          p_expires_at: string
-          p_invite_id: string
-        }
+        Args: { p_code_hash: string; p_expires_at: string; p_invite_id: string }
+        Returns: string
+      }
+      request_appointment_cancellation: {
+        Args: { p_appointment_id: string; p_reason?: string }
         Returns: string
       }
     }

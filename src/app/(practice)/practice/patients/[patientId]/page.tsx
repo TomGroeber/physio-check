@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft02Icon } from "@hugeicons/core-free-icons";
 import { getSessionContext } from "@/server/services/session";
@@ -52,7 +52,8 @@ export default async function PatientDetailPage({
   params: Promise<{ patientId: string }>;
   searchParams: Promise<{ range?: string }>;
 }) {
-  const session = (await getSessionContext())!;
+  const session = await getSessionContext();
+  if (!session?.memberships[0]) redirect("/login");
   const practiceId = session.memberships[0].practiceId;
   const [{ patientId }, { range }] = await Promise.all([params, searchParams]);
   const days = range === "30" ? 30 : 7;

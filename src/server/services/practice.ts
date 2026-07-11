@@ -31,7 +31,7 @@ export async function getDashboardData(practiceId: string, timezone: string) {
         .from("appointments")
         .select(
           `id, starts_at, ends_at, timezone, status,
-           patient:profiles ( full_name ),
+           patient:profiles!appointments_patient_profile_id_fkey ( full_name ),
            therapist:practice_members ( profiles ( full_name ) )`
         )
         .eq("practice_id", practiceId)
@@ -43,7 +43,7 @@ export async function getDashboardData(practiceId: string, timezone: string) {
         .select(
           `id, reason, created_at, status,
            appointments!inner ( id, starts_at, timezone, practice_id,
-             patient:profiles ( full_name ) )`
+             patient:profiles!appointments_patient_profile_id_fkey ( full_name ) )`
         )
         .eq("status", "pending")
         .eq("appointments.practice_id", practiceId)

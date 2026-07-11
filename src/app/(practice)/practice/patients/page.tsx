@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getSessionContext } from "@/server/services/session";
 import { listOpenPatientInvites, listPatients } from "@/server/services/practice";
 import { revokePatientInviteAction } from "@/server/actions/invites";
@@ -25,7 +26,8 @@ export default async function PatientsPage({
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
-  const session = (await getSessionContext())!;
+  const session = await getSessionContext();
+  if (!session?.memberships[0]) redirect("/login");
   const { q = "" } = await searchParams;
   const practiceId = session.memberships[0].practiceId;
   const [patients, invites] = await Promise.all([
