@@ -1,20 +1,63 @@
 # PhysioCheck
 
-App für Physiotherapiepraxen und ihre Patientinnen und Patienten: Heimübungspläne mit Videos, Termine und selbst dokumentierte Durchführung (Adhärenz).
+App für Physiotherapiepraxen und ihre Patientinnen und Patienten: Heimübungspläne mit Videos, Termine, verordnete Sitzungen und selbst dokumentierte Durchführung (Adhärenz).
 
-> **Stand:** Phase D lokal umgesetzt: nutzbarer Praxiskalender mit Monats-, Wochen-, Tages- und Listenansicht, Terminaktionen, Konfliktschutz, Patienten-Absageanfrage und Termin-Notifications. Verordnungen/Sitzungsanspruch und Patientenakten folgen. Produktumfang: `docs/PRODUCT_SPEC.md`.
+> **Stand 11.07.2026:** Phase E/F ist in das Hauptprojekt übernommen und erstmals vollständig lokal verifiziert (Datenbank, Seeds, 43 Unit-Tests, 28 E2E-Tests, Production Build und ein manueller UI-Durchlauf für Sitzungen und Dokumente). Produktumfang: `docs/PRODUCT_SPEC.md` · Übergabe: `docs/AI_HANDOFF.md`.
 
-## Aktueller Entwicklungsstand
+## Funktionsübersicht
 
-- **Funktioniert:** Registrierung → Praxiscode, Praxiswechsel, Übungsdokumentation, Patientendetailseite und interaktiver Praxiskalender.
-- **Kalender:** Termine anlegen, bearbeiten, stornieren und abschließen; Filter; Stornierung bleibt in der Historie.
-- **Sicherheit:** Praxis-/Patientenauswahl wird serverseitig validiert; DB verhindert Terminüberschneidungen desselben Therapeuten.
-- **Geprüft:** Typecheck, Lint, 40 Unit-/Komponententests und Production Build.
-- **Lokal noch zu prüfen:** Migration `20260711200000_appointment_lifecycle.sql` sowie E2E mit Docker/Supabase.
-- **Nächster Schritt:** Phase E – Verordnungen und verbleibende Sitzungen; danach Patientenakten.
-- **GitHub:** Noch kein Remote konfiguriert. Letzter vorhandener Commit vor den Phase-D-Arbeiten: `9acc17e`.
+Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 Implementiert, lokal noch zu testen · ❌ Noch nicht umgesetzt · 🛑 Bewusst nicht vorgesehen
 
-Ausführliche Übergabe: [`docs/AI_HANDOFF.md`](docs/AI_HANDOFF.md).
+| Bereich | Funktion | Status | Getestet durch | Hinweise |
+|---|---|---|---|---|
+| Authentifizierung | Registrierung, Login, E-Mail-Bestätigung, Passwort zurücksetzen | ✅ | E2E-Tests (28, 11.07.2026) | Registrierung erzeugt nur unverbundene Patientenkonten |
+| Praxiscode | Code erzeugen, einlösen, widerrufen, erneuern | ✅ | E2E-Kernablauf (11.07.2026) | Nur Hash gespeichert, einmalig, 7 Tage gültig |
+| Praxiswechsel | Wechsel per Code neuer Praxis mit Warnhinweis | 🟡 | Unit-Tests, kein eigener E2E-Test | Alte Verbindung bleibt als Historie; kein Datenübertrag |
+| Patientenverwaltung | Liste, Suche, Patient anlegen, Detailseite | ✅ | E2E + UI-Durchlauf (11.07.2026) | Detailseite mit Terminen, Sitzungen, Dokumenten, Plan |
+| Telefonnummer | Telefonnummer pro Patient erfassen/anzeigen | ❌ | – | Geplant: Etappe 2 |
+| Heimübungen | Übungsanzeige „Heute“ + Detailseite mit Vorgaben | ✅ | E2E-Tests (11.07.2026) | Übungen stammen aus Demo-Seed |
+| Heimübungen | Übungs-/Videoverwaltung durch die Praxis (Upload) | ❌ | – | Privater Bucket `exercise-media` existiert bereits |
+| Übungsdokumentation | Selbstauskunft (erledigt/teilweise/zu schwierig/nicht möglich), Schmerz, Notiz | ✅ | E2E-Tests (11.07.2026) | Snapshot der Vorgaben; keine Doppeldokumentation pro Tag |
+| Kalender | Monats-, Wochen-, Tages- und Listenansicht mit Filtern | ✅ | Unit-Tests + UI-Durchlauf (11.07.2026) | Ohne zusätzliche Kalenderbibliothek |
+| Termine | Termin anlegen und bearbeiten | 🧪 | Unit-Tests der Validierung | UI vorhanden; kein automatischer End-zu-End-Test |
+| Termine | Termin abschließen (rechnet 1 Sitzung an) | ✅ | UI-Durchlauf (11.07.2026) | Anrechnung atomar; pro Termin höchstens einmal (DB-`unique`) |
+| Termine | Termin stornieren (Historie bleibt erhalten) | 🧪 | Unit-Tests der Validierung | Konfliktschutz gegen Überlappung in PostgreSQL |
+| Absagen | Patient stellt Absageanfrage, Praxis wird benachrichtigt | 🧪 | Unit-Tests | Annehmen/Ablehnen durch die Praxis fehlt noch |
+| Benachrichtigungen | In-App-Notifications bei Stornierung/Absageanfrage | 🟡 | Unit-Tests | Kein Benachrichtigungszentrum, kein Badge-Zähler |
+| Behandlungseinheiten | Verordnung anlegen, ganzzahlige Anpassung mit Pflichtgrund, Historie, Patientenanzeige | ✅ | UI-Durchlauf (11.07.2026) | Nur ganze Zahlen (`integer` in DB); Anzeige bei mehreren aktiven Verordnungen noch uneinheitlich (siehe unten) |
+| Verordnungswarnungen | Warnungen bei wenig Einheiten/Ablauf | ❌ | – | Geplant: Etappe 4 |
+| Patientenakten | Upload (PDF/JPEG/PNG), Ansicht über kurzlebige signierte URL, Archivieren | ✅ | UI-Durchlauf (11.07.2026) | Patient hat keinen Zugriff (Probe bestanden); Virenscan vor Pilotbetrieb erforderlich |
+| Patientenakten | Filter, endgültiges Löschen, dedizierte RLS-/Storage-Tests | ❌ | – | Geplant: Etappe 5/10 |
+| Patienten-Kurzprofil | Internes Kurzprofil auf der Detailseite | ❌ | – | Geplant: Etappe 5 |
+| Kalenderfarben | Farbkennzeichnung pro Therapeut/Kategorie | ❌ | – | Geplant: Etappe 2 |
+| Markierte Patienten | Patienten anheften/priorisieren | ❌ | – | Geplant: Etappe 6 |
+| Warteliste | Praxisbezogene Warteliste mit Kriterien | ❌ | – | Geplant: Etappe 7 |
+| Freie Termine | Frei gewordene Slots + Angebotsworkflow | ❌ | – | Geplant: Etappe 8 |
+| PWA | Installierbares Manifest | 🟡 | manuell (frühere Phase) | Kein Offline-Modus, keine Push-Benachrichtigungen |
+| Sicherheit | RLS auf allen Patiententabellen, serverseitige Autorisierung, private Buckets | 🟡 | E2E + Negativ-Proben (11.07.2026) | Dedizierte Cross-Practice-RLS-Testsuite fehlt noch (Etappe 10) |
+| Tests | Typecheck, Lint, 43 Unit-/Komponententests, 28 E2E, Build | ✅ | lokal ausgeführt (11.07.2026) | RLS-/Storage-Testsuite und Sitzungs-/Dokument-E2E fehlen |
+| Deployment | Produktivbetrieb/Hosting | ❌ | – | Nur mit ausdrücklicher Zustimmung von Tom |
+
+## Was funktioniert aktuell?
+
+- **Kompletter Patienteneinstieg:** Konto erstellen → E-Mail bestätigen → Praxiscode einlösen → mit der Praxis verbunden.
+- **Übungen:** Patienten sehen ihre Tagesübungen, dokumentieren die Durchführung als Selbstauskunft; die Praxis sieht die Rückmeldungen der letzten 7/30 Tage.
+- **Kalender:** Die Praxis arbeitet mit Monats-/Wochen-/Tages-/Listenansicht; Termine können angelegt, geändert, storniert und abgeschlossen werden.
+- **Behandlungseinheiten:** Die Praxis hinterlegt Verordnungen mit ganzzahligen Sitzungen, korrigiert mit Pflichtgrund, und ein abgeschlossener Termin rechnet genau eine Sitzung an – pro Termin höchstens einmal. Patienten sehen ihren Stand mit neutralem Kostenhinweis.
+- **Patientenakten:** Die Praxis lädt PDF/JPEG/PNG in einen privaten Bucket und öffnet sie über kurzlebige signierte URLs; Patienten haben keinerlei Zugriff.
+
+## Was funktioniert noch nicht vollständig?
+
+- **Anzeige bei mehreren aktiven Verordnungen:** Der Patient sieht die neueste Verordnung, Termine werden aber gegen die älteste gültige angerechnet – der angezeigte Stand kann dadurch unverändert bleiben. Wird in Etappe 3 vereinheitlicht.
+- **Absageanfragen:** Die Praxis wird benachrichtigt, kann aber noch nicht per Klick annehmen/ablehnen.
+- **Termin anlegen/bearbeiten/stornieren:** implementiert und validiert, aber ohne automatischen End-zu-End-Test.
+- **Übungsverwaltung:** Übungen und Videos können noch nicht über die Oberfläche angelegt werden (nur Demo-Seed).
+- **Dokumente:** kein Filter, kein endgültiges Löschen, kein Virenscan (Blocker vor Pilotbetrieb).
+- **Benachrichtigungszentrum:** Notifications existieren, aber ohne gelesen/ungelesen-Übersicht und Badge.
+
+## Letzte Änderungen
+
+- **11.07.2026 – Konsolidierung und lokale Verifikation von Phase E/F.** Die separat angelieferte Implementierung (`physio-check-phase-ef-updated/`) wurde in das Hauptprojekt übernommen und der Duplikat-Ordner entfernt. Die Migration `20260711230000_authorizations_and_patient_documents.sql` schlug beim ersten echten Lauf fehl (PostgreSQL-Schlüsselwort `authorization` als Alias) und wurde korrigiert. Danach erstmals vollständig lokal geprüft: `db:reset`, Seed, Typecheck, Lint, 43 Unit-Tests, 28 E2E-Tests, Production Build sowie ein UI-Durchlauf für Verordnungen (anlegen, −2 mit Grund, Terminabschluss rechnet genau 1 an) und Dokumente (PNG-Upload, signierte URL, Patient ausgesperrt). Das GitHub-Repository war versehentlich öffentlich und ist jetzt **privat**. Bekannte Einschränkung: uneinheitliche Anzeige bei mehreren aktiven Verordnungen (siehe oben).
 
 ## Technik (gepinnte Versionen)
 
@@ -44,6 +87,7 @@ Ausführliche Übergabe: [`docs/AI_HANDOFF.md`](docs/AI_HANDOFF.md).
 pnpm install          # Abhängigkeiten installieren
 supabase start        # lokale Datenbank + Auth + Storage (Docker)
 cp .env.example .env.local   # einmalig; Werte siehe unten
+pnpm db:reset         # Migrationen anwenden
 pnpm seed             # Demo-Daten anlegen
 pnpm dev              # App auf http://localhost:3000
 ```
@@ -61,15 +105,13 @@ Werte für `.env.local`: `supabase status` zeigt `API URL` (→ `NEXT_PUBLIC_SUP
 
 Demo-Einladungscode: `DEMA-PHYS-2326`
 
-- **Patientenansicht:** anmelden als Patientin → Startseite „Heute" mit Übungen und nächstem Termin.
+- **Patientenansicht:** anmelden als Patientin → Startseite „Heute" mit Übungen, Sitzungsstand und nächstem Termin.
 - **Therapeutenansicht:** anmelden als Therapeutin → Praxis-Dashboard.
 - Am besten zwei verschiedene Browser (oder ein privates Fenster) für beide Rollen gleichzeitig.
 
 **Demo-Daten zurücksetzen:** `pnpm db:reset && pnpm seed`
 
 **E-Mails ansehen (Registrierung/Passwort):** Lokal werden alle Mails von Mailpit abgefangen: http://localhost:54324
-
-**Testvideo hochladen:** noch nicht möglich – die Übungsverwaltung mit Video-Upload folgt in Phase C. Der private Storage-Bucket (`exercise-media`) ist bereits eingerichtet.
 
 ## Häufigste Befehle
 
@@ -85,7 +127,7 @@ pnpm db:types     # TypeScript-Typen aus dem DB-Schema erzeugen
 pnpm seed         # Demo-Daten neu anlegen
 ```
 
-## Registrierung und Verbindung testen (neuer Ablauf)
+## Registrierung und Verbindung testen
 
 1. `pnpm db:reset`, `pnpm seed`, `pnpm dev`
 2. Startseite → „Neues Konto erstellen“: Name, E-Mail, Passwort eingeben.
@@ -111,20 +153,13 @@ Alternativ funktioniert weiterhin der Einladungslink: Startseite → „Ich habe
 4. Termin öffnen, ändern, abschließen oder mit optionalem neutralem Grund stornieren.
 5. Als Patient unter **Termine** eine Absage anfragen; der Kalender zeigt anschließend „Absage angefragt“.
 
-## Bestehende Demo-Bereiche testen
+## Sitzungen und Patientenakte testen
 
-1. `supabase start`, `pnpm seed`, `pnpm dev`
-2. Als Patientin anmelden → „Heute" zeigt 3 Übungen (1 gestern dokumentiert) und den nächsten Termin mit Karten-Link; Bereiche „Termine" und „Profil" über die untere Navigation.
-3. Abmelden, als Therapeutin anmelden → Dashboard zeigt heutige Termine, dokumentierte Übungen und die Rückmeldung „zu schwierig" aus den Demo-Daten; Patientenliste mit Suche, Übungsbibliothek, Terminliste.
-
-## Neue Migration anwenden
-
-Die Migration `20260711200000_appointment_lifecycle.sql` ergänzt Stornierungs-/Abschlussdaten, atomaren Konfliktschutz und Patienten-Absageanfragen. Lokal genügt:
-
-```bash
-pnpm db:reset
-pnpm seed
-```
+1. Als Therapeutin anmelden → **Patienten → Petra Beispielfrau**.
+2. Eine Verordnung mit Sitzungsanzahl anlegen oder mit begründetem `+`/`-` anpassen.
+3. Ein PDF/JPEG/PNG hochladen und über „Öffnen“ die kurzlebige Ansicht prüfen.
+4. Im Kalender einen geplanten Termin abschließen: eine verfügbare Sitzung wird angerechnet.
+5. Als Patientin anmelden: „Heute“ zeigt die verbleibenden Sitzungen.
 
 ## Wichtige Dokumente
 
@@ -141,4 +176,5 @@ pnpm seed
 
 - Rollen und Rechte liegen ausschließlich in der Datenbank (Row Level Security auf jeder patientenbezogenen Tabelle).
 - Der Service-Role-Schlüssel existiert nur serverseitig (`.env.local`, nie im Browser, nie im Repository).
+- Interne Patientendokumente sind für Patienten unsichtbar und nur über kurzlebige signierte URLs für aktive Praxismitglieder erreichbar.
 - Keine echten Personen- oder Gesundheitsdaten in Entwicklung und Tests.

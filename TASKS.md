@@ -79,22 +79,43 @@
 - [x] Patient bei Praxis-Stornierung benachrichtigen; Praxis bei Patienten-Absageanfrage benachrichtigen
 - [x] Null-Session-Absturz der Patientenliste durch lokale Route-Prüfung behoben
 - [x] Typecheck, Lint, 40 Unit-/Komponententests und Production Build grün
-- [ ] Migration, Seed und E2E lokal mit Docker/Supabase ausführen
+- [x] Migration, Seed und E2E lokal mit Docker/Supabase ausführen (2026-07-11: 28 E2E grün)
 - [ ] Entscheidung über Absageanfrage (annehmen/ablehnen) als eigene Praxisaktion vervollständigen
 
 ## Phase E – Verordnete und verbleibende Sitzungen
 
-- [ ] Tabellen `treatment_authorizations` + `appointment_authorization_usages` (verbleibend = verordnet − gültige Nutzungen, kein driftender Zähler)
-- [ ] Nur Therapeut rechnet abgeschlossene Termine an; nie automatisch
-- [ ] Patientenansicht „Noch X von Y Sitzungen“ + neutraler Kostenhinweis (keine Kassen-Garantie)
-- [ ] Therapeutenansicht: Verordnungen anlegen/bearbeiten/archivieren, Zuordnung korrigieren, Historie/Audit
+- [x] Tabellen für Verordnung, Adjustment-Historie und terminbezogene Nutzung (kein driftender Zähler)
+- [x] Terminabschluss und Anrechnung atomar; nur aktive Praxismitglieder können auslösen
+- [x] Patientenansicht „Noch X von Y Sitzungen“ + neutraler Kostenhinweis (keine Kassen-Garantie)
+- [x] Therapeutenansicht: Verordnungen anlegen, begründet anpassen, archivieren; Audit-Ereignisse
+- [x] Migration/Seed/Terminabschluss lokal mit Docker/Supabase end-to-end geprüft (2026-07-11: UI-Durchlauf; Migration wegen reserviertem Alias `authorization` korrigiert)
+- [ ] Anzeige bei mehreren aktiven Verordnungen vereinheitlichen: Patient sieht die neueste, angerechnet wird die älteste gültige (entdeckt 2026-07-11; Etappe 3)
 
 ## Phase F – Private Patientenakten
 
-- [ ] Privater Bucket `patient-records`; Pfad aus serverseitig verifizierten IDs; zufällige Dateinamen
-- [ ] Upload (PDF/JPEG/PNG, Größenlimit, Signaturprüfung), Ansicht, Download über kurzlebige signierte URLs
-- [ ] Kategorien, Dokumentdatum, Notiz, Filter; Archivieren/Löschen mit Bestätigung
-- [ ] Strikte Mandantentrennung (RLS + Service + Tests); Audit; Virenscan vor Pilotbetrieb dokumentieren
+- [x] Privater Bucket `patient-records`; Pfad aus serverseitig verifizierten IDs; zufällige Dateinamen
+- [x] Upload (PDF/JPEG/PNG, 20-MB-Limit, Signaturprüfung), Ansicht über kurzlebige signierte URLs
+- [x] Kategorien, Dokumentdatum, Notiz und Archivieren
+- [x] RLS, serverseitige Zugehörigkeitsprüfung und Audit für Upload/Archivierung
+- [x] Upload, signierte URL und Patientenaussperrung lokal end-to-end geprüft (2026-07-11: UI-Durchlauf + Negativ-Proben)
+- [ ] Dokument-Filter, endgültiges Löschen mit Bestätigung und dedizierte Mandantentrennungs-Tests
+- [ ] Virenscan/Quarantäne vor Pilotbetrieb integrieren
+
+## Etappenplan ab 11.07.2026 (verbindliche Produktentscheidungen)
+
+Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungseinheiten; 1 Termin = 1 Einheit; interne Dokumente nie für Patienten; Verordnungswarnungen, markierte Patienten, Warteliste, freie Termine; ehrliche README; Obsidian-Sync).
+
+- [x] **Etappe 1:** Repository analysiert, Phase-E/F-Parallelordner ins Hauptprojekt konsolidiert, Migration korrigiert, alles lokal verifiziert, README-Funktionsübersicht erstellt (2026-07-11)
+- [ ] **Etappe 2:** Telefonnummer und Kalenderfarben
+- [ ] **Etappe 3:** Behandlungskontingente ausschließlich in ganzen Einheiten (Ledger-Ereignisse, Warnung bei 0, einheitliche Anzeige bei mehreren Verordnungen)
+- [ ] **Etappe 4:** Verordnungswarnungen (Patientendetail, Dashboard, Filter, datensparsame Notifications)
+- [ ] **Etappe 5:** Patientendokumente vervollständigen (Filter, Löschen, Tests) und internes Patienten-Kurzprofil
+- [ ] **Etappe 6:** Markierte Patienten
+- [ ] **Etappe 7:** Warteliste
+- [ ] **Etappe 8:** Frei gewordene Termine und Angebotsworkflow
+- [ ] **Etappe 9:** Obsidian-Synchronisation (`scripts/sync-obsidian.ts`, `pnpm docs:sync`; wartet auf Vault-Pfad von Tom)
+- [ ] **Etappe 10:** RLS-, Unit-, Integrations- und E2E-Tests (inkl. Dokument-Negativtests Patient/Fremdpraxis)
+- [ ] **Etappe 11:** Abschließende Dokumentation und ehrliche Statusübersicht
 
 ## Phase G – Notifications, Terminvorschläge, Härtung und Bedienbarkeit
 

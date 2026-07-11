@@ -6,7 +6,7 @@ Verbindliche Projektregeln. Der Masterprompt (Produkt- und Arbeitsgrundlage) ist
 
 App für Physiotherapiepraxen (Therapeuten-Dashboard) und Patienten (Heimübungspläne mit Videos, Termine, Adhärenz-Dokumentation). Vorläufiger Name **PhysioCheck** – Name/Logo/Farben liegen zentral in `src/config/branding.ts` und Design-Tokens; niemals hartkodieren.
 
-**Aktueller Stand:** Phase D lokal umgesetzt (2026-07-11): Phase C bleibt vollständig erhalten. Neu sind `/practice/calendar` mit Monat/Woche/Tag/Liste, Termin anlegen/bearbeiten/stornieren/abschließen, Filter, DB-Konfliktschutz, Patient-Absageanfrage und Termin-Notifications. Migration `20260711200000_appointment_lifecycle.sql`. Typecheck, Lint, 40 Unit-/Komponententests und Production Build sind grün; DB-Migration und E2E müssen lokal mit Docker/Supabase verifiziert werden. Nächster Schritt: Phase E (Verordnungen/verbleibende Sitzungen), danach Phase F (Patientenakten). GitHub-Remote ist noch nicht eingerichtet. Details: `docs/AI_HANDOFF.md`.
+**Aktueller Stand:** Phase E/F ist ins Hauptprojekt konsolidiert und lokal verifiziert (2026-07-11): Kalender, Verordnungen/verbleibende Sitzungen (integer, Adjustment-/Usage-Historie) und private Patientenakten. Neueste Migration: `20260711230000_authorizations_and_patient_documents.sql` (Alias-Fix wegen reserviertem Schlüsselwort). Geprüft: db:reset, Seed, Typecheck, Lint, 43 Unit-Tests, 28 E2E, Build, UI-Durchlauf Sitzungen/Dokumente. Remote `origin` ist `TomGroeber/physio-check` (**privat**). Nächster Schritt: Etappenplan in `TASKS.md` (Etappe 2: Telefonnummer + Kalenderfarben). Details: `docs/AI_HANDOFF.md`.
 
 ## Kommunikation
 

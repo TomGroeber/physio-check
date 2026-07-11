@@ -1,53 +1,49 @@
 # PhysioCheck – AI Handoff
 
-> Stand: 2026-07-11 · Arbeitszweig: `main` · letzter bestehender Commit vor Phase D: `9acc17e`
+> Stand: 2026-07-11 (abends) · Arbeitszweig: `main` · GitHub-Remote: `TomGroeber/physio-check` (**privat**)
 
 ## Produkt und Stack
 
-PhysioCheck verbindet Physiotherapiepraxen mit Patienten: Praxiscode, Heimübungen als Selbstauskunft, Termine und später Verordnungen sowie interne Patientenakten. Stack: Next.js 16, React 19, TypeScript strict, Tailwind, shadcn/ui, Supabase Auth/PostgreSQL/Storage/RLS, pnpm, Vitest und Playwright.
+PhysioCheck verbindet Physiotherapiepraxen mit Patienten: Praxiscode, Heimübungen als Selbstauskunft, Termine, Verordnungen und interne Patientenakten. Stack: Next.js 16, React 19, TypeScript strict, Tailwind, shadcn/ui, Supabase Auth/PostgreSQL/Storage/RLS, pnpm, Vitest und Playwright.
 
-## Fertig
+## Wichtig: Konsolidierung am 2026-07-11
 
-- Phase C: freie Registrierung, unverbundenes Konto auf `/connect` beschränkt, sichere einmalige Codes und Praxiswechsel.
-- Phase C: Übungsdetail und Dokumentation mit Status, Sätzen, Schmerz, Notiz und Snapshot; Praxisansicht 7/30 Tage.
-- Phase D: `/practice/calendar` mit Monat/Woche/Tag/Liste und Filtern.
-- Phase D: Termin anlegen, bearbeiten, stornieren und abschließen.
-- Phase D: PostgreSQL-Konfliktschutz für überlappende aktive Termine desselben Therapeuten.
-- Phase D: Patient kann Absage anfragen; Praxis erhält datensparsame Notifications.
-- Phase D: Praxisstornierung erzeugt Patient-Notification.
-- Fix: Praxis-Patientenrouten prüfen Session/Mitgliedschaft selbst und dereferenzieren keine Null-Session.
+Die Phase-E/F-Implementierung lag zuvor als kompletter Parallelordner `physio-check-phase-ef-updated/` im Repo (Commit `40a1b02`). Sie wurde in den Projektstamm übernommen, der Ordner gelöscht (D-030). Dabei wurde die bis dahin **nie ausgeführte** Migration `20260711230000_authorizations_and_patient_documents.sql` repariert: `authorization` ist ein reserviertes PostgreSQL-Schlüsselwort und wurde als Tabellen-Alias durch `auth_rec` ersetzt. Außerdem war das GitHub-Repo versehentlich öffentlich und ist jetzt privat (D-031).
 
-## Neueste Migration
+## Fertig (und am 2026-07-11 lokal verifiziert)
 
-`supabase/migrations/20260711200000_appointment_lifecycle.sql`
+- Phase C: freie Registrierung, unverbundenes Konto auf `/connect` beschränkt, sichere einmalige Codes und Praxiswechsel. *(E2E grün)*
+- Phase C: Übungsdetail und Dokumentation mit Status, Sätzen, Schmerz, Notiz und Snapshot; Praxisansicht 7/30 Tage. *(E2E grün)*
+- Phase D: `/practice/calendar` mit Monat/Woche/Tag/Liste und Filtern; Termin anlegen/bearbeiten/stornieren/abschließen; GiST-Konfliktschutz; Absageanfrage + Notifications. *(Migration und Abschluss-Aktion lokal geprüft; kein E2E für Anlegen/Bearbeiten/Stornieren)*
+- Phase E: Verordnungen (integer-Sitzungen), Adjustment-Historie mit Pflichtgrund, terminbezogene Usage (`appointment_id unique` = keine Doppelanrechnung), Patientenanzeige mit neutralem Kostenhinweis. *(UI-Durchlauf: anlegen 9 → −2 mit Grund → Terminabschluss rechnet genau 1 an → Patient sieht Stand)*
+- Phase F: interne PDF/JPEG/PNG-Dokumente pro Patient, privater Bucket `patient-records`, Signatur-/Größenprüfung, kurzlebige signierte URL, Audit. *(UI-Durchlauf: PNG-Upload, Öffnen über signierte URL 200; Patient auf Dokumentroute/Praxisseite → Redirect, kein Zugriff)*
 
-Sie ergänzt `cancelled_at`, `cancelled_by_profile_id`, `cancellation_reason`, `completed_at`, den GiST-Konflikt-Constraint und `request_appointment_cancellation(...)`.
+## Prüfstand (alles am 2026-07-11 auf Toms Mac ausgeführt)
 
-## Prüfstand
-
-- `pnpm typecheck`: grün
-- `pnpm lint`: grün
-- `pnpm test`: 40 Tests, grün
+- `pnpm db:reset`: grün (alle 5 Migrationen)
+- `pnpm seed`: grün
+- `pnpm typecheck`, `pnpm lint`: grün
+- `pnpm test`: 43 Tests grün
+- `pnpm e2e`: 28 bestanden, 6 planmäßig übersprungen (Kernablauf läuft nur auf Chromium)
 - `pnpm build`: grün
-- `pnpm db:reset`, `pnpm seed`, `pnpm e2e`: in dieser Umgebung nicht möglich (Docker/Supabase fehlen); auf Toms Mac ausführen.
+- UI-Durchlauf Sitzungen + Dokumente (Playwright-Skript, Screenshots): bestanden inkl. Negativ-Proben
 
-## Offene Punkte in Priorität
+## Bekannte Probleme / offene Punkte in Priorität
 
-1. Lokal Migration/Seed/E2E prüfen und gefundene SQL-/Ablauffehler beheben.
-2. Praxisentscheidung für Absageanfragen (annehmen/ablehnen) fertigstellen.
-3. Phase E: `treatment_authorizations`, Usage-/Adjustment-Historie und Patientenanzeige verbleibender Sitzungen.
-4. Phase F: privater Bucket `patient-records`, Metadaten, Upload/Preview/Download und RLS.
-5. Übungs-/Videoverwaltung und Plan-Zuweisung per UI.
-6. Dedizierte Cross-Practice-RLS-Tests.
+1. **Mehrere aktive Verordnungen:** Patient „Heute“ zeigt die neueste Verordnung, `complete_appointment_with_authorization` rechnet gegen die älteste gültige an – der vom Patienten gesehene Stand kann sich beim Terminabschluss nicht ändern. In Etappe 3 vereinheitlichen.
+2. Verbindlicher Etappenplan in `TASKS.md` (Produktentscheidungen vom 2026-07-11): Etappe 2 Telefonnummer + Kalenderfarben → Etappe 3 ganzzahlige Behandlungskontingente (Ledger-Ereignisse, Warnung bei 0-Abschluss) → Etappe 4 Verordnungswarnungen → … → Etappe 9 Obsidian-Sync (wartet auf Vault-Pfad von Tom).
+3. Praxisentscheidung für Absageanfragen (annehmen/ablehnen) fehlt.
+4. Dedizierte Cross-Practice-/Patient-RLS- und Storage-Tests (Etappe 10).
+5. Virenscan/Quarantäne für Uploads vor Pilotbetrieb; aktuell nur Dateityp, Signatur und Größe.
+6. Übungs-/Videoverwaltung und Plan-Zuweisung per UI.
 
 ## Relevante Dateien
 
-- Kalender: `src/app/(practice)/practice/calendar/`
-- Kalenderlogik: `src/lib/calendar.ts`
-- Termin-Services/-Actions: `src/server/services/appointments.ts`, `src/server/actions/appointments.ts`
-- Terminvalidierung: `src/lib/validation/appointments.ts`
-- Patient-Absage: `src/components/patient/cancellation-request-form.tsx`
-- Migration: `supabase/migrations/20260711200000_appointment_lifecycle.sql`
+- Kalender: `src/app/(practice)/practice/calendar/` · Logik `src/lib/calendar.ts`
+- Termine: `src/server/services/appointments.ts`, `src/server/actions/appointments.ts`, `src/lib/validation/appointments.ts`
+- Sitzungen: `src/server/actions/authorizations.ts`, `src/server/services/authorizations.ts`, `src/components/practice/authorization-panel.tsx`
+- Dokumente: `src/server/actions/documents.ts`, `src/server/services/documents.ts`, `src/components/practice/document-panel.tsx`, Route `src/app/(practice)/practice/patients/[patientId]/documents/[documentId]/route.ts`
+- Neueste Migration: `supabase/migrations/20260711230000_authorizations_and_patient_documents.sql`
 - UI-Texte: `src/messages/de.ts`
 
 ## Lokaler Start
@@ -64,8 +60,8 @@ Demo-Logins stehen im README. Keine echten Patientendaten verwenden.
 
 ## GitHub
 
-Noch kein Remote vorhanden (`git remote -v` war leer). Vor einem Push `.gitignore`, `git status` und staged Diff auf Secrets prüfen. Repository privat anlegen; `.env.local`, lokale Supabase-Daten und Patientendaten niemals pushen.
+Remote `origin` ist `https://github.com/TomGroeber/physio-check.git` (privat). Vor jedem Push Status und Diff auf Secrets prüfen; `.env.local`, lokale Supabase-Daten und Patientendaten niemals pushen.
 
 ## Nächster konkreter Auftrag
 
-Zuerst Phase-D-Migration und Kalender end-to-end auf Toms lokaler Supabase-Instanz prüfen. Danach Absageentscheidung abschließen und Phase E (verordnete/verbleibende Sitzungen mit nachvollziehbaren Anpassungen) implementieren.
+Etappe 2 aus `TASKS.md`: Telefonnummer pro Patient (Datenminimierung beachten) und Kalenderfarben. Danach Etappe 3 (Behandlungskontingente strikt ganzzahlig mit Ledger-Ereignissen `initial_allocation`/`appointment_completed`/`appointment_completion_reversed`/`manual_increase`/`manual_decrease`, Warnung beim Abschluss mit 0 verbleibenden Einheiten, einheitliche Verordnungsauswahl für Anzeige und Anrechnung).

@@ -2,6 +2,22 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-07-11 – Konsolidierung und Verifikation
+
+**D-031 · Repository ist privat.** Das GitHub-Repository `TomGroeber/physio-check` war versehentlich öffentlich und wurde auf privat gestellt. Es enthielt keine Secrets (nur Platzhalter in `.env.example`), aber ein Gesundheits-App-Projekt bleibt grundsätzlich privat.
+
+**D-030 · Ein Projektstamm, keine Parallelkopien.** Die als kompletter Ordner `physio-check-phase-ef-updated/` angelieferte Phase-E/F-Implementierung wurde in das Hauptprojekt übernommen und der Ordner gelöscht (Git-Historie behält ihn). Der Root des Repositories ist die einzige technische Wahrheit; künftige Zulieferungen werden direkt dort integriert. Beim ersten echten Datenbanklauf wurde in der Migration `20260711230000` der Alias `authorization` (reserviertes PostgreSQL-Schlüsselwort) zu `auth_rec` korrigiert – die Migration war zuvor in keiner Umgebung ausgeführt worden.
+
+## 2026-07-11 – Phase E/F
+
+**D-029 · Dokumente bleiben praxisintern.** Patientendokumente sind ausschließlich für aktive Praxismitglieder sichtbar. Der Bucket ist privat; Dateinamen sind zufällig und Ansichten verwenden 60 Sekunden gültige signierte URLs. Upload/Archivierung werden auditiert. Vor einem Pilotbetrieb ist zusätzlich ein Virenscan mit Quarantäne erforderlich.
+
+**D-028 · Sitzungskorrekturen sind append-only.** Der Ausgangswert einer Verordnung wird nicht still überschrieben. Jede manuelle Korrektur ist ein Delta mit Pflichtgrund; verbleibend wird aus Grundwert + Anpassungen − Termin-Nutzungen berechnet.
+
+**D-027 · Terminabschluss rechnet atomar an.** Das Abschließen eines geplanten Termins und die Anrechnung genau einer verfügbaren, gültigen Verordnung laufen in einer PostgreSQL-Funktion. Ohne verfügbare Verordnung wird der Termin abgeschlossen, aber keine Sitzung erfunden.
+
+**D-026 · Keine Erstattungszusage.** Die Sitzungsanzeige ist eine organisatorische Übersicht und macht keine Zusage zur Kostenübernahme durch eine luxemburgische Krankenkasse.
+
 ## 2026-07-11 – Phase D
 
 **D-025 · Eigener servergerenderter Kalender.** Monat, Woche, Tag und Liste werden mit kleinen reinen Datumshelfern umgesetzt. Keine zusätzliche Kalenderbibliothek: weniger Abhängigkeiten, vollständige Tastatur-/Listenbedienung und kompatibel mit Next.js 16/React 19.
