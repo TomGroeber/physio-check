@@ -2,7 +2,19 @@
 
 App für Physiotherapiepraxen und ihre Patientinnen und Patienten: Heimübungspläne mit Videos, Termine und selbst dokumentierte Durchführung (Adhärenz).
 
-> **Stand:** Phase C umgesetzt: freie Patientenregistrierung mit anschließender Code-Verbindung zur Praxis und vollständige Übungsdokumentation (Selbstauskunft) inkl. Therapeutenansicht. Kalender, Verordnungen, Patientenakten und Benachrichtigungen folgen in den nächsten Phasen. Produktumfang: `docs/PRODUCT_SPEC.md`.
+> **Stand:** Phase D lokal umgesetzt: nutzbarer Praxiskalender mit Monats-, Wochen-, Tages- und Listenansicht, Terminaktionen, Konfliktschutz, Patienten-Absageanfrage und Termin-Notifications. Verordnungen/Sitzungsanspruch und Patientenakten folgen. Produktumfang: `docs/PRODUCT_SPEC.md`.
+
+## Aktueller Entwicklungsstand
+
+- **Funktioniert:** Registrierung → Praxiscode, Praxiswechsel, Übungsdokumentation, Patientendetailseite und interaktiver Praxiskalender.
+- **Kalender:** Termine anlegen, bearbeiten, stornieren und abschließen; Filter; Stornierung bleibt in der Historie.
+- **Sicherheit:** Praxis-/Patientenauswahl wird serverseitig validiert; DB verhindert Terminüberschneidungen desselben Therapeuten.
+- **Geprüft:** Typecheck, Lint, 40 Unit-/Komponententests und Production Build.
+- **Lokal noch zu prüfen:** Migration `20260711200000_appointment_lifecycle.sql` sowie E2E mit Docker/Supabase.
+- **Nächster Schritt:** Phase E – Verordnungen und verbleibende Sitzungen; danach Patientenakten.
+- **GitHub:** Noch kein Remote konfiguriert. Letzter vorhandener Commit vor den Phase-D-Arbeiten: `9acc17e`.
+
+Ausführliche Übergabe: [`docs/AI_HANDOFF.md`](docs/AI_HANDOFF.md).
 
 ## Technik (gepinnte Versionen)
 
@@ -91,6 +103,14 @@ Alternativ funktioniert weiterhin der Einladungslink: Startseite → „Ich habe
 4. „Heute“ zeigt die Bestätigung und den aktualisierten Fortschritt; die Übung ist für heute als dokumentiert markiert.
 5. Abmelden, als Therapeutin anmelden → **Patienten → Petra Beispielfrau**: Selbstauskünfte der letzten 7/30 Tage mit Status, Sätzen, Schmerzangaben und Notizen.
 
+## Praxiskalender testen
+
+1. Als `therapeutin@demo.physiocheck.test` anmelden.
+2. **Kalender** öffnen und zwischen Monat, Woche, Tag und Liste wechseln.
+3. „Termin anlegen“ wählen, Patient, Therapeut, Datum und Dauer speichern.
+4. Termin öffnen, ändern, abschließen oder mit optionalem neutralem Grund stornieren.
+5. Als Patient unter **Termine** eine Absage anfragen; der Kalender zeigt anschließend „Absage angefragt“.
+
 ## Bestehende Demo-Bereiche testen
 
 1. `supabase start`, `pnpm seed`, `pnpm dev`
@@ -99,7 +119,7 @@ Alternativ funktioniert weiterhin der Einladungslink: Startseite → „Ich habe
 
 ## Neue Migration anwenden
 
-Die Migration `20260711170000_scope_completion_logs_to_plan_practice.sql` begrenzt das Lesen von Durchführungsprotokollen auf die Praxis, zu deren Plan sie gehören. Lokal genügt:
+Die Migration `20260711200000_appointment_lifecycle.sql` ergänzt Stornierungs-/Abschlussdaten, atomaren Konfliktschutz und Patienten-Absageanfragen. Lokal genügt:
 
 ```bash
 pnpm db:reset
@@ -114,6 +134,7 @@ pnpm seed
 - `docs/DATA_MODEL.md` – Datenmodell (ER-Diagramm)
 - `docs/PRIVACY_SECURITY.md` – Datenschutz und Sicherheit
 - `docs/ROADMAP.md` – spätere Erweiterungen
+- `docs/AI_HANDOFF.md` – aktueller Übergabestand für Claude/ChatGPT
 - `TASKS.md` / `DECISIONS.md` – Aufgaben und Entscheidungen
 
 ## Sicherheit (Kurzfassung)

@@ -2,6 +2,16 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-07-11 – Phase D
+
+**D-025 · Eigener servergerenderter Kalender.** Monat, Woche, Tag und Liste werden mit kleinen reinen Datumshelfern umgesetzt. Keine zusätzliche Kalenderbibliothek: weniger Abhängigkeiten, vollständige Tastatur-/Listenbedienung und kompatibel mit Next.js 16/React 19.
+
+**D-024 · Konfliktschutz in PostgreSQL.** Ein partieller GiST-Exclusion-Constraint verhindert überlappende aktive Termine desselben Therapeuten atomar, auch bei parallelen Requests. Stornierte und abgeschlossene Termine blockieren nicht.
+
+**D-023 · Termine werden nie gelöscht.** Stornierung und Abschluss ergänzen Status, Zeitpunkt und ausführende Person. Historie bleibt erhalten; neutrale Gründe enthalten keine Gesundheitsdetails.
+
+**D-022 · Absageanfrage als atomare DB-Funktion.** Patientenanfrage, Terminstatus und datensparsame Notifications an aktive Praxisnutzer entstehen in einer Transaktion.
+
 ## 2026-07-11 – Phase C
 
 **D-021 · Lokales E-Mail-Limit angehoben.** `supabase/config.toml` erlaubt lokal 100 statt 2 Auth-E-Mails pro Stunde, damit der E2E-Kernablauf (Registrierung + Bestätigung über Mailpit) wiederholbar läuft. Betrifft nur die lokale Entwicklungsumgebung.

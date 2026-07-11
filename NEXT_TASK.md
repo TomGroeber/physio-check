@@ -1,385 +1,419 @@
-# Fortsetzungs-Prompt für Claude Fable 5 – PhysioCheck
+# Folgeauftrag für Claude Fable 5 – PhysioCheck Phase D–G und GitHub-Handoff
 
-Du arbeitest im **bestehenden Repository `physio-check`** weiter. Starte kein neues Projekt, erstelle keine zweite App und ersetze keine funktionierende Architektur ohne konkreten Grund. Untersuche zuerst den aktuellen Stand und arbeite danach direkt weiter. Stoppe nicht nach der Analyse, solange kein echtes technisches Hindernis besteht.
+Du arbeitest im **bestehenden Repository `~/physio-check`** weiter. Erstelle kein neues Projekt, keine zweite App und keine parallele Implementierung. Der aktuelle Code und die vorhandene Git-Historie sind die einzige technische Wahrheit. Lies zuerst den Bestand und arbeite danach unmittelbar weiter. Stoppe nicht nach Analyse oder Planung, solange kein echtes technisches Hindernis besteht.
 
-## 1. Rolle und Kommunikation
+## 1. Aktueller Stand, den du zuerst verifizieren musst
 
-Du bist leitender Product Engineer, UX-Designer, Softwarearchitekt, Datenbankentwickler und Security-Reviewer für PhysioCheck.
+Phase C wurde laut letztem Abschlussbericht vollständig umgesetzt:
 
-- Erklärungen und Abschlussberichte für Tom auf Deutsch.
-- Code, Datenbanktabellen, Typen, Dateinamen und technische Dokumentation auf Englisch.
-- Tom hat wenig Programmiererfahrung: erkläre notwendige manuelle Schritte exakt und ohne unnötigen Fachjargon.
-- Triff reversible Detailentscheidungen selbstständig.
-- Stelle nur Rückfragen, wenn eine Entscheidung die Architektur, Datensicherheit oder fachliche Logik wesentlich verändert.
-- Probleme direkt benennen. Keine Features als fertig darstellen, wenn sie nur Mockups oder Platzhalter sind.
+- Registrierung ist wieder ohne vorherige Einladung möglich.
+- Nach Registrierung und E-Mail-Bestätigung ist ein unverbundenes Patientenkonto auf den Verbindungsbereich beschränkt.
+- Ein Physiotherapeut kann pro Patient einen Code erzeugen.
+- Der angemeldete Patient gibt den Code ein und wird anschließend mit der Praxis verbunden.
+- Ungültige, abgelaufene, widerrufene und verwendete Codes werden abgewiesen.
+- Praxiswechsel ist konzeptionell über eine neue Einladung möglich.
+- Patienten können zugewiesene Übungen als erledigt, teilweise erledigt, zu schwierig oder nicht möglich dokumentieren.
+- Tagesfortschritt aktualisiert sich.
+- Doppelte Dokumentation desselben Plan-Items am selben Tag wird verhindert.
+- Physiotherapeuten sehen die Selbstauskünfte auf der Patientendetailseite.
 
-## 2. Aktueller verifizierter Projektstand
+Laut Bericht wurden unter anderem neu angelegt:
 
-Der bestehende Stack ist verbindlich:
+- `src/app/(auth)/connect/page.tsx`
+- `src/app/(patient)/exercises/[planItemId]/...`
+- `src/app/(practice)/practice/patients/[patientId]/page.tsx`
+- `src/server/services/exercise-log.ts`
+- `src/server/actions/exercise-logs.ts`
+- `src/lib/plan-schedule.ts`
+- `src/lib/validation/exercise-logs.ts`
+- `e2e/core-flow.spec.ts`
 
-- Next.js 16 App Router
-- React 19
-- TypeScript strict
-- Tailwind CSS
-- shadcn/ui
-- Supabase Auth, PostgreSQL, Storage und Row Level Security
-- pnpm
-- Vitest und Testing Library
-- Playwright
+Laut Bericht waren erfolgreich:
 
-Bereits vorhanden:
+- `pnpm typecheck`
+- `pnpm lint`
+- `pnpm test` mit 32 Unit-/Komponententests
+- `pnpm db:reset`
+- `pnpm seed`
+- `pnpm e2e` mit 28 Tests
+- `pnpm build`
 
-- rollenabhängige Patienten- und Praxisoberflächen,
-- E-Mail-/Passwort-Authentifizierung,
-- Praxis-, Mitarbeiter- und Patientenverknüpfungen,
-- Übungsbibliothek, Planversionen und Completion-Log-Datenmodell,
-- Termine, Absageanfragen und Notifications als grundlegende Tabellen,
-- privater Storage-Bucket für Übungsvideos,
-- Demo-Daten,
-- zentrale deutsche UI-Texte,
-- Dokumentation in `README.md`, `CLAUDE.md`, `TASKS.md`, `DECISIONS.md` und `docs/`.
+Vorhandene Commits laut Bericht:
 
-Die folgenden Migrationen existieren und wurden lokal erfolgreich angewendet:
+- `4588ceb` – Initial-Commit des Phase-B-Stands
+- `4e1ed64` – Registrierung
+- `a9a815d` – Übungsdokumentation
+- `9acc17e` – Dokumentation
 
-- `supabase/migrations/20260711100000_initial_schema.sql`
-- `supabase/migrations/20260711140000_secure_patient_invites.sql`
+Verifiziere diese Angaben mit:
 
-Phase B wurde zuletzt umgesetzt:
+```bash
+pwd
+git status
+git log --oneline --decorate -15
+git remote -v
+git branch --show-current
+```
 
-- sichere Einladungscodes,
-- Hash-Speicherung,
-- Rate Limiting,
-- Erstellen, Widerrufen und Erneuern von Codes,
-- atomare Code-Einlösung,
-- nachvollziehbarer Praxiswechsel,
-- Demo-Konto `eingeladen@demo.physiocheck.test`,
-- Typecheck, Lint, 16 Unit-/Komponententests und Production Build waren grün.
+Lies vollständig:
 
-Wichtig: Der zuletzt implementierte Ablauf prüft die Einladung **vor** der Registrierung. Diese Produktentscheidung ist jetzt geändert und muss sauber migriert werden. Die Sicherheitsmechanismen der Einladung sollen dabei erhalten bleiben.
+- `README.md`
+- `CLAUDE.md`
+- `NEXT_TASK.md`
+- `TASKS.md`
+- `DECISIONS.md`
+- alle Dateien unter `docs/`
+- relevante Migrationen, Services, Actions, Seiten und Tests
 
-## 3. Verbindliche Korrektur des Registrierungsablaufs
+Wenn Bericht und Repository voneinander abweichen, gilt der Repository-Stand. Dokumentiere die Abweichung und repariere nicht blind.
 
-Der gewünschte Ablauf ist ab jetzt:
+## 2. Noch fehlende, verbindlich zu implementierende Funktionen
 
-1. Ein Besucher öffnet PhysioCheck.
-2. Er kann ein neues Patientenkonto mit Name, E-Mail und Passwort erstellen.
-3. Er bestätigt seine E-Mail und meldet sich an.
-4. Solange das Konto mit keiner Praxis verbunden ist, darf es ausschließlich die Codeeingabe, das eigene Basiskonto, Abmeldung und notwendige rechtliche Hinweise sehen.
-5. Erst nach Eingabe und erfolgreicher Prüfung eines vom Physiotherapeuten erzeugten Codes wird das Konto mit dem vorbereiteten Patientendatensatz der Praxis verbunden.
-6. Erst danach werden Übungen, Termine, Sitzungsanspruch und weitere Patientendaten freigeschaltet.
-7. Auf einem neuen Gerät meldet sich der Patient normal mit E-Mail und Passwort an. Der Code ist kein Login-Ersatz.
-8. Ein bestehender Patient kann über einen neuen gültigen Code die Praxis wechseln. Der Wechsel braucht eine klare Bestätigung. Die bisherige Verbindung wird beendet und bleibt als Historie erhalten. Daten werden nicht zwischen Praxen übertragen.
+Die folgenden Punkte sind keine späteren Ideen, sondern müssen jetzt als echte, getestete Funktionen umgesetzt werden:
 
-Passe dafür mindestens an:
+1. klassischer, interaktiver Kalender für die Praxis,
+2. Termine im Kalender erstellen, einsehen, bearbeiten, stornieren und abschließen,
+3. sichere Dokumenten-/Patientenakten-Verwaltung pro Patient,
+4. verordnete, verbrauchte und verbleibende Sitzungen pro Patient,
+5. vollständiger Code-Verbindungs- und Praxiswechsel-Ablauf,
+6. Notifications für relevante Terminereignisse,
+7. GitHub als verbindliche gemeinsame Quelle für Claude und ChatGPT,
+8. dauerhafte KI-Übergabedokumentation nach jedem Arbeitsauftrag.
 
-- öffentliche Startseite,
-- `/register`,
-- `registerAction`,
-- E-Mail-Bestätigung,
-- Login-Weiterleitung,
-- `/connect` bzw. Einladungseingabe,
-- `homeRouteFor`,
-- Einladungscookies/-sitzungen,
-- deutsche UI-Texte,
-- E2E-Tests und Dokumentation.
+## 3. GitHub zuerst sicher einrichten
 
-Die Registrierung darf keine Therapeuten- oder Adminrolle erzeugen. Ein unverbundener Benutzer darf durch direkte URL-Aufrufe oder manipulierte Requests keine Praxis- oder Patientendaten sehen.
+Der Benutzer möchte, dass Claude und ChatGPT jederzeit auf demselben aktuellen Stand weiterarbeiten können. GitHub wird deshalb die gemeinsame technische Quelle.
 
-## 4. Ziel der nächsten Entwicklungsphasen
+### Vor dem ersten Push
 
-Implementiere jetzt folgende Funktionen produktionsnah und als echte End-to-End-Abläufe.
+Prüfe:
 
-### Phase C – Registrierung korrigieren und Übungen wirklich dokumentieren
+```bash
+git status
+git remote -v
+gh auth status
+git ls-files
+```
 
-#### Patientenregistrierung
+Stelle sicher, dass niemals committed oder gepusht werden:
 
-Setze den oben beschriebenen neuen Ablauf um. Erhalte dabei:
+- `.env`
+- `.env.local`
+- echte Supabase-Schlüssel
+- Zugangstokens
+- echte Patienten- oder Gesundheitsdaten
+- `node_modules/`
+- `.next/`
+- `playwright-report/`
+- `test-results/`
+- `.claude/settings.local.json`
+- `supabase/.temp/`
+- `__MACOSX/`
+- der temporäre Unterordner `PHYSIOCHECK_PHASE_B/`
 
-- sichere Codes,
-- sieben Tage Gültigkeit,
-- einmalige Nutzung,
-- Widerruf und Erneuerung,
-- Rate Limiting,
-- atomare Einlösung,
-- Audit-Ereignisse,
-- Mandantentrennung.
+Erweitere `.gitignore`, falls nötig. Prüfe vor dem Push staged Dateien und Diff auf Secrets.
 
-Ändere bereits angewendete Migrationen nicht nachträglich. Erstelle neue additive Migrationen mit einem neuen Zeitstempel. Falls reine Anwendungslogik ohne Schemaänderung genügt, dokumentiere das.
+### Remote-Regeln
 
-#### Abhaken und Dokumentieren von Übungen
+- Wenn bereits ein plausibler Remote für PhysioCheck existiert, verwende ihn.
+- Wenn kein Remote existiert, richte ein **privates** GitHub-Repository namens `physio-check` unter dem aktuell authentifizierten GitHub-Konto ein.
+- Erstelle niemals versehentlich ein öffentliches Repository.
+- Wenn mehrere GitHub-Konten oder ein unklarer Remote zur Auswahl stehen, frage einmal nach dem Ziel. Rate nicht.
+- Verwende `main` als Hauptbranch, sofern der bestehende Branch nicht bewusst anders benannt ist.
+- Push den verifizierten Ausgangsstand vor größeren neuen Änderungen.
 
-Das derzeit sichtbare Abhaken in der Patientenansicht funktioniert noch nicht zuverlässig und muss vollständig implementiert werden.
+GitHub-Zugangsdaten oder Tokens dürfen niemals in Dateien oder Ausgaben übernommen werden.
 
-Ein Patient muss für jede heute fällige Übung:
+## 4. Verbindlicher KI-Handoff nach jedem Auftrag
 
-- die Übungsdetailseite öffnen können,
-- Video und genaue Vorgaben sehen,
-- die Übung als **erledigt**, **teilweise erledigt**, **zu schwierig** oder **nicht möglich** dokumentieren können,
-- optional absolvierte Sätze angeben,
-- optional Schmerz vorher und nachher von 0 bis 10 angeben,
-- optional eine kurze Notiz hinterlassen,
-- nach dem Speichern sofort den aktualisierten Tagesfortschritt sehen.
+Nach jedem Benutzerauftrag, der Code oder Produktverhalten verändert, musst du vor dem Abschluss:
 
-Fachliche Regeln:
+1. `README.md` aktualisieren,
+2. `CLAUDE.md` aktualisieren,
+3. `TASKS.md` aktualisieren,
+4. `DECISIONS.md` aktualisieren,
+5. `docs/AI_HANDOFF.md` neu anlegen oder aktualisieren,
+6. Tests ausführen,
+7. logisch getrennte Commits erstellen,
+8. auf den konfigurierten GitHub-Remote pushen.
 
-- Es bleibt eine Selbstauskunft, kein Nachweis korrekter Ausführung.
-- Keine Formulierung wie „verifiziert“, „bewiesen“ oder „kontrolliert ausgeführt“.
-- Der Patient darf nur eigene, aktuell zugewiesene Plan-Items dokumentieren.
-- `prescription_snapshot` muss die zum Zeitpunkt der Durchführung gültigen Vorgaben speichern.
-- Offensichtliche Doppelerfassungen desselben Plan-Items am selben Tag verhindern.
-- Nach erfolgreichem Speichern Button deaktivieren und „Heute dokumentiert“ anzeigen.
-- Fehler dürfen keinen falschen Erfolgszustand erzeugen.
-- Hohe oder steigende Schmerzwerte lösen nur einen neutralen Hinweis aus, keine Diagnose.
+`README.md` benötigt einen kompakten Abschnitt **Aktueller Entwicklungsstand** mit:
 
-Der Physiotherapeut sieht auf der Patientendetailseite:
+- zuletzt abgeschlossener Phase,
+- tatsächlich funktionierenden Funktionen,
+- bekannten Einschränkungen,
+- exakt nächstem Arbeitsschritt,
+- Datum und letztem Commit-Hash,
+- Link auf `docs/AI_HANDOFF.md`.
 
-- dokumentierte Übungen der letzten 7 und 30 Tage,
-- Status, Zeitpunkt, Sätze und optionale Schmerzwerte,
-- Notizen und Markierungen wie „zu schwierig“,
-- einen klaren Hinweis, dass es Selbstauskünfte sind.
+`docs/AI_HANDOFF.md` ist die detaillierte Übergabedatei für eine andere KI und enthält:
 
-### Phase D – Vollständig nutzbarer Kalender für Physiotherapeuten
+- Produktziel,
+- Stack und Laufzeitversionen,
+- Architekturgrenzen,
+- Datenmodell und neueste Migration,
+- abgeschlossene Funktionen,
+- offene Funktionen nach Priorität,
+- bekannte Bugs und Risiken,
+- zuletzt ausgeführte Tests mit Ergebnis,
+- Demo-Konten und rein fiktive Testdaten,
+- lokale Startbefehle,
+- relevante Dateipfade,
+- letzte Commits,
+- Remote-/Branch-Information ohne Zugangsdaten,
+- konkreten nächsten Auftrag.
 
-Der bisherige Bereich „Termine“ reicht nicht. Der Physiotherapeut braucht einen echten Arbeitskalender.
+README bleibt übersichtlich. Detaillierte Sitzungsprotokolle gehören in `docs/AI_HANDOFF.md`, nicht als endlose Chronik in README.
 
-Erstelle unter beispielsweise `/practice/calendar` einen übersichtlichen Kalender mit:
+## 5. Phase D – Klassischer, aktiv nutzbarer Praxiskalender
+
+Der bisherige Terminbereich ist nur eine Übersicht. Ersetze bzw. erweitere ihn zu einem echten Arbeitskalender für Physiotherapeuten.
+
+### Kalenderoberfläche
+
+Erstelle einen Hauptbereich **Kalender**, zum Beispiel unter `/practice/calendar`, mit:
 
 - Monatsansicht,
 - Wochenansicht,
 - Tagesansicht,
-- allen Terminen der aktiven Praxis,
-- Zeit, Dauer, Patient, behandelnder Person, Standort und Status,
+- alternativ zugänglicher Terminlistenansicht,
+- Navigation zu vorherigem/nächstem Zeitraum und „Heute“,
+- Darstellung aller Termine der aktiven Praxis,
+- Patient, Uhrzeit, Dauer, behandelnder Physiotherapeut, Standort und Status,
 - Filtern nach Therapeut, Patient, Standort und Status,
-- klarer Kennzeichnung von geplant, Absage angefragt, abgesagt und abgeschlossen.
+- visueller, aber nicht nur farblicher Statuskennzeichnung.
 
-Der Kalender muss aktiv nutzbar sein:
+Prüfe vor Installation die offizielle Dokumentation einer stabilen Kalenderbibliothek und ihre Kompatibilität mit Next.js 16 und React 19. Halte zusätzliche Abhängigkeiten gering. Alle Kernfunktionen müssen per Tastatur erreichbar sein.
 
-- neuen Termin durch Auswahl eines Datums/Zeitfensters erstellen,
-- bestehenden Termin öffnen,
-- Datum, Uhrzeit, Dauer, Therapeut und Standort ändern,
-- Termin mit Bestätigungsdialog und optionalem Grund stornieren,
-- Termin als abgeschlossen markieren,
-- Konflikte für denselben Therapeuten serverseitig prüfen,
-- alle Schreibvorgänge mit Zod validieren,
-- Zeitzone `Europe/Luxembourg` korrekt behandeln,
-- Sommer-/Winterzeit testen.
+### Kalenderaktionen
 
-Ein abgesagter Termin wird nicht gelöscht, sondern erhält einen nachvollziehbaren Status mit `cancelled_at`, `cancelled_by` und optionalem neutralem Grund. Er bleibt in der Historie sichtbar.
+Der Physiotherapeut kann:
 
-Benachrichtigungsregeln:
+- durch Auswahl eines Tages/Zeitfensters einen Termin anlegen,
+- einen bestehenden Termin öffnen,
+- Datum, Startzeit, Dauer, Patient, Therapeut und Standort ändern,
+- einen Termin mit Bestätigungsdialog stornieren,
+- einen optionalen neutralen Stornierungsgrund angeben,
+- einen Termin als abgeschlossen markieren,
+- direkt vom Termin zur Patientendetailseite wechseln.
 
-- Storniert der Physiotherapeut, erhält der Patient eine In-App-Notification.
+Fachliche und technische Regeln:
+
+- Stornierte Termine werden nicht gelöscht.
+- Ergänze nachvollziehbare Felder wie `cancelled_at`, `cancelled_by_profile_id` und optional `cancellation_reason` über eine neue Migration.
+- Konflikte desselben Physiotherapeuten müssen serverseitig verhindert werden.
+- Alle Schreibvorgänge über Server Actions/Services und Zod validieren.
+- Praxis-ID ausschließlich aus der verifizierten serverseitigen Mitgliedschaft ableiten.
+- Zeitzone `Europe/Luxembourg`, UTC-Speicherung und Sommer-/Winterzeit korrekt behandeln.
+- Kritische Änderungen auditieren, ohne Gesundheitsdetails in Audit-Metadaten.
+
+### Termin-Notifications
+
+- Storniert der Physiotherapeut einen Termin, erhält der Patient eine In-App-Notification.
 - Stellt der Patient eine Absageanfrage, erhalten zuständige Praxisnutzer eine Notification.
-- Entscheidungen über Absageanfragen werden dem Patienten mitgeteilt.
-- Keine Gesundheitsdaten in Notification-Titeln oder Vorschautexten.
+- Bestätigung oder Ablehnung einer Anfrage wird dem Patienten angezeigt.
+- Notification-Titel und Vorschau enthalten keine Diagnose oder sensiblen Gesundheitsdetails.
+- Gelesen/ungelesen und Badge-Zähler implementieren, sofern noch nicht vorhanden.
 
-Wähle eine stabile Kalenderlösung, die mit Next.js 16 und React 19 kompatibel ist. Prüfe vor Installation die aktuelle offizielle Dokumentation. Halte neue Abhängigkeiten gering. Wenn eine Bibliothek Drag-and-drop verwendet, müssen alle Änderungen trotzdem serverseitig validiert werden. Tastaturbedienung und eine zugängliche Listenalternative sind Pflicht.
+## 6. Patientenverbindung, Codes und Praxiswechsel vollständig prüfen
 
-### Phase E – Verordnete und verbleibende Therapiesitzungen
+Der gewünschte Ablauf ist:
 
-In Luxemburg kann eine ärztliche Verordnung eine bestimmte Anzahl physiotherapeutischer Sitzungen umfassen. Diese Anzahl variiert. Nach Ausschöpfung kann eine weitere Behandlung möglicherweise nicht mehr von der Krankenkasse übernommen werden.
+1. Patient erstellt ein Konto.
+2. Patient bestätigt E-Mail und meldet sich an.
+3. Unverbundenes Konto landet zwingend bei der Codeeingabe.
+4. Physiotherapeut erzeugt für den vorbereiteten Patienten einen individuellen Code.
+5. Patient gibt diesen Code ein.
+6. Nach erfolgreicher Einlösung ist der Patient unmittelbar mit der Praxis verbunden und sieht seine Daten.
+7. Der Code ist einmalig, zeitlich begrenzt, widerrufbar und nur als Hash gespeichert.
+8. Neues Gerät: normaler Login, kein neuer Code erforderlich.
+9. Praxiswechsel: Patient kann einen Code einer neuen Praxis eingeben, sieht vorher eine klare Wechselwarnung und bestätigt den Wechsel.
+10. Alte Praxisverbindung wird beendet und bleibt als Historie erhalten. Daten werden nicht übertragen.
 
-Die App darf daraus keine verbindliche Versicherungs- oder Kostenentscheidung ableiten. Sie dokumentiert ausschließlich die von der Praxis eingetragenen Verordnungsdaten und zeigt einen neutralen Hinweis, dass die tatsächliche Kostenübernahme mit Praxis und Versicherung zu klären ist.
+Phase C soll diesen Ablauf bereits enthalten. Verifiziere ihn im Code und mit E2E-Tests. Ergänze fehlende UI für **Praxis wechseln** im Patientenprofil. Ein Code darf nur den vorbereiteten Patientendatensatz verbinden, für den er erzeugt wurde. Fremde oder bereits anderweitig verwendete Codes dürfen nicht funktionieren.
 
-Modelliere mehrere zeitlich aufeinanderfolgende Verordnungen pro Patient. Eine Verordnung benötigt mindestens:
+## 7. Phase E – Verordnete und verbleibende Sitzungen
 
-- Praxis,
-- Patient,
-- Bezeichnung oder interne Referenz,
-- verordnete Gesamtzahl an Sitzungen,
-- Ausstellungsdatum,
-- optional gültig von/bis,
-- Status: aktiv, ausgeschöpft, abgelaufen oder archiviert,
-- optional verordnender Arzt als Freitext,
-- optionale neutrale Notiz,
-- Ersteller und Zeitstempel.
+In Luxemburg kann eine ärztliche Verordnung eine bestimmte Anzahl physiotherapeutischer Sitzungen umfassen. Die Praxis trägt diese Anzahl ein. Sie kann je nach Verordnung variieren.
 
-Speichere den Restwert nicht als frei änderbaren, driftanfälligen Zähler. Bevorzugte Struktur:
+Die App dokumentiert den von der Praxis eingetragenen Stand. Sie darf keine Garantie geben, dass eine Krankenkasse tatsächlich zahlt. Zeige deshalb einen neutralen Hinweis, dass Kostenübernahme und Bedingungen mit Praxis und Versicherung zu klären sind.
 
-- `treatment_authorizations` für die Verordnung,
-- `appointment_authorization_usages` für tatsächlich angerechnete abgeschlossene Termine,
-- eindeutige Zuordnung pro Termin,
-- verbleibend = verordnet minus Summe der gültigen Nutzungen.
+### Datenmodell
 
-Nur ein Physiotherapeut darf festlegen, ob ein abgeschlossener Termin auf eine Verordnung angerechnet wird. Geplante oder abgesagte Termine reduzieren die Anzahl niemals automatisch.
+Implementiere mehrere Verordnungen pro Patient, zum Beispiel:
 
-Patientenansicht:
+- `treatment_authorizations`
+- `appointment_authorization_usages`
+- gegebenenfalls `treatment_authorization_adjustments`
 
-- gut sichtbar „Noch X von Y verordneten Sitzungen verfügbar“,
-- Name/Zeitraum der aktiven Verordnung,
-- neutraler Zustand bei 0 verbleibenden Sitzungen,
-- keine Garantieformulierung zur Kostenübernahme,
-- keine Preisberechnung im MVP.
+Eine Verordnung enthält mindestens:
 
-Therapeutenansicht auf der Patientendetailseite:
+- `practice_id`
+- `patient_profile_id`
+- Titel oder interne Referenz
+- verordnete Gesamtzahl
+- Ausstellungsdatum
+- optional Gültigkeitszeitraum
+- Status: active, exhausted, expired, archived
+- optional verordnender Arzt als Freitext
+- optionale interne Notiz
+- erstellt/geändert von und Zeitstempel
 
-- Verordnungen anlegen, bearbeiten und archivieren,
+Berechnung:
+
+- Geplante oder abgesagte Termine reduzieren nichts.
+- Nach einer tatsächlich abgeschlossenen Sitzung kann der Physiotherapeut den Termin einer Verordnung anrechnen.
+- Verbleibend = verordnete Gesamtzahl plus/minus dokumentierte Anpassungen minus gültig angerechnete abgeschlossene Sitzungen.
+- Ergebnis darf nie unbemerkt negativ werden.
+- Derselbe Termin darf höchstens einmal angerechnet werden.
+
+### Manuelle Anpassung
+
+Der Physiotherapeut muss die Gesamtzahl bzw. den verfügbaren Stand bei fachlich notwendigen Korrekturen anpassen können. Setze das nicht als unprotokolliertes Überschreiben eines Zählers um.
+
+Verwende nachvollziehbare Anpassungen mit:
+
+- Änderung um `+N` oder `-N` beziehungsweise neuer genehmigter Gesamtzahl,
+- Pflichtgrund,
+- ausführender Person,
+- Zeitstempel,
+- Audit-Ereignis.
+
+So kann die Praxis Fehler korrigieren oder eine neue/erweiterte Bewilligung abbilden, ohne Historie zu verlieren.
+
+### Oberflächen
+
+Physiotherapeut auf der Patientendetailseite:
+
+- Verordnung anlegen,
+- Gesamtzahl und Zeitraum erfassen,
+- aktive Verordnung sehen,
 - verwendete und verbleibende Sitzungen sehen,
-- abgeschlossenen Termin einer Verordnung zuordnen oder Zuordnung korrigieren,
-- nachvollziehbare Historie und Audit-Ereignisse.
+- Anpassung mit Grund durchführen,
+- Termin anrechnen oder Anrechnung korrigieren,
+- Historie einsehen.
 
-### Phase F – Private Patientenakten und Dokumente
+Patient:
 
-Der Physiotherapeut muss zu jedem einzelnen Patienten Dokumente hochladen und ältere Unterlagen jederzeit wiederfinden können, beispielsweise:
+- gut sichtbar „Noch X von Y eingetragenen Sitzungen verfügbar“,
+- aktive Verordnung und optionaler Zeitraum,
+- neutraler Zustand bei 0,
+- Hinweis, dass dies keine verbindliche Kostenzusage ist.
 
-- ärztliche Verordnung,
-- Befund,
-- Patientenakte,
-- Therapiebericht,
-- sonstige relevante Unterlagen.
+## 8. Phase F – Sichere Patientenakten und Dokumente
 
-Erstelle auf der Patientendetailseite einen Bereich **Dokumente**.
+Das Hochladen von Dokumenten pro Patient existiert derzeit noch nicht und muss vollständig implementiert werden.
 
-Funktionen:
+### Patientendetailseite
 
-- Datei hochladen,
+Ergänze den Bereich **Dokumente/Patientenakte** unter `/practice/patients/[patientId]`.
+
+Physiotherapeuten können:
+
+- Dokument hochladen,
 - Titel vergeben,
-- Kategorie auswählen,
-- optionales Dokumentdatum,
-- optionale neutrale Notiz,
-- Liste chronologisch und filterbar anzeigen,
-- PDF und unterstützte Bilder sicher ansehen,
-- Datei herunterladen,
-- alte Dokumente behalten,
-- Dokument mit Bestätigung archivieren oder löschen, abhängig von dokumentierter Aufbewahrungsentscheidung.
+- Kategorie auswählen, mindestens Verordnung, Befund, Patientenakte, Therapiebericht, Sonstiges,
+- optionales Dokumentdatum setzen,
+- optionale interne Notiz ergänzen,
+- Dokumente chronologisch anzeigen und filtern,
+- PDF und unterstützte Bilder ansehen,
+- herunterladen,
+- ältere Dokumente weiterhin aufrufen,
+- archivieren oder nach klarer Bestätigung löschen, abhängig von dokumentierter Aufbewahrungsentscheidung.
 
-Sicherheitsanforderungen:
+### Storage und Sicherheit
 
-- neuer privater Supabase-Storage-Bucket, zum Beispiel `patient-records`,
-- Objektpfad enthält verifizierte serverseitige Praxis- und Patientenverknüpfungs-IDs, niemals eine frei vertraute Client-Praxis-ID,
-- zufällige Dateinamen im Storage; Originalname nur als geschützte Metadaten,
-- erlaubte MIME-Typen im MVP mindestens PDF, JPEG und PNG,
-- konfigurierbares Größenlimit,
-- Dateisignatur/Content-Type serverseitig plausibilisieren,
-- kurzlebige signierte Download-URLs erst nach erneuter Autorisierungsprüfung,
-- kein öffentlicher Bucket,
-- Patienten sehen diese internen Akten standardmäßig nicht,
-- Zugriff ausschließlich für aktive Mitarbeiter derselben Praxis,
-- Cross-Practice-Zugriff per RLS, Serviceprüfung und Tests verhindern,
-- Upload, Download, Archivierung und Löschung auditieren,
-- keine Dokumentinhalte oder sensiblen Dateinamen in normalen Logs.
+- Neuer privater Supabase-Bucket `patient-records`.
+- Kein öffentlicher Zugriff.
+- Objektpfad aus serverseitig verifizierter `practice_id` und Patientenverknüpfung ableiten.
+- Keine Client-Praxis-ID als Vertrauensquelle.
+- Zufälliger Storage-Dateiname; Originalname nur in geschützten Metadaten.
+- MVP-Dateitypen: PDF, JPEG und PNG.
+- Konfigurierbares Größenlimit.
+- MIME-Typ und Dateisignatur serverseitig plausibilisieren.
+- Signierte Download-/Preview-URL nur nach erneuter Berechtigungsprüfung und kurzlebig erzeugen.
+- Patienten sehen interne Akten standardmäßig nicht.
+- Nur aktive Mitglieder derselben Praxis erhalten Zugriff.
+- Cross-Practice-Zugriff in Datenbank, Storage und Service-Schicht verhindern.
+- Upload, Download, Archivierung und Löschung auditieren.
+- Keine Dokumenttitel, Originaldateinamen oder Inhalte in normalen Logs oder Audit-Metadaten.
 
-Dokumentiere Virenscanning als zwingenden Punkt vor echtem Pilotbetrieb, falls es im lokalen MVP nicht zuverlässig umgesetzt werden kann. Behaupte nicht, ungeprüfte Uploads seien produktionsreif.
+Erstelle eine neue Tabelle wie `patient_documents` mit RLS. Dokumentiere Virenscanning als Blocker vor echtem Pilotbetrieb, wenn lokal kein zuverlässiger Scanner implementiert wird. Stelle ungeprüfte Uploads nicht als produktionsreif dar.
 
-### Phase G – Notifications, Qualität und Abschluss
+## 9. Zentrale Patientendetailseite
 
-Erstelle ein echtes In-App-Benachrichtigungszentrum für Patient und Praxis:
-
-- gelesen/ungelesen,
-- Badge mit ungelesener Anzahl,
-- relevante Zielroute,
-- Terminabsage,
-- Absageanfrage,
-- Entscheidung,
-- Terminvorschlag,
-- neuer oder geänderter Übungsplan,
-- keine vertraulichen Gesundheitsdetails im Vorschautext.
-
-Ergänze für spätere Terminanfragen das fachliche Modell:
-
-- Patient kann nach einer Absage einen neuen Termin anfragen,
-- Physiotherapeut kann mehrere konkrete Terminvorschläge senden,
-- Patient kann genau einen Vorschlag bestätigen,
-- Bestätigung erzeugt atomar den Termin und schließt andere Vorschläge,
-- Konfliktprüfung findet bei Bestätigung erneut statt.
-
-Wenn dieser Ablauf nicht mehr sinnvoll in derselben Etappe umsetzbar ist, implementiere zumindest Datenmodell, Services und klaren nächsten Task. Keine funktionslosen Buttons anzeigen.
-
-## 5. Patientendetailseite als zentraler Arbeitsbereich
-
-Erstelle bzw. erweitere `/practice/patients/[patientId]` als zentralen Arbeitsbereich mit klaren Bereichen oder Tabs:
+Die Patientendetailseite soll nach Abschluss mindestens enthalten:
 
 - Übersicht,
-- Übungen,
+- Übungen und Selbstauskünfte,
 - Termine,
-- Sitzungen/Verordnungen,
-- Dokumente,
-- Aktivität.
+- Verordnungen/Sitzungen,
+- Dokumente/Patientenakte,
+- Aktivität/Historie.
 
-Die Übersicht zeigt mindestens:
+Die Übersicht zeigt kompakt:
 
 - nächsten Termin,
 - aktive Verordnung und verbleibende Sitzungen,
 - aktuellen Übungsplan,
-- dokumentierte Durchführung der letzten sieben Tage,
-- wichtige Rückmeldungen,
+- dokumentierte Übungen der letzten sieben Tage,
+- markierte Rückmeldungen,
 - letzte Dokumente.
 
-Jede Abfrage muss Praxiszugehörigkeit serverseitig prüfen. `patientId` aus der URL ist niemals allein ausreichend für eine Berechtigung.
+Jeder Zugriff auf `[patientId]` muss serverseitig nachweisen, dass der aktuelle Benutzer aktives Mitglied derselben Praxis ist.
 
-## 6. Datenbank- und Migrationsregeln
+## 10. Neue Migrationen und Datenbankregeln
 
 - Bestehende Migrationen nicht umschreiben.
-- Neue nummerierte Migrationen erstellen.
-- Vor jeder Migration bestehende Daten und Constraints berücksichtigen.
+- Neue timestamp-basierte Migrationen erstellen.
+- Bestehende lokale Daten sauber migrieren.
 - RLS auf jeder neuen Tabelle aktivieren.
 - Grants explizit setzen.
-- Service Role nur für eng begrenzte serverseitige Vorgänge.
-- Keine Praxis-ID aus einem Formular ungeprüft übernehmen.
-- Kritische Vorgänge atomar über PostgreSQL-Funktionen oder Transaktionen ausführen.
-- `database.types.ts` nach Schemaänderungen mit `pnpm db:types` neu generieren.
-- Audit-Metadaten dürfen keine Gesundheitsdetails, Schmerzwerte oder Dokumentnamen enthalten.
+- `database.types.ts` nach Migrationen mit `pnpm db:types` regenerieren.
+- Kritische Vorgänge atomar implementieren.
+- Keine Service-Role-Schlüssel im Client.
+- Keine echten Patientendaten in Seed oder Tests.
 
-Voraussichtlich benötigte neue Tabellen bzw. Erweiterungen:
+## 11. Verbindliche Tests
 
-- `treatment_authorizations`
-- `appointment_authorization_usages`
-- `patient_documents`
-- Termin-Stornierungsmetadaten
-- gegebenenfalls `appointment_requests` und `appointment_proposals`
+Ergänze mindestens:
 
-Prüfe zuerst, welche vorhandenen Tabellen erweitert werden können, ohne Daten zu duplizieren.
+### Kalender
 
-## 7. UX-Anforderungen
+- Termin erstellen, bearbeiten, stornieren und abschließen.
+- Stornierter Termin bleibt in Historie.
+- Fremde Praxis kann Termin nicht sehen oder ändern.
+- Überlappender Termin desselben Therapeuten wird abgewiesen.
+- Stornierung erzeugt Notification.
+- Zeitzone und Sommer-/Winterzeit.
 
-### Patient
+### Praxisverbindung
 
-- mobile-first,
-- klare deutsche Sprache,
-- große Touch-Ziele von mindestens 48 × 48 px,
-- Text gut lesbar und skalierbar,
-- maximal drei Hauptbereiche in der unteren Navigation,
-- heutige Aufgaben ohne Suchen sichtbar,
-- verbleibende Sitzungen verständlich, aber nicht alarmistisch,
-- keine versteckten Kernaktionen,
-- keine beschämende Gamification.
+- neues Konto bleibt bis Codeeinlösung gesperrt,
+- gültiger Code verbindet den vorbereiteten Patienten,
+- Code ist nur einmal verwendbar,
+- Praxiswechsel braucht Bestätigung,
+- alte Praxis sieht keine Daten der neuen Praxis und umgekehrt.
 
-### Physiotherapeut
+### Sitzungen
 
-- Desktop- und Tablet-optimiert,
-- Kalender als echter Hauptbereich,
-- schnelle Navigation von Termin zu Patientendetail,
-- Patientendetail bündelt alle relevanten Informationen,
-- Aktionen mit klarer Rückmeldung und Bestätigung bei Stornierung, Archivierung oder Löschung,
-- sensible Daten nicht unnötig in Übersichten zeigen.
+- geplante/abgesagte Termine reduzieren Restwert nicht,
+- abgeschlossener, angerechneter Termin reduziert genau einmal,
+- manuelle Anpassung braucht Grund und wird historisiert,
+- Restwertberechnung ist korrekt und nicht unbemerkt negativ,
+- Patient sieht nur eigene Werte,
+- fremde Praxis hat keinen Zugriff.
 
-Alle deutschen Texte weiterhin zentral über `src/messages/de.ts` pflegen.
+### Dokumente
 
-## 8. Verbindliche Tests
+- erlaubter Upload funktioniert,
+- unerlaubter MIME-Typ und zu große Datei werden abgewiesen,
+- fremde Praxis kann Metadaten und Datei nicht lesen,
+- Patient kann interne Akte nicht lesen,
+- signierte URL nur für Berechtigte,
+- Archivierung/Löschung wird bestätigt und auditiert.
 
-Ergänze mindestens folgende Tests:
-
-1. Konto kann ohne Einladung registriert werden.
-2. Unverbundenes Konto kann keine Patientenbereiche oder Praxisdaten sehen.
-3. Gültiger Code verbindet das angemeldete Konto genau einmal.
-4. Ungültige, abgelaufene, widerrufene und verwendete Codes werden abgewiesen.
-5. Praxiswechsel braucht Bestätigung und beendet die alte aktive Verbindung.
-6. Patient kann nur eigene zugewiesene Übungen dokumentieren.
-7. Doppelte Tagesdokumentation wird verhindert.
-8. Tagesfortschritt aktualisiert sich nach erfolgreicher Dokumentation.
-9. Fremde Praxis kann Completion Logs nicht lesen.
-10. Therapeut kann Termine im Kalender erstellen, ändern, stornieren und abschließen.
-11. Terminkonflikte desselben Therapeuten werden serverseitig verhindert.
-12. Stornierung erzeugt die richtige Notification.
-13. Nur abgeschlossene und ausdrücklich angerechnete Termine reduzieren verbleibende Sitzungen.
-14. Verbleibende Sitzungen werden korrekt berechnet und nie negativ.
-15. Patient sieht nur eigene Verordnungsdaten.
-16. Dokumente einer fremden Praxis sind weder über DB noch Storage erreichbar.
-17. Unberechtigte signierte Download-URL wird nicht erzeugt.
-18. Zeitzonen- und Sommerzeitfälle funktionieren.
-19. Kernansichten sind per Tastatur bedienbar und sinnvoll beschriftet.
-
-Führe nach jeder Etappe aus:
+Führe nach jeder Teilphase aus:
 
 ```bash
 pnpm typecheck
@@ -387,7 +421,7 @@ pnpm lint
 pnpm test
 ```
 
-Vor jedem abgeschlossenen Meilenstein zusätzlich:
+Vor Abschluss zusätzlich:
 
 ```bash
 pnpm db:reset
@@ -396,77 +430,38 @@ pnpm e2e
 pnpm build
 ```
 
-Behebe alle durch deine Änderungen verursachten Fehler. Schalte keine Prüfungen ab, um einen grünen Status vorzutäuschen.
+## 12. Arbeitsreihenfolge
 
-## 9. Dokumentation und Arbeitsfortschritt
+1. Aktuellen Code, Git-Status, Tests und Dokumentation verifizieren.
+2. GitHub-Remote sicher einrichten und Ausgangsstand privat pushen.
+3. Phase D: Kalender und Termin-Notifications vollständig umsetzen.
+4. Praxisverbindung und Praxiswechsel gegen Anforderungen prüfen und Lücken schließen.
+5. Phase E: Verordnungen und Sitzungsstand vollständig umsetzen.
+6. Phase F: Patientenakten und Dokumente vollständig umsetzen.
+7. Patientendetailseite integrieren.
+8. Vollständige Sicherheits-, RLS-, E2E- und Build-Prüfung.
+9. README und `docs/AI_HANDOFF.md` aktualisieren.
+10. Logisch getrennte Commits erstellen und auf GitHub pushen.
 
-Aktualisiere kontinuierlich:
+Stoppe nicht nach einer Planung. Wenn GitHub-Zugriff fehlt, implementiere die lokalen Produktphasen weiter, dokumentiere den konkreten GitHub-Blocker und frage gezielt nach der einmaligen Authentifizierung. Ein fehlender Remote darf nicht als Vorwand dienen, die App-Funktionen nicht zu bauen.
 
-- `README.md`
-- `CLAUDE.md`
-- `TASKS.md`
-- `DECISIONS.md`
-- `docs/PRODUCT_SPEC.md`
-- `docs/ARCHITECTURE.md`
-- `docs/DATA_MODEL.md`
-- `docs/PRIVACY_SECURITY.md`
-- `docs/ROADMAP.md`
+## 13. Abschlussbericht
 
-Halte in `TASKS.md` klar fest:
+Berichte nach jeder Phase:
 
-- erledigt,
-- in Arbeit,
-- offen,
-- technisch blockiert,
-- vor Pilotbetrieb rechtlich oder organisatorisch zu prüfen.
-
-Dokumentiere insbesondere, dass die angezeigte verbleibende Sitzungsanzahl keine Garantie der Krankenkassenübernahme ist.
-
-## 10. Git und externe Aktionen
-
-- Vor Änderungen `git status` prüfen.
-- Bestehende Nutzeränderungen erhalten.
-- Kleine logisch getrennte Commits erstellen; Commits sind erlaubt.
-- Keine Deployments.
-- Kein Push in externe Repositories.
-- Keine produktive Supabase-Umgebung verändern.
-- Keine externen Konten, Dienste oder kostenpflichtigen Ressourcen anlegen.
-- Keine echten Patientendaten verwenden.
-
-## 11. Verbindliche Arbeitsreihenfolge
-
-1. Repository vollständig analysieren.
-2. Git-Status und aktuelle Tests prüfen.
-3. `TASKS.md` und `DECISIONS.md` auf den neuen Auftrag aktualisieren.
-4. Einen kurzen, konkreten Umsetzungsplan erstellen.
-5. Direkt mit Phase C beginnen.
-6. Zuerst Registrierungsablauf korrigieren und Übungsdokumentation end-to-end fertigstellen.
-7. Danach den nutzbaren Kalender implementieren.
-8. Danach Verordnungen/verbleibende Sitzungen.
-9. Danach Patientenakten.
-10. Danach Notifications und Qualitätssicherung.
-
-Stoppe nicht nach Analyse oder Planung. Wenn eine spätere Phase für eine einzelne Sitzung zu groß wird, beende mindestens die aktuell begonnene Phase vollständig, getestet und dokumentiert und hinterlasse den nächsten Schritt präzise in `TASKS.md` und `CLAUDE.md`.
-
-## 12. Abschlussbericht nach jeder Phase
-
-Berichte:
-
-- was umgesetzt wurde,
-- welche Dateien wesentlich geändert wurden,
-- welche Migrationen hinzugefügt wurden,
-- welche Sicherheitsentscheidungen getroffen wurden,
-- welche Tests ergänzt wurden,
-- welche Befehle erfolgreich waren,
-- welche Einschränkungen verbleiben,
-- wie Tom die Funktion manuell testet,
-- nächster sinnvoller Schritt,
-- Commit-Hash.
+- implementierte Funktionen,
+- wesentliche Dateien,
+- neue Migrationen,
+- Sicherheitsentscheidungen,
+- neue Tests,
+- Ergebnisse aller Prüfungen,
+- bekannte Einschränkungen,
+- manueller Testweg für Tom,
+- Commit-Hashes,
+- Remote und Branch,
+- Push-Status,
+- nächster Auftrag für eine andere KI.
 
 ## Beginne jetzt
 
-Analysiere das bestehende Repository vollständig und arbeite danach direkt mit Phase C weiter. Die erste sichtbare Zielstrecke ist:
-
-> Patient erstellt Konto → bestätigt E-Mail → meldet sich an → gibt Praxiscode ein → wird verbunden → sieht heutige Übung → dokumentiert die Durchführung → Fortschritt aktualisiert sich → Physiotherapeut sieht die Selbstauskunft auf der Patientendetailseite.
-
-Danach implementierst du den aktiv nutzbaren Physiotherapeuten-Kalender.
+Analysiere den aktuellen Repository-Stand und beginne danach unmittelbar mit der sicheren GitHub-Grundlage und Phase D. Das erste sichtbare Ergebnis muss ein klassischer, aktiv nutzbarer Praxiskalender sein. Danach implementierst du Sitzungsanspruch und Patientenakten vollständig. Alle fertigen Änderungen müssen dokumentiert, committed und auf den privaten GitHub-Remote gepusht werden.

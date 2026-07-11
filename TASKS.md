@@ -70,13 +70,17 @@
 
 ## Phase D – Vollständig nutzbarer Praxiskalender
 
-- [ ] `/practice/calendar` mit Monats-, Wochen- und Tagesansicht (kompatibel mit Next 16/React 19, wenige Abhängigkeiten)
-- [ ] Termin anlegen (Datum/Zeitfenster wählen), öffnen, ändern (Zeit, Dauer, Therapeut, Standort)
-- [ ] Stornieren mit Bestätigung + optionalem neutralem Grund (`cancelled_at`, `cancelled_by`, Historie bleibt)
-- [ ] Als abgeschlossen markieren; Filter Therapeut/Patient/Standort/Status
-- [ ] Serverseitige Konfliktprüfung pro Therapeut; Zod-Validierung aller Schreibwege
-- [ ] Zeitzone Europe/Luxembourg inkl. Sommer-/Winterzeit-Tests; Tastaturbedienung + Listenalternative
-- [ ] Notifications: Patient bei Stornierung, Praxis bei Absageanfrage, Patient bei Entscheidung (ohne Gesundheitsdaten)
+- [x] `/practice/calendar` mit Monats-, Wochen-, Tages- und Listenansicht ohne zusätzliche Kalenderabhängigkeit
+- [x] Termin anlegen, öffnen und ändern (Zeit, Dauer, Therapeut, Standort)
+- [x] Stornieren mit optionalem neutralem Grund (`cancelled_at`, Ausführender, Historie bleibt)
+- [x] Als abgeschlossen markieren; Filter Therapeut/Patient/Status
+- [x] Serverseitige Zugehörigkeitsprüfung, Zod-Validierung und atomarer DB-Konfliktschutz pro Therapeut
+- [x] Europe/Luxembourg inkl. Sommer-/Winterzeit-Unit-Tests; Tastaturpfade + Listenalternative
+- [x] Patient bei Praxis-Stornierung benachrichtigen; Praxis bei Patienten-Absageanfrage benachrichtigen
+- [x] Null-Session-Absturz der Patientenliste durch lokale Route-Prüfung behoben
+- [x] Typecheck, Lint, 40 Unit-/Komponententests und Production Build grün
+- [ ] Migration, Seed und E2E lokal mit Docker/Supabase ausführen
+- [ ] Entscheidung über Absageanfrage (annehmen/ablehnen) als eigene Praxisaktion vervollständigen
 
 ## Phase E – Verordnete und verbleibende Sitzungen
 
