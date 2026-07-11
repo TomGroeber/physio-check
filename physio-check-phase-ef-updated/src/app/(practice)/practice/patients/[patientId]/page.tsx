@@ -1,0 +1,238 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft02Icon } from "@hugeicons/core-free-icons";
+import { getSessionContext } from "@/server/services/session";
+import {
+  getPatientCompletionLogs,
+  getPatientCurrentPlan,
+  getPatientDetail,
+  getPatientNextAppointment,
+} from "@/server/services/practice";
+import { formatDateShort, formatDateTime } from "@/lib/datetime";
+import { branding } from "@/config/branding";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { AuthorizationPanel } from "@/components/practice/authorization-panel";
+import { DocumentPanel } from "@/components/practice/document-panel";
+import { listPatientAuthorizations } from "@/server/services/authorizations";
+import { listPatientDocuments } from "@/server/services/documents";
+import { de } from "@/messages/de";
+
+export const metadata: Metadata = { title: de.practice.patients.title };
+
+const t = de.practice.patientDetail;
+const logStatus = de.practice.dashboard.logStatus;
+
+/** Kurzzusammenfassung der Vorgaben eines Plan-Items. */
+function itemSummary(item: {
+  sets: number | null;
+  repetitions: number | null;
+  hold_seconds: number | null;
+  total_duration_seconds: number | null;
+}): string {
+  const u = de.units;
+  const parts: string[] = [];
+  if (item.sets) parts.push(`${item.sets} ${item.sets === 1 ? u.set : u.sets}`);
+  if (item.repetitions) parts.push(`${item.repetitions} ${u.repetitions}`);
+  if (item.hold_seconds) parts.push(u.holdSeconds(item.hold_seconds));
+  if (item.total_duration_seconds)
+    parts.push(u.minutes(Math.round(item.total_duration_seconds / 60)));
+  return parts.join(" · ");
+}
+
+const statusVariant: Record<string, "default" | "secondary" | "destructive"> = {
+  completed: "default",
+  partial: "secondary",
+  too_difficult: "destructive",
+  not_possible: "destructive",
+};
+
+export default async function PatientDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ patientId: string }>;
+  searchParams: Promise<{ range?: string }>;
+}) {
+  const session = await getSessionContext();
+  if (!session?.memberships[0]) redirect("/login");
+  const practiceId = session.memberships[0].practiceId;
+  const [{ patientId }, { range }] = await Promise.all([params, searchParams]);
+  const days = range === "30" ? 30 : 7;
+
+  // Serverseitige Autorisierung: patientId aus der URL genügt nie allein.
+  const link = await getPatientDetail(practiceId, patientId);
+  if (!link) notFound();
+
+  const [logs, plan, nextAppointment, authorizations, documents] = await Promise.all([
+    getPatientCompletionLogs(practiceId, patientId, days),
+    getPatientCurrentPlan(practiceId, patientId),
+    getPatientNextAppointment(practiceId, patientId),
+    listPatientAuthorizations(practiceId, patientId),
+    listPatientDocuments(practiceId, patientId),
+  ]);
+
+  return (
+    <div className="flex max-w-3xl flex-col gap-6">
+      <Link
+        href="/practice/patients"
+        className="flex items-center gap-2 text-base font-semibold text-primary"
+      >
+        <HugeiconsIcon icon={ArrowLeft02Icon} strokeWidth={2} className="size-5" aria-hidden />
+        {t.backToList}
+      </Link>
+
+      <div>
+        <h1 className="text-2xl font-bold">{link.patient.full_name}</h1>
+        <p className="text-base text-muted-foreground">
+          {t.connectedSince(
+            formatDateShort(new Date(link.linked_at), branding.defaultTimeZone)
+          )}
+        </p>
+      </div>
+
+      <section aria-labelledby="appointment-heading" className="flex flex-col gap-3">
+        <h2 id="appointment-heading" className="text-xl font-bold">
+          {t.nextAppointment}
+        </h2>
+        <Card>
+          <CardContent className="p-4 text-base">
+            {nextAppointment ? (
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-semibold">
+                  {formatDateTime(
+                    new Date(nextAppointment.starts_at),
+                    nextAppointment.timezone
+                  )}
+                </span>
+                <span className="text-muted-foreground">
+                  {nextAppointment.therapist?.profiles?.full_name ?? ""}
+                </span>
+              </div>
+            ) : (
+              <span className="text-muted-foreground">{t.noAppointment}</span>
+            )}
+          </CardContent>
+        </Card>
+      </section>
+
+      <AuthorizationPanel patientId={patientId} authorizations={authorizations} />
+
+      <DocumentPanel patientId={patientId} documents={documents} />
+
+      <section aria-labelledby="plan-heading" className="flex flex-col gap-3">
+        <h2 id="plan-heading" className="text-xl font-bold">
+          {t.currentPlan}
+        </h2>
+        {plan ? (
+          <Card>
+            <CardContent className="flex flex-col gap-3 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-base font-semibold">{plan.title}</span>
+                <Badge variant="secondary">{t.planVersion(plan.versionNumber)}</Badge>
+              </div>
+              <ul className="flex flex-col gap-2">
+                {plan.items.map((item) => (
+                  <li key={item.id} className="text-base">
+                    <span className="font-semibold">{item.exercises?.title}</span>
+                    {itemSummary(item) ? (
+                      <span className="text-muted-foreground"> – {itemSummary(item)}</span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardContent className="p-4 text-base text-muted-foreground">
+              {t.noPlan}
+            </CardContent>
+          </Card>
+        )}
+      </section>
+
+      <section aria-labelledby="logs-heading" className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="logs-heading" className="text-xl font-bold">
+            {t.logsHeading}
+          </h2>
+          <nav aria-label={t.logsHeading} className="flex gap-2">
+            <Link
+              href={`/practice/patients/${patientId}`}
+              aria-current={days === 7 ? "page" : undefined}
+              className={`rounded-md border px-3 py-2 text-sm font-semibold ${
+                days === 7 ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+              }`}
+            >
+              {t.range7}
+            </Link>
+            <Link
+              href={`/practice/patients/${patientId}?range=30`}
+              aria-current={days === 30 ? "page" : undefined}
+              className={`rounded-md border px-3 py-2 text-sm font-semibold ${
+                days === 30 ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+              }`}
+            >
+              {t.range30}
+            </Link>
+          </nav>
+        </div>
+
+        <p className="text-sm text-muted-foreground">{t.selfReportNote}</p>
+
+        {logs.length === 0 ? (
+          <Card>
+            <CardContent className="p-4 text-base text-muted-foreground">
+              {t.noLogs}
+            </CardContent>
+          </Card>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {logs.map((log) => (
+              <li key={log.id}>
+                <Card>
+                  <CardContent className="flex flex-col gap-2 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-base font-semibold">
+                        {log.exercise_plan_items?.exercises?.title ?? "Übung"}
+                      </span>
+                      <Badge variant={statusVariant[log.status] ?? "secondary"}>
+                        {logStatus[log.status]}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDateTime(
+                        new Date(log.performed_at),
+                        branding.defaultTimeZone
+                      )}
+                    </p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                      {log.sets_completed !== null ? (
+                        <span>{t.setsCompleted(log.sets_completed)}</span>
+                      ) : null}
+                      {log.pain_before !== null ? (
+                        <span>{t.painBefore(log.pain_before)}</span>
+                      ) : null}
+                      {log.pain_after !== null ? (
+                        <span>{t.painAfter(log.pain_after)}</span>
+                      ) : null}
+                    </div>
+                    {log.note ? (
+                      <p className="rounded-md bg-muted p-2 text-sm">
+                        <span className="font-semibold">{t.patientNote}: </span>
+                        {log.note}
+                      </p>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
+  );
+}
