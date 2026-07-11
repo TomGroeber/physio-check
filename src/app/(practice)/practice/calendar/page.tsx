@@ -5,6 +5,7 @@ import { getSessionContext } from "@/server/services/session";
 import { getAppointmentOptions, listCalendarAppointments } from "@/server/services/appointments";
 import { isCalendarView, isIsoDate, monthGridDays, navigateDate, visibleRange, weekDaysIso, type CalendarView } from "@/lib/calendar";
 import { formatDateLong, formatTime, isoDateInTimeZone, todayInTimeZone, zonedTimeToUtc } from "@/lib/datetime";
+import { colorStyle } from "@/lib/calendar-colors";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { de } from "@/messages/de";
@@ -83,6 +84,17 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
         <Button type="submit" variant="secondary" className="h-11 text-base">{de.practice.calendar.filter}</Button>
       </form>
 
+      {options.therapists.length > 0 ? (
+        <ul aria-label={de.practice.calendar.legend} className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+          {options.therapists.map((row) => (
+            <li key={row.id} className="flex items-center gap-1.5">
+              <span aria-hidden className={`size-2.5 rounded-full ${colorStyle(row.calendar_color).dot}`} />
+              {row.profiles.full_name}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
       {view === "month" ? (
         <div className="grid grid-cols-7 overflow-hidden rounded-xl border bg-border" role="grid" aria-label={de.practice.calendar.monthView}>
           {de.practice.calendar.weekdays.map((weekday) => <div key={weekday} className="bg-muted p-2 text-center text-sm font-bold">{weekday}</div>)}
@@ -90,7 +102,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
             const dayAppointments = appointmentsForDay(day);
             return <div key={day} className={`min-h-32 bg-card p-2 ${day === today ? "ring-2 ring-inset ring-primary" : ""}`} role="gridcell">
               <div className="mb-2 flex items-center justify-between"><span className="text-sm font-bold">{Number(day.slice(-2))}</span><Link href={`/practice/calendar/new?date=${day}`} className="text-sm text-primary" aria-label={`${day}: Termin anlegen`}>+</Link></div>
-              <div className="flex flex-col gap-1">{dayAppointments.slice(0, 4).map((appointment) => <Link key={appointment.id} href={`/practice/calendar/${appointment.id}`} className="rounded bg-primary/10 px-2 py-1 text-xs hover:bg-primary/20"><span className="font-bold">{formatTime(new Date(appointment.starts_at), appointment.timezone)}</span> {appointment.patient.full_name}</Link>)}{dayAppointments.length > 4 ? <Link href={base({ view: "day", date: day })} className="text-xs font-semibold text-primary">+ {dayAppointments.length - 4} weitere</Link> : null}</div>
+              <div className="flex flex-col gap-1">{dayAppointments.slice(0, 4).map((appointment) => <Link key={appointment.id} href={`/practice/calendar/${appointment.id}`} className={`flex items-center gap-1 rounded bg-primary/10 px-2 py-1 text-xs hover:bg-primary/20 ${colorStyle(appointment.therapist?.calendar_color).chip}`}><span aria-hidden className={`size-2 shrink-0 rounded-full ${colorStyle(appointment.therapist?.calendar_color).dot}`} /><span className="font-bold">{formatTime(new Date(appointment.starts_at), appointment.timezone)}</span> <span className="truncate">{appointment.patient.full_name}</span></Link>)}{dayAppointments.length > 4 ? <Link href={base({ view: "day", date: day })} className="text-xs font-semibold text-primary">+ {dayAppointments.length - 4} weitere</Link> : null}</div>
             </div>;
           })}
         </div>
@@ -107,5 +119,5 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
 
 function AppointmentList({ appointments }: { appointments: Awaited<ReturnType<typeof listCalendarAppointments>> }) {
   if (!appointments.length) return <p className="text-sm text-muted-foreground">{de.practice.calendar.empty}</p>;
-  return <ul className="flex flex-col gap-2">{appointments.map((appointment) => <li key={appointment.id}><Link href={`/practice/calendar/${appointment.id}`} className="flex flex-wrap items-center gap-2 rounded-lg border p-3 hover:bg-muted"><span className="font-bold">{formatTime(new Date(appointment.starts_at), appointment.timezone)}</span><span className="flex-1">{appointment.patient.full_name}</span><Badge variant="secondary">{statusLabel(appointment.status)}</Badge></Link></li>)}</ul>;
+  return <ul className="flex flex-col gap-2">{appointments.map((appointment) => <li key={appointment.id}><Link href={`/practice/calendar/${appointment.id}`} className={`flex flex-wrap items-center gap-2 rounded-lg border p-3 hover:bg-muted ${colorStyle(appointment.therapist?.calendar_color).chip}`}><span className="font-bold">{formatTime(new Date(appointment.starts_at), appointment.timezone)}</span><span className="flex-1">{appointment.patient.full_name}</span>{appointment.therapist ? <span className="flex items-center gap-1.5 text-sm text-muted-foreground"><span aria-hidden className={`size-2.5 rounded-full ${colorStyle(appointment.therapist.calendar_color).dot}`} />{appointment.therapist.profiles?.full_name}</span> : null}<Badge variant="secondary">{statusLabel(appointment.status)}</Badge></Link></li>)}</ul>;
 }

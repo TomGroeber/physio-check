@@ -6,7 +6,7 @@ Verbindliche Projektregeln. Der Masterprompt (Produkt- und Arbeitsgrundlage) ist
 
 App für Physiotherapiepraxen (Therapeuten-Dashboard) und Patienten (Heimübungspläne mit Videos, Termine, Adhärenz-Dokumentation). Vorläufiger Name **PhysioCheck** – Name/Logo/Farben liegen zentral in `src/config/branding.ts` und Design-Tokens; niemals hartkodieren.
 
-**Aktueller Stand:** Phase E/F ist ins Hauptprojekt konsolidiert und lokal verifiziert (2026-07-11): Kalender, Verordnungen/verbleibende Sitzungen (integer, Adjustment-/Usage-Historie) und private Patientenakten. Neueste Migration: `20260711230000_authorizations_and_patient_documents.sql` (Alias-Fix wegen reserviertem Schlüsselwort). Geprüft: db:reset, Seed, Typecheck, Lint, 43 Unit-Tests, 28 E2E, Build, UI-Durchlauf Sitzungen/Dokumente. Remote `origin` ist `TomGroeber/physio-check` (**privat**). Nächster Schritt: Etappenplan in `TASKS.md` (Etappe 2: Telefonnummer + Kalenderfarben). Details: `docs/AI_HANDOFF.md`.
+**Aktueller Stand:** Etappe 2 abgeschlossen (2026-07-11): Telefonnummer (Patient pflegt, Praxis sieht/korrigiert via `set_patient_phone`) und Kalenderfarben (8er-Palette, Spaltenrecht nur `calendar_color`, Legende + farbige Chips). Neueste Migration: `20260711260000_phone_and_calendar_colors.sql`. Geprüft: db:reset, Seed, Typecheck, Lint, 50 Unit-Tests, 28 E2E, Build, UI-Durchlauf mit API-Sicherheitsproben. Remote `origin` ist `TomGroeber/physio-check` (**privat**). Nächster Schritt: Etappe 3 (Behandlungskontingente strikt ganzzahlig, Ledger-Ereignisse, Warnung bei 0, einheitliche Verordnungsauswahl). Details: `docs/AI_HANDOFF.md`.
 
 ## Kommunikation
 

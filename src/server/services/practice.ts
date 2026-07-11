@@ -99,7 +99,7 @@ export async function listPatients(practiceId: string, search: string) {
     .from("patient_practice_links")
     .select(
       `id, linked_at, status,
-       patient:profiles!inner ( id, full_name )`
+       patient:profiles!inner ( id, full_name, phone )`
     )
     .eq("practice_id", practiceId)
     .eq("status", "active")
@@ -148,7 +148,7 @@ export async function getPatientDetail(practiceId: string, patientId: string) {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from("patient_practice_links")
-    .select(`id, linked_at, patient:profiles!inner ( id, full_name )`)
+    .select(`id, linked_at, patient:profiles!inner ( id, full_name, phone )`)
     .eq("practice_id", practiceId)
     .eq("patient_profile_id", patientId)
     .eq("status", "active")

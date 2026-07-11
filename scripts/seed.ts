@@ -100,12 +100,15 @@ async function main() {
   const { data: therapistMember, error: memberError } = await db
     .from("practice_members")
     .insert([
-      { practice_id: practice.id, profile_id: therapistId, role: "therapist" },
-      { practice_id: practice.id, profile_id: adminId, role: "admin" },
+      { practice_id: practice.id, profile_id: therapistId, role: "therapist", calendar_color: "indigo" },
+      { practice_id: practice.id, profile_id: adminId, role: "admin", calendar_color: "amber" },
     ])
     .select("id, profile_id");
   if (memberError || !therapistMember) throw new Error(`members: ${memberError?.message}`);
   const therapistMemberId = therapistMember.find((m) => m.profile_id === therapistId)!.id;
+
+  // Fiktive Kontaktnummer der Demo-Patientin (keine echte Nummer).
+  await db.from("profiles").update({ phone: "+352 621 000 001" }).eq("id", patientId);
 
   await db.from("patient_invites").insert({
     practice_id: practice.id,

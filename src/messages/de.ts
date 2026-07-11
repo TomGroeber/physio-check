@@ -230,6 +230,11 @@ export const de = {
       noPractice: "Noch keine Praxis verbunden.",
       connectCta: "Mit Praxis verbinden",
       changePractice: "Praxis wechseln",
+      phone: "Telefonnummer",
+      phoneHint: "Optional. Ihre Praxis kann Sie so bei Terminfragen erreichen.",
+      phonePlaceholder: "z. B. +352 621 123 456",
+      phoneSave: "Telefonnummer speichern",
+      phoneEmpty: "Keine Telefonnummer hinterlegt.",
     },
   },
 
@@ -305,6 +310,12 @@ export const de = {
       patientNote: "Notiz",
       selfReportNote:
         "Alle Angaben sind Selbstauskünfte der Patientin/des Patienten – kein Nachweis der Ausführung.",
+      contactHeading: "Kontakt",
+      phoneLabel: "Telefonnummer",
+      phoneEmpty: "Keine Telefonnummer hinterlegt.",
+      phoneEditHint:
+        "Wird auch dem Patienten im Profil angezeigt. Bitte nur Kontaktdaten, keine Gesundheitsinformationen.",
+      phoneSave: "Telefonnummer speichern",
     },
     exercises: {
       title: "Übungsbibliothek",
@@ -358,10 +369,17 @@ export const de = {
       cancelHint: "Der Termin bleibt in der Historie. Der Patient wird benachrichtigt.",
       cancelReason: "Grund (optional, keine Gesundheitsdetails)",
       cancelAppointment: "Termin endgültig stornieren",
+      legend: "Farben der Behandelnden",
     },
     settings: {
       title: "Einstellungen",
       practiceData: "Praxisdaten",
+      calendarColorTitle: "Meine Kalenderfarbe",
+      calendarColorHint:
+        "Diese Farbe kennzeichnet Ihre Termine im Praxiskalender. Der Name der behandelnden Person steht immer zusätzlich dabei.",
+      calendarColorSave: "Farbe speichern",
+      colorSaved: "Kalenderfarbe gespeichert.",
+      colorSaveError: "Die Kalenderfarbe konnte nicht gespeichert werden.",
     },
   },
 
@@ -385,6 +403,12 @@ export const de = {
     reload: "Seite neu laden",
     forbiddenTitle: "Kein Zugriff",
     forbiddenBody: "Sie haben keine Berechtigung für diesen Bereich.",
+    notSignedIn: "Bitte melden Sie sich erneut an.",
+  },
+
+  profilePhone: {
+    saved: "Telefonnummer gespeichert.",
+    saveError: "Die Telefonnummer konnte nicht gespeichert werden.",
   },
 } as const;
 

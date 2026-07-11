@@ -14,6 +14,7 @@ import { formatDateShort, formatDateTime } from "@/lib/datetime";
 import { branding } from "@/config/branding";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { PatientPhoneForm } from "@/components/practice/patient-phone-form";
 import { AuthorizationPanel } from "@/components/practice/authorization-panel";
 import { DocumentPanel } from "@/components/practice/document-panel";
 import { listPatientAuthorizations } from "@/server/services/authorizations";
@@ -92,6 +93,26 @@ export default async function PatientDetailPage({
           )}
         </p>
       </div>
+
+      <section aria-labelledby="contact-heading" className="flex flex-col gap-3">
+        <h2 id="contact-heading" className="text-xl font-bold">
+          {t.contactHeading}
+        </h2>
+        <Card>
+          <CardContent className="flex flex-col gap-4 p-5">
+            <p className="text-base">
+              {link.patient.phone ? (
+                <a href={`tel:${link.patient.phone.replace(/[^\d+]/g, "")}`} className="font-bold text-primary">
+                  {link.patient.phone}
+                </a>
+              ) : (
+                <span className="text-muted-foreground">{t.phoneEmpty}</span>
+              )}
+            </p>
+            <PatientPhoneForm patientId={patientId} initialPhone={link.patient.phone ?? ""} />
+          </CardContent>
+        </Card>
+      </section>
 
       <section aria-labelledby="appointment-heading" className="flex flex-col gap-3">
         <h2 id="appointment-heading" className="text-xl font-bold">

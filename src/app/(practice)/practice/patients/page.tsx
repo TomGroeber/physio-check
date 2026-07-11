@@ -78,8 +78,15 @@ export default async function PatientsPage({
               >
                 <Card className="transition-colors hover:bg-muted/50">
                   <CardContent className="flex items-center justify-between gap-3 p-4">
-                    <span className="text-base font-semibold">
-                      {link.patient.full_name}
+                    <span className="flex flex-col">
+                      <span className="text-base font-semibold">
+                        {link.patient.full_name}
+                      </span>
+                      {link.patient.phone ? (
+                        <span className="text-sm text-muted-foreground">
+                          {link.patient.phone}
+                        </span>
+                      ) : null}
                     </span>
                     <span className="text-sm text-muted-foreground">
                       {t.connectedSince(

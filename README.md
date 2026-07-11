@@ -2,7 +2,7 @@
 
 App für Physiotherapiepraxen und ihre Patientinnen und Patienten: Heimübungspläne mit Videos, Termine, verordnete Sitzungen und selbst dokumentierte Durchführung (Adhärenz).
 
-> **Stand 11.07.2026:** Phase E/F ist in das Hauptprojekt übernommen und erstmals vollständig lokal verifiziert (Datenbank, Seeds, 43 Unit-Tests, 28 E2E-Tests, Production Build und ein manueller UI-Durchlauf für Sitzungen und Dokumente). Produktumfang: `docs/PRODUCT_SPEC.md` · Übergabe: `docs/AI_HANDOFF.md`.
+> **Stand 11.07.2026:** Phase E/F konsolidiert und verifiziert; Etappe 2 (Telefonnummer + Kalenderfarben) umgesetzt und im Browser durchgetestet (50 Unit-Tests, 28 E2E-Tests, Build, UI-Durchlauf mit Sicherheits-Proben). Produktumfang: `docs/PRODUCT_SPEC.md` · Übergabe: `docs/AI_HANDOFF.md`.
 
 ## Funktionsübersicht
 
@@ -14,7 +14,7 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Praxiscode | Code erzeugen, einlösen, widerrufen, erneuern | ✅ | E2E-Kernablauf (11.07.2026) | Nur Hash gespeichert, einmalig, 7 Tage gültig |
 | Praxiswechsel | Wechsel per Code neuer Praxis mit Warnhinweis | 🟡 | Unit-Tests, kein eigener E2E-Test | Alte Verbindung bleibt als Historie; kein Datenübertrag |
 | Patientenverwaltung | Liste, Suche, Patient anlegen, Detailseite | ✅ | E2E + UI-Durchlauf (11.07.2026) | Detailseite mit Terminen, Sitzungen, Dokumenten, Plan |
-| Telefonnummer | Telefonnummer pro Patient erfassen/anzeigen | ❌ | – | Geplant: Etappe 2 |
+| Telefonnummer | Patient pflegt eigene Nummer; Praxis sieht und korrigiert sie | ✅ | UI-Durchlauf + API-Proben (11.07.2026) | Optional, nur Ziffern/übliche Zeichen; Anzeige in Liste und Detail |
 | Heimübungen | Übungsanzeige „Heute“ + Detailseite mit Vorgaben | ✅ | E2E-Tests (11.07.2026) | Übungen stammen aus Demo-Seed |
 | Heimübungen | Übungs-/Videoverwaltung durch die Praxis (Upload) | ❌ | – | Privater Bucket `exercise-media` existiert bereits |
 | Übungsdokumentation | Selbstauskunft (erledigt/teilweise/zu schwierig/nicht möglich), Schmerz, Notiz | ✅ | E2E-Tests (11.07.2026) | Snapshot der Vorgaben; keine Doppeldokumentation pro Tag |
@@ -29,13 +29,13 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Patientenakten | Upload (PDF/JPEG/PNG), Ansicht über kurzlebige signierte URL, Archivieren | ✅ | UI-Durchlauf (11.07.2026) | Patient hat keinen Zugriff (Probe bestanden); Virenscan vor Pilotbetrieb erforderlich |
 | Patientenakten | Filter, endgültiges Löschen, dedizierte RLS-/Storage-Tests | ❌ | – | Geplant: Etappe 5/10 |
 | Patienten-Kurzprofil | Internes Kurzprofil auf der Detailseite | ❌ | – | Geplant: Etappe 5 |
-| Kalenderfarben | Farbkennzeichnung pro Therapeut/Kategorie | ❌ | – | Geplant: Etappe 2 |
+| Kalenderfarben | Eigene Farbe pro Praxismitglied, Termin-Chips + Legende | ✅ | UI-Durchlauf + API-Proben (11.07.2026) | 8 feste Farben; Name steht immer dabei (nie nur Farbe) |
 | Markierte Patienten | Patienten anheften/priorisieren | ❌ | – | Geplant: Etappe 6 |
 | Warteliste | Praxisbezogene Warteliste mit Kriterien | ❌ | – | Geplant: Etappe 7 |
 | Freie Termine | Frei gewordene Slots + Angebotsworkflow | ❌ | – | Geplant: Etappe 8 |
 | PWA | Installierbares Manifest | 🟡 | manuell (frühere Phase) | Kein Offline-Modus, keine Push-Benachrichtigungen |
 | Sicherheit | RLS auf allen Patiententabellen, serverseitige Autorisierung, private Buckets | 🟡 | E2E + Negativ-Proben (11.07.2026) | Dedizierte Cross-Practice-RLS-Testsuite fehlt noch (Etappe 10) |
-| Tests | Typecheck, Lint, 43 Unit-/Komponententests, 28 E2E, Build | ✅ | lokal ausgeführt (11.07.2026) | RLS-/Storage-Testsuite und Sitzungs-/Dokument-E2E fehlen |
+| Tests | Typecheck, Lint, 50 Unit-/Komponententests, 28 E2E, Build | ✅ | lokal ausgeführt (11.07.2026) | RLS-/Storage-Testsuite und Sitzungs-/Dokument-E2E fehlen |
 | Deployment | Produktivbetrieb/Hosting | ❌ | – | Nur mit ausdrücklicher Zustimmung von Tom |
 
 ## Was funktioniert aktuell?
@@ -45,6 +45,7 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 - **Kalender:** Die Praxis arbeitet mit Monats-/Wochen-/Tages-/Listenansicht; Termine können angelegt, geändert, storniert und abgeschlossen werden.
 - **Behandlungseinheiten:** Die Praxis hinterlegt Verordnungen mit ganzzahligen Sitzungen, korrigiert mit Pflichtgrund, und ein abgeschlossener Termin rechnet genau eine Sitzung an – pro Termin höchstens einmal. Patienten sehen ihren Stand mit neutralem Kostenhinweis.
 - **Patientenakten:** Die Praxis lädt PDF/JPEG/PNG in einen privaten Bucket und öffnet sie über kurzlebige signierte URLs; Patienten haben keinerlei Zugriff.
+- **Kontakt und Farben:** Patienten hinterlegen ihre Telefonnummer im Profil, die Praxis sieht und korrigiert sie; jedes Praxismitglied hat eine eigene Kalenderfarbe mit Legende im Kalender.
 
 ## Was funktioniert noch nicht vollständig?
 
@@ -56,6 +57,8 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 - **Benachrichtigungszentrum:** Notifications existieren, aber ohne gelesen/ungelesen-Übersicht und Badge.
 
 ## Letzte Änderungen
+
+- **11.07.2026 – Telefonnummer und Kalenderfarben (Etappe 2).** Patienten pflegen ihre Telefonnummer im Profil; die Praxis sieht sie in Patientenliste/-detail (als anrufbarer Link) und korrigiert sie über eine serverseitig geprüfte DB-Funktion. Jedes Praxismitglied wählt in den Einstellungen eine von 8 Kalenderfarben; der Kalender zeigt Farbpunkt, Farbrand und Legende – der Name steht immer zusätzlich dabei. Migration `20260711260000_phone_and_calendar_colors.sql`; dabei wurde das Update-Recht auf `practice_members` auf die Farbspalte eingeschränkt (Rollen-Eskalation per API jetzt auch auf Spaltenebene blockiert, per Probe verifiziert). Geprüft: Typecheck, Lint, 50 Unit-Tests, 28 E2E-Tests, Build, UI-Durchlauf mit Negativ-Proben. Einschränkung: Farbe gilt pro Mitglied (keine Kategorien-Farben).
 
 - **11.07.2026 – Konsolidierung und lokale Verifikation von Phase E/F.** Die separat angelieferte Implementierung (`physio-check-phase-ef-updated/`) wurde in das Hauptprojekt übernommen und der Duplikat-Ordner entfernt. Die Migration `20260711230000_authorizations_and_patient_documents.sql` schlug beim ersten echten Lauf fehl (PostgreSQL-Schlüsselwort `authorization` als Alias) und wurde korrigiert. Danach erstmals vollständig lokal geprüft: `db:reset`, Seed, Typecheck, Lint, 43 Unit-Tests, 28 E2E-Tests, Production Build sowie ein UI-Durchlauf für Verordnungen (anlegen, −2 mit Grund, Terminabschluss rechnet genau 1 an) und Dokumente (PNG-Upload, signierte URL, Patient ausgesperrt). Das GitHub-Repository war versehentlich öffentlich und ist jetzt **privat**. Bekannte Einschränkung: uneinheitliche Anzeige bei mehreren aktiven Verordnungen (siehe oben).
 

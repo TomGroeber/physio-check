@@ -2,6 +2,12 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-07-11 – Etappe 2
+
+**D-033 · Kalenderfarbe als einziges selbst änderbares Mitgliedsfeld.** Das breite Update-Recht auf `practice_members` wurde entzogen und durch ein Spaltenrecht nur für `calendar_color` plus eine RLS-Policy auf die eigene Zeile ersetzt. Damit kann ein Mitglied seine Farbe selbst wählen, aber niemals Rolle oder Aktiv-Status ändern – per API-Probe verifiziert. Farben sind eine feste 8er-Palette; im Kalender steht der Name immer neben der Farbe (WCAG 1.4.1).
+
+**D-032 · Telefonnummer liegt beim Profil.** `profiles.phone` gehört der Person: Patienten pflegen sie über die bestehende „update own“-Policy selbst. Die Praxis darf sie nur über die SECURITY-DEFINER-Funktion `set_patient_phone` korrigieren, die aktive Mitgliedschaft und aktive Patientenverbindung prüft. Optional und formatoffen (max. 30 Zeichen, nur Ziffern und übliche Zeichen) – Datenminimierung, keine Pflichtangabe.
+
 ## 2026-07-11 – Konsolidierung und Verifikation
 
 **D-031 · Repository ist privat.** Das GitHub-Repository `TomGroeber/physio-check` war versehentlich öffentlich und wurde auf privat gestellt. Es enthielt keine Secrets (nur Platzhalter in `.env.example`), aber ein Gesundheits-App-Projekt bleibt grundsätzlich privat.

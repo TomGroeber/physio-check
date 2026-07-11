@@ -106,7 +106,7 @@
 Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungseinheiten; 1 Termin = 1 Einheit; interne Dokumente nie für Patienten; Verordnungswarnungen, markierte Patienten, Warteliste, freie Termine; ehrliche README; Obsidian-Sync).
 
 - [x] **Etappe 1:** Repository analysiert, Phase-E/F-Parallelordner ins Hauptprojekt konsolidiert, Migration korrigiert, alles lokal verifiziert, README-Funktionsübersicht erstellt (2026-07-11)
-- [ ] **Etappe 2:** Telefonnummer und Kalenderfarben
+- [x] **Etappe 2:** Telefonnummer (Patient pflegt, Praxis sieht/korrigiert via `set_patient_phone`) und Kalenderfarben (8er-Palette, Spaltenrecht nur für `calendar_color`, Legende + Chips im Kalender) – Migration `20260711260000`, UI-Durchlauf + API-Sicherheitsproben grün (2026-07-11)
 - [ ] **Etappe 3:** Behandlungskontingente ausschließlich in ganzen Einheiten (Ledger-Ereignisse, Warnung bei 0, einheitliche Anzeige bei mehreren Verordnungen)
 - [ ] **Etappe 4:** Verordnungswarnungen (Patientendetail, Dashboard, Filter, datensparsame Notifications)
 - [ ] **Etappe 5:** Patientendokumente vervollständigen (Filter, Löschen, Tests) und internes Patienten-Kurzprofil
