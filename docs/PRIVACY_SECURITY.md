@@ -1,5 +1,12 @@
 # PhysioCheck – Datenschutz und Sicherheit
 
+## Ergänzung Phase C: Registrierung und Übungsdokumentation
+
+- Ein registriertes, unverbundenes Konto besitzt keinerlei Zugriff auf Praxis- oder Patientendaten – weder über die Oberfläche noch über direkte URLs oder die Datenbank (RLS greift ohne Praxis-Link nicht).
+- Übungsvideos werden nur über kurzlebige signierte URLs ausgeliefert, die erst NACH der serverseitigen Prüfung „Item gehört zum eigenen aktuellen Plan" erzeugt werden.
+- Durchführungsprotokolle sind Selbstauskünfte, unveränderlich und nur lesbar für den Patienten selbst und Mitglieder der Praxis, zu deren Plan sie gehören. Nach einem Praxiswechsel sieht die neue Praxis keine alte Dokumentation (D-019).
+- Schmerzangaben und Notizen erscheinen nur in der Anwendung, nie in Logs, Audit-Metadaten oder E-Mails. Hohe Schmerzwerte lösen ausschließlich einen neutralen Hinweis aus – keine Diagnose, keine automatische Therapieentscheidung.
+
 ## Ergänzung Phase B: Einladungssystem
 
 - Einladungscodes werden nur als SHA-256-Hash gespeichert und im Klartext genau einmal angezeigt.

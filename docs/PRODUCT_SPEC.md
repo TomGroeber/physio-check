@@ -11,7 +11,7 @@ Die Patientenoberfläche ist konsequent für ältere und technisch unerfahrene M
 ## 2. Fachliche Leitplanken (nicht verhandelbar)
 
 1. **Selbstauskunft, kein Nachweis.** Dokumentierte Übungen heißen „Durchführung dokumentieren" / „Übung erledigt" / „Adhärenz". Niemals „verifiziert", „bewiesen" oder „kontrolliert ausgeführt".
-2. **Einladung vor Registrierung.** Ein Patientenkonto kann erst nach Prüfung eines gültigen Praxis-Codes erstellt werden. Bestehende Konten können eine geprüfte Einladung nach dem Login annehmen. Auf neuen Geräten erfolgt die Anmeldung über das Konto, nicht erneut über den Code.
+2. **Registrierung frei, Daten erst nach Code.** (Geändert 2026-07-11, D-018.) Jeder Besucher kann ein Patientenkonto erstellen (Name, E-Mail, Passwort, E-Mail-Bestätigung). Ohne Praxisverbindung sieht das Konto ausschließlich Codeeingabe, eigene Basisdaten, Abmeldung und rechtliche Hinweise. Erst ein geprüfter Praxis-Code verbindet mit dem vorbereiteten Patientendatensatz und schaltet Übungen/Termine frei. Auf neuen Geräten erfolgt die Anmeldung über das Konto, nicht erneut über den Code. Eine Registrierung erzeugt niemals eine Therapeuten- oder Adminrolle.
 3. **Codes sind sicher:** zufällig, 7 Tage gültig, einmal verwendbar, widerrufbar, nur als Hash gespeichert, gegen Erraten geschützt (Rate Limiting).
 4. **Absage ist zunächst eine Anfrage.** Der Therapeut bestätigt oder lehnt ab. Automatische Bestätigung fristgerechter Absagen ist eine spätere, konfigurierbare Praxis-Einstellung.
 5. **Kein Medizinprodukt-Verhalten:** keine Diagnosen, keine automatischen Therapieentscheidungen, kein Notfalldienst. Bei hohen Schmerzangaben nur eine neutrale, mit der Praxis abstimmbare Sicherheitsinformation.
@@ -31,11 +31,11 @@ Rollenzuweisung erfolgt **niemals** durch den Benutzer selbst über das Frontend
 ### F1 – Registrierung und Anmeldung
 - Registrierung/Anmeldung per E-Mail und Passwort; E-Mail-Bestätigung; „Passwort vergessen".
 - Verständliche deutsche Fehlertexte ohne technische Codes.
-- Öffentliche Startseite bietet Einladungscode oder Anmeldung; eine freie Patientenregistrierung existiert nicht.
-- Rollenabhängige Weiterleitung; ein Konto ohne Praxisverknüpfung landet bei der Einladungseingabe.
+- Öffentliche Startseite bietet Registrierung, Anmeldung und Einladungscode-Eingabe.
+- Rollenabhängige Weiterleitung; ein Konto ohne Praxisverknüpfung landet im geschützten Verbindungsbereich (`/connect`) und sieht dort nur Codeeingabe, Basiskonto und Abmeldung.
 - Therapeutenkonten entstehen nur über einen Admin-/Praxiseinladungsprozess (im MVP: Seed/Admin-Skript, dokumentiert).
 
-**Akzeptanz:** Ein neuer Patient kann sich erst nach gültigem Code registrieren, die E-Mail bestätigen und die Verbindung ausdrücklich annehmen. Ein Therapeut landet nach Login im Dashboard.
+**Akzeptanz:** Ein Besucher kann ein Konto erstellen und die E-Mail bestätigen; ohne Code sind keine Praxis- oder Patientendaten erreichbar (auch nicht per direkter URL). Erst ein gültiger Code verbindet das Konto ausdrücklich mit der Praxis. Ein Therapeut landet nach Login im Dashboard.
 
 ### F2 – Patienten-Einladung
 - Therapeut legt Patientendatensatz mit minimalen Daten an (z. B. nur Anzeigename).

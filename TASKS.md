@@ -47,40 +47,55 @@
 - [x] Einladungshash ist für normale Praxisnutzer nicht lesbar
 - [x] Demo-Einladung und manuelle Testanleitung ergänzt
 - [x] Typecheck, Lint, Unit-/Komponententests (16) und Production Build grün
-- [ ] Migration und E2E lokal mit Docker/Supabase ausführen
+- [x] Migration und E2E lokal mit Docker/Supabase ausführen (2026-07-11, Phase C)
 
-## Phase C – Übungen und dokumentierte Durchführung
+## Phase C – Registrierung korrigiert + dokumentierte Durchführung ✅ (2026-07-11)
 
-- [ ] Übung anlegen (Formular + Video-Upload in privaten Bucket, Validierung, signierte URLs)
-- [ ] Plan zuweisen (Version 1) – Auswahl aus Bibliothek, Konfiguration pro Patient
-- [ ] Patienten-Startseite „Heute" mit Übungsliste und Fortschritt
-- [ ] Übung durchführen: Video, Vorgaben, Timer, erledigt/zu schwierig, Schmerzskala, Notiz, Snapshot
-- [ ] Therapeutenansicht: dokumentierte Einträge als Selbstauskunft
-- [ ] RLS-/Autorisierungstests: Fremdzugriff Patient↔Patient und Praxis↔Praxis wird verhindert
-- [ ] E2E-Test des gesamten Kernablaufs
+- [x] Registrierung ohne Einladung (Name, E-Mail, Passwort); erzeugt nur ein unverbundenes Patientenkonto, nie eine Praxisrolle
+- [x] Unverbundene Konten sehen nur `/connect` (Codeeingabe, Basiskonto, Abmelden, Hinweis); `/today`, `/practice` usw. leiten um
+- [x] `/connect` als geschützter Verbindungsbereich: Code prüfen → Praxis bestätigen → atomare Einlösung; Praxiswechsel mit Warnhinweis
+- [x] Einladungslink-Ablauf (`/invite` → `/invite/continue`) für Besucher erhalten; Einladungssicherheit unverändert (Hash, 7 Tage, einmalig, Widerruf/Erneuerung, Rate Limit, Audit)
+- [x] Keine Schemaänderung für die Registrierung nötig (reine Anwendungslogik, dokumentiert in D-018)
+- [x] Übungsdetailseite Patient: Video (kurzlebige signierte URL nach Autorisierungsprüfung), Vorgaben, Schritte, Hinweise
+- [x] Dokumentation als Selbstauskunft: erledigt/teilweise/zu schwierig/nicht möglich, optional Sätze, Schmerz 0–10 vorher/nachher, Notiz
+- [x] `prescription_snapshot` friert Vorgaben zum Zeitpunkt der Durchführung ein; nur eigene Items des aktuellen aktiven Plans dokumentierbar
+- [x] Doppelte Tagesdokumentation verhindert; nach Speichern „Heute dokumentiert“ und aktualisierter Fortschritt
+- [x] Neutraler Schmerzhinweis bei hohen/steigenden Werten (keine Diagnose)
+- [x] Patientendetailseite Praxis (`/practice/patients/[patientId]`): nächster Termin, aktueller Plan, Selbstauskünfte der letzten 7/30 Tage mit Hinweis
+- [x] Migration `20260711170000`: Praxis liest nur Protokolle aus Plänen der EIGENEN Praxis (Mandantentrennung nach Praxiswechsel)
+- [x] Unit-Tests (32) für Planlogik und Validierung; serieller E2E-Kernablauf inkl. E-Mail-Bestätigung über Mailpit
+- [ ] Übung anlegen/bearbeiten mit Video-Upload in privaten Bucket (Medienverwaltung) – nächster Schritt vor/neben Phase D
+- [ ] Plan zuweisen über die Oberfläche (Version 1 + Änderungen als neue Version)
+- [ ] Dedizierte RLS-Testsuite (Fremdzugriff Patient↔Patient, Praxis↔Praxis) als eigene Testdatei
 
-## Phase D – Termine, Absagen und neue Terminvorschläge
+## Phase D – Vollständig nutzbarer Praxiskalender
 
-- [ ] Terminverwaltung Therapeut (anlegen, ändern, stornieren, abschließen)
-- [ ] Nächster Termin auf Patienten-Startseite + Karten-Link
-- [ ] Absageanfrage Patient (mit Aufklärungstext) → Bearbeitung Therapeut → konsistenter Status beidseitig
-- [ ] Patient kann nach Absage einen neuen Termin anfragen
-- [ ] Therapeut sendet mehrere Terminvorschläge; Patient bestätigt einen Vorschlag
-- [ ] Zeitzonen-/Sommerzeit-Tests
+- [ ] `/practice/calendar` mit Monats-, Wochen- und Tagesansicht (kompatibel mit Next 16/React 19, wenige Abhängigkeiten)
+- [ ] Termin anlegen (Datum/Zeitfenster wählen), öffnen, ändern (Zeit, Dauer, Therapeut, Standort)
+- [ ] Stornieren mit Bestätigung + optionalem neutralem Grund (`cancelled_at`, `cancelled_by`, Historie bleibt)
+- [ ] Als abgeschlossen markieren; Filter Therapeut/Patient/Standort/Status
+- [ ] Serverseitige Konfliktprüfung pro Therapeut; Zod-Validierung aller Schreibwege
+- [ ] Zeitzone Europe/Luxembourg inkl. Sommer-/Winterzeit-Tests; Tastaturbedienung + Listenalternative
+- [ ] Notifications: Patient bei Stornierung, Praxis bei Absageanfrage, Patient bei Entscheidung (ohne Gesundheitsdaten)
 
-## Phase E – Benachrichtigungen
+## Phase E – Verordnete und verbleibende Sitzungen
 
-- [ ] Zentrale Notification-Services und In-App-Oberfläche
-- [ ] Gegenseitige Benachrichtigungen bei Absagen, Anfragen und Vorschlägen
-- [ ] gelesen/ungelesen, datensparsame Inhalte, relevante Tests
+- [ ] Tabellen `treatment_authorizations` + `appointment_authorization_usages` (verbleibend = verordnet − gültige Nutzungen, kein driftender Zähler)
+- [ ] Nur Therapeut rechnet abgeschlossene Termine an; nie automatisch
+- [ ] Patientenansicht „Noch X von Y Sitzungen“ + neutraler Kostenhinweis (keine Kassen-Garantie)
+- [ ] Therapeutenansicht: Verordnungen anlegen/bearbeiten/archivieren, Zuordnung korrigieren, Historie/Audit
 
-## Phase F – Patientenakten
+## Phase F – Private Patientenakten
 
-- [ ] Privater Dokument-Storage pro Praxis und Patient
-- [ ] Upload, Download, Dokumentübersicht und Löschung mit Bestätigung
-- [ ] Strikte Mandantentrennung, Audit-Log und Zugriffstests
+- [ ] Privater Bucket `patient-records`; Pfad aus serverseitig verifizierten IDs; zufällige Dateinamen
+- [ ] Upload (PDF/JPEG/PNG, Größenlimit, Signaturprüfung), Ansicht, Download über kurzlebige signierte URLs
+- [ ] Kategorien, Dokumentdatum, Notiz, Filter; Archivieren/Löschen mit Bestätigung
+- [ ] Strikte Mandantentrennung (RLS + Service + Tests); Audit; Virenscan vor Pilotbetrieb dokumentieren
 
-## Phase G – Härtung und Bedienbarkeit
+## Phase G – Notifications, Terminvorschläge, Härtung und Bedienbarkeit
+
+- [ ] In-App-Benachrichtigungszentrum: gelesen/ungelesen, Badge, Zielroute, datensparsame Inhalte
+- [ ] Terminanfrage nach Absage: mehrere Vorschläge, Patient bestätigt genau einen (atomar, mit Konfliktprüfung)
 
 - [ ] Barrierefreiheit: Tastatur, Fokus, Kontraste, Screenreader-Labels, große Schrift (WCAG 2.2 AA, Kernansichten geprüft)
 - [ ] Fehler-, Lade- und Leerzustände aller datenabhängigen Seiten

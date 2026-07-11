@@ -1,5 +1,11 @@
 # PhysioCheck – Architektur
 
+## Phase-C-Erweiterung: freie Registrierung und Übungsdokumentation
+
+Die Registrierung erzeugt nur noch ein unverbundenes Patientenkonto; `homeRouteFor` leitet Konten ohne Rolle und ohne Praxis-Link in den geschützten Verbindungsbereich `/connect` (Codeeingabe, Basiskonto, Abmeldung). Die Praxisverbindung läuft unverändert über die geprüfte Einladung und `redeem_patient_invite`.
+
+Übungsdokumentation: Die Übungsdetailseite und die Dokumentations-Action prüfen serverseitig, dass das Plan-Item zum **aktuellen** aktiven Plan des angemeldeten Patienten gehört (`src/server/services/exercise-log.ts`); erst danach erzeugt der Service-Client eine kurzlebige signierte Video-URL aus dem privaten Bucket. Der Insert des Protokolls läuft mit den Rechten des Patienten – die RLS-Insert-Policy ist die zweite Verteidigungslinie. `prescription_snapshot` friert die Vorgaben ein; Doppelerfassungen pro Kalendertag (Praxiszeitzone) werden abgewiesen. Eine Migration begrenzt das Lesen von Protokollen auf Mitglieder der Praxis, zu deren Plan das Item gehört (Mandantentrennung nach Praxiswechsel, D-019).
+
 ## Phase-B-Erweiterung: Einladung und Praxiswechsel
 
 Der öffentliche Code wird ausschließlich in einer Server Action geprüft. Bei Erfolg entsteht eine 30 Minuten gültige, HMAC-signierte HttpOnly-Einladungssitzung. Registrierung und Annahme lesen diese Sitzung erneut und prüfen den Datensatz gegen die Datenbank.

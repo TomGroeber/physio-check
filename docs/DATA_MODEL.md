@@ -1,5 +1,12 @@
 # PhysioCheck – Datenmodell
 
+## Phase-C-Ergänzungen
+
+- Keine neuen Tabellen. Die freie Registrierung ist reine Anwendungslogik (D-018).
+- `completion_logs`: Lese-Policy ersetzt – Praxismitglieder lesen nur Protokolle, deren Plan-Item zu einem Plan der eigenen Praxis gehört (Migration `20260711170000`, D-019). Patienten lesen weiterhin nur eigene Protokolle; Einträge bleiben unveränderlich (keine Update-/Delete-Policy).
+- `prescription_snapshot` enthält: `exercise_id`, `exercise_title`, `sets`, `repetitions`, `hold_seconds`, `total_duration_seconds`, `rest_seconds`, `schedule`, `note` (Vorgaben – keine Gesundheitsdaten).
+- Duplikatschutz „gleiches Item am gleichen Tag" bleibt bewusst applikationsseitig (D-020).
+
 ## Phase-B-Ergänzungen
 
 - `invite_redemption_attempts`: serverseitige Rate-Limit-Ereignisse; keine IP-Adresse und kein User-Agent im Klartext.

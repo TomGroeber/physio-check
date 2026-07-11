@@ -6,7 +6,7 @@ Verbindliche Projektregeln. Der Masterprompt (Produkt- und Arbeitsgrundlage) ist
 
 App für Physiotherapiepraxen (Therapeuten-Dashboard) und Patienten (Heimübungspläne mit Videos, Termine, Adhärenz-Dokumentation). Vorläufiger Name **PhysioCheck** – Name/Logo/Farben liegen zentral in `src/config/branding.ts` und Design-Tokens; niemals hartkodieren.
 
-**Aktueller Stand:** Phase B umgesetzt (2026-07-11): Registrierung erst nach geprüfter Einladung, sichere Code-Sitzung, persistentes Rate Limiting, Code-Erstellung/Widerruf/Erneuerung, atomare Einlösung und Praxiswechsel. Typecheck, Lint, 16 Unit-/Komponententests und Production Build sind grün. Migration und E2E müssen lokal mit Docker/Supabase erneut ausgeführt werden. Als Nächstes Phase C: funktionierende Übungsdokumentation und Medienverwaltung.
+**Aktueller Stand:** Phase C umgesetzt (2026-07-11): Registrierung ist ohne Einladung möglich (nur unverbundenes Patientenkonto); unverbundene Konten sehen ausschließlich `/connect` (Codeeingabe, Basiskonto, Abmelden); Verbindung/Praxiswechsel per geprüftem Code bleibt voll abgesichert (D-018). Übungsdokumentation läuft end-to-end: Detailseite mit Vorgaben und signierter Video-URL, Selbstauskunft mit Status/Sätzen/Schmerz/Notiz + `prescription_snapshot`, Duplikatschutz pro Tag, Therapeutenansicht 7/30 Tage auf `/practice/patients/[patientId]`. Neue Migration begrenzt Protokoll-Lesen auf die Praxis des Plans (D-019). Typecheck, Lint, 32 Unit-Tests, 28 E2E-Tests (inkl. Kernablauf mit Mailpit) und Production Build sind grün. Als Nächstes Phase D: nutzbarer Praxiskalender; außerdem offen: Übungs-/Videoverwaltung, Planzuweisung per UI, dedizierte RLS-Testsuite.
 
 ## Kommunikation
 

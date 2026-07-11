@@ -2,6 +2,16 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-07-11 – Phase C
+
+**D-021 · Lokales E-Mail-Limit angehoben.** `supabase/config.toml` erlaubt lokal 100 statt 2 Auth-E-Mails pro Stunde, damit der E2E-Kernablauf (Registrierung + Bestätigung über Mailpit) wiederholbar läuft. Betrifft nur die lokale Entwicklungsumgebung.
+
+**D-020 · Duplikatschutz applikationsseitig.** Doppelte Dokumentation desselben Plan-Items am selben Kalendertag (Praxiszeitzone) wird serverseitig geprüft und abgewiesen; bewusst kein Unique-Constraint, damit spätere Verordnungen wie „2× täglich" möglich bleiben (siehe Datenmodell). Ein theoretisches Parallel-Race erzeugt schlimmstenfalls einen zweiten Eintrag, verfälscht aber nichts und bleibt sichtbar.
+
+**D-019 · Protokolle gehören zur Praxis des Plans.** Neue Migration ersetzt die Lese-Policy für `completion_logs`: Praxismitglieder lesen nur Protokolle, deren Plan-Item zu einem Plan der eigenen Praxis gehört. Nach einem Praxiswechsel sieht die neue Praxis keine alte Dokumentation; die frühere Praxis behält ihre eigene Behandlungsdokumentation.
+
+**D-018 · Registrierung ohne Einladung.** Produktentscheidung (ersetzt D-017): Jeder Besucher kann ein Patientenkonto erstellen (Name, E-Mail, Passwort). Das Konto bleibt unverbunden und sieht nur den geschützten Bereich `/connect` (Codeeingabe, Basiskonto, Abmelden). Erst ein geprüfter Code verbindet mit der Praxis; alle Sicherheitsmechanismen der Einladung (Hash, 7 Tage, einmalig, Widerruf/Erneuerung, Rate Limit, atomare Einlösung, Audit) bleiben unverändert. Keine Schemaänderung nötig – reine Anwendungslogik. Eine Registrierung kann weiterhin niemals eine Therapeuten- oder Adminrolle erzeugen.
+
 ## 2026-07-11 – Phase B
 
 **D-017 · Einladung vor Registrierung.** `/register` ist ohne kurz zuvor serverseitig geprüfte Einladung nicht erreichbar. Die Prüfung erzeugt eine 30 Minuten gültige, HMAC-signierte HttpOnly-Sitzung; der Klartextcode wird nicht im Browser-State gespeichert.

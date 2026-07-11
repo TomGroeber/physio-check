@@ -2,12 +2,13 @@
 
 > Erweiterungen, die bewusst NICHT im ersten MVP sind. Die Architektur hält die Türen offen, ohne für Hypothesen zu wachsen.
 
-## Nächste Produktphasen
+## Nächste Produktphasen (Stand 2026-07-11, Phase C fertig)
 
-- **Phase C:** echte Übungsverwaltung, private Videos und funktionierende Dokumentation der Durchführung
-- **Phase D:** Absagen, neue Terminanfragen, mehrere Vorschläge und Bestätigung durch den Patienten
-- **Phase E:** internes Benachrichtigungszentrum mit gelesen/ungelesen
+- **Phase D:** vollständig nutzbarer Praxiskalender (Monat/Woche/Tag, anlegen/ändern/stornieren/abschließen, Konfliktprüfung, Notifications)
+- **Phase E:** verordnete und verbleibende Therapiesitzungen (`treatment_authorizations` + Nutzungen, neutrale Kostenhinweise)
 - **Phase F:** private Patientenakten mit Upload, Audit-Log und strikter Mandantentrennung
+- **Phase G:** Benachrichtigungszentrum, Terminvorschläge nach Absage, Härtung
+- **Offen aus Phase C:** Übungs-/Videoverwaltung über die Oberfläche, Planzuweisung per UI, dedizierte RLS-Testsuite
 
 ## Nahe Erweiterungen (Architektur vorbereitet)
 

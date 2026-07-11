@@ -2,7 +2,7 @@
 
 App für Physiotherapiepraxen und ihre Patientinnen und Patienten: Heimübungspläne mit Videos, Termine und selbst dokumentierte Durchführung (Adhärenz).
 
-> **Stand:** Phase B (sicherer Einladungs-, Registrierungs- und Praxiswechsel-Ablauf) umgesetzt. Übungsdokumentation, erweiterte Terminlogik, Benachrichtigungen und Patientenakten folgen in den nächsten Phasen. Produktumfang: `docs/PRODUCT_SPEC.md`.
+> **Stand:** Phase C umgesetzt: freie Patientenregistrierung mit anschließender Code-Verbindung zur Praxis und vollständige Übungsdokumentation (Selbstauskunft) inkl. Therapeutenansicht. Kalender, Verordnungen, Patientenakten und Benachrichtigungen folgen in den nächsten Phasen. Produktumfang: `docs/PRODUCT_SPEC.md`.
 
 ## Technik (gepinnte Versionen)
 
@@ -73,27 +73,33 @@ pnpm db:types     # TypeScript-Typen aus dem DB-Schema erzeugen
 pnpm seed         # Demo-Daten neu anlegen
 ```
 
-## Einladungsablauf testen
+## Registrierung und Verbindung testen (neuer Ablauf)
 
 1. `pnpm db:reset`, `pnpm seed`, `pnpm dev`
-2. Startseite öffnen → „Ich habe einen Einladungscode“.
-3. `DEMA-PHYS-2326` eingeben.
-4. „Mit bestehendem Konto anmelden“ wählen.
-5. Als `eingeladen@demo.physiocheck.test` mit `PhysioDemo2026!` anmelden.
-6. Verbindung zur Demo-Praxis bestätigen.
+2. Startseite → „Neues Konto erstellen“: Name, E-Mail, Passwort eingeben.
+3. Bestätigungs-E-Mail in Mailpit öffnen (http://localhost:54324) und Link anklicken.
+4. Anmelden → das unverbundene Konto landet im Bereich „Mit Ihrer Praxis verbinden“ und sieht sonst nichts.
+5. Code `DEMA-PHYS-2326` eingeben → Praxis bestätigen → „Heute“ erscheint.
 
-Eine neue Einladung erstellt die Therapeutin unter **Patienten → Patient anlegen**. Der Klartextcode wird nur direkt nach der Erstellung angezeigt. „Neuen Code erzeugen“ widerruft den vorherigen Code atomar.
+Alternativ funktioniert weiterhin der Einladungslink: Startseite → „Ich habe einen Einladungscode“. Eine neue Einladung erstellt die Therapeutin unter **Patienten → Patient anlegen**. Der Klartextcode wird nur direkt nach der Erstellung angezeigt. „Neuen Code erzeugen“ widerruft den vorherigen Code atomar.
+
+## Übungsdokumentation testen
+
+1. Als Patientin (`patientin@demo.physiocheck.test`) anmelden.
+2. Auf „Heute“ eine Übung antippen → Detailseite mit Vorgaben (Video folgt mit der Medienverwaltung).
+3. Status wählen (Erledigt / Teilweise / Zu schwierig / Nicht möglich), optional Sätze, Schmerz 0–10 und Notiz → „Dokumentation speichern“.
+4. „Heute“ zeigt die Bestätigung und den aktualisierten Fortschritt; die Übung ist für heute als dokumentiert markiert.
+5. Abmelden, als Therapeutin anmelden → **Patienten → Petra Beispielfrau**: Selbstauskünfte der letzten 7/30 Tage mit Status, Sätzen, Schmerzangaben und Notizen.
 
 ## Bestehende Demo-Bereiche testen
 
 1. `supabase start`, `pnpm seed`, `pnpm dev`
 2. Als Patientin anmelden → „Heute" zeigt 3 Übungen (1 gestern dokumentiert) und den nächsten Termin mit Karten-Link; Bereiche „Termine" und „Profil" über die untere Navigation.
 3. Abmelden, als Therapeutin anmelden → Dashboard zeigt heutige Termine, dokumentierte Übungen und die Rückmeldung „zu schwierig" aus den Demo-Daten; Patientenliste mit Suche, Übungsbibliothek, Terminliste.
-4. Eine Registrierung ist nur nach einem gültigen Einladungscode erreichbar. Nach der E-Mail-Bestätigung wird die Praxisverbindung ausdrücklich bestätigt.
 
 ## Neue Migration anwenden
 
-Die Migration `20260711140000_secure_patient_invites.sql` ergänzt Praxiswechsel, atomare Code-Einlösung und persistentes Rate Limiting. Lokal genügt:
+Die Migration `20260711170000_scope_completion_logs_to_plan_practice.sql` begrenzt das Lesen von Durchführungsprotokollen auf die Praxis, zu deren Plan sie gehören. Lokal genügt:
 
 ```bash
 pnpm db:reset
