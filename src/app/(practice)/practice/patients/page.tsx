@@ -70,21 +70,26 @@ export default async function PatientsPage({
         <ul className="flex flex-col gap-2">
           {patients.map((link) => (
             <li key={link.id}>
-              <Card>
-                <CardContent className="flex items-center justify-between gap-3 p-4">
-                  <span className="text-base font-semibold">
-                    {link.patient.full_name}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    {t.connectedSince(
-                      formatDateShort(
-                        new Date(link.linked_at),
-                        branding.defaultTimeZone
-                      )
-                    )}
-                  </span>
-                </CardContent>
-              </Card>
+              <Link
+                href={`/practice/patients/${link.patient.id}`}
+                className="block rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                <Card className="transition-colors hover:bg-muted/50">
+                  <CardContent className="flex items-center justify-between gap-3 p-4">
+                    <span className="text-base font-semibold">
+                      {link.patient.full_name}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      {t.connectedSince(
+                        formatDateShort(
+                          new Date(link.linked_at),
+                          branding.defaultTimeZone
+                        )
+                      )}
+                    </span>
+                  </CardContent>
+                </Card>
+              </Link>
             </li>
           ))}
         </ul>

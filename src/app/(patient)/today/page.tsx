@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Tick02Icon } from "@hugeicons/core-free-icons";
+import { ArrowRight02Icon, Tick02Icon } from "@hugeicons/core-free-icons";
 import { getSessionContext } from "@/server/services/session";
 import { getPatientTodayData, type TodayExercise } from "@/server/services/patient";
 import { AppointmentCard } from "@/components/patient/appointment-card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { de } from "@/messages/de";
 
@@ -24,12 +26,15 @@ function prescriptionSummary(exercise: TodayExercise): string {
   return parts.join(" · ");
 }
 
-export default async function TodayPage() {
+export default async function TodayPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ logged?: string; painhint?: string }>;
+}) {
   // Layout garantiert eine Session; hier nur für die Typen abgesichert.
   const session = (await getSessionContext())!;
-  const { exercises, hasPlan, nextAppointment } = await getPatientTodayData(
-    session.userId
-  );
+  const [{ exercises, hasPlan, nextAppointment }, { logged, painhint }] =
+    await Promise.all([getPatientTodayData(session.userId), searchParams]);
 
   const doneCount = exercises.filter((e) => e.completedToday).length;
   const firstName = session.fullName.split(" ")[0] || session.fullName;
@@ -40,6 +45,21 @@ export default async function TodayPage() {
         {t.greeting}
         {firstName ? `, ${firstName}` : ""}!
       </h1>
+
+      {logged ? (
+        <Alert className="border-success bg-success/10">
+          <AlertDescription className="text-base text-foreground" role="status">
+            {t.loggedSuccess}
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      {painhint ? (
+        <Alert className="border-warning bg-warning/15">
+          <AlertDescription className="text-base text-foreground">
+            {t.painHint}
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       <section aria-labelledby="exercises-heading" className="flex flex-col gap-3">
         <h2 id="exercises-heading" className="text-xl font-bold">
@@ -65,33 +85,51 @@ export default async function TodayPage() {
             <ul className="flex flex-col gap-3">
               {exercises.map((exercise) => (
                 <li key={exercise.planItemId}>
-                  <Card>
-                    <CardContent className="flex items-center gap-4 p-5">
-                      <span
-                        className={
-                          exercise.completedToday
-                            ? "flex size-10 shrink-0 items-center justify-center rounded-full bg-success text-success-foreground"
-                            : "flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-border"
-                        }
-                        aria-hidden
-                      >
-                        {exercise.completedToday && (
-                          <HugeiconsIcon icon={Tick02Icon} strokeWidth={2.5} className="size-6" />
-                        )}
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-lg font-bold">{exercise.title}</p>
-                        {prescriptionSummary(exercise) && (
-                          <p className="text-base text-muted-foreground">
-                            {prescriptionSummary(exercise)}
-                          </p>
-                        )}
-                        {exercise.completedToday && (
-                          <p className="sr-only">{t.alreadyLogged}</p>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <Link
+                    href={`/exercises/${exercise.planItemId}`}
+                    aria-label={t.openExercise(exercise.title)}
+                    className="block rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2"
+                  >
+                    <Card className="transition-colors hover:bg-muted/50">
+                      <CardContent className="flex items-center gap-4 p-5">
+                        <span
+                          className={
+                            exercise.completedToday
+                              ? "flex size-10 shrink-0 items-center justify-center rounded-full bg-success text-success-foreground"
+                              : "flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-border"
+                          }
+                          aria-hidden
+                        >
+                          {exercise.completedToday && (
+                            <HugeiconsIcon
+                              icon={Tick02Icon}
+                              strokeWidth={2.5}
+                              className="size-6"
+                            />
+                          )}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-lg font-bold">{exercise.title}</p>
+                          {prescriptionSummary(exercise) && (
+                            <p className="text-base text-muted-foreground">
+                              {prescriptionSummary(exercise)}
+                            </p>
+                          )}
+                          {exercise.completedToday && (
+                            <p className="text-base font-semibold text-success">
+                              {t.alreadyLogged}
+                            </p>
+                          )}
+                        </div>
+                        <HugeiconsIcon
+                          icon={ArrowRight02Icon}
+                          strokeWidth={2}
+                          className="size-6 shrink-0 text-muted-foreground"
+                          aria-hidden
+                        />
+                      </CardContent>
+                    </Card>
+                  </Link>
                 </li>
               ))}
             </ul>

@@ -139,6 +139,115 @@ export async function getOpenPatientInvite(practiceId: string, inviteId: string)
   return data;
 }
 
+/**
+ * Aktiver Patient der Praxis für die Detailseite. Die `patientId` aus
+ * der URL genügt NIE allein: Es muss ein aktiver Link zur eigenen
+ * Praxis existieren, sonst null (→ 404).
+ */
+export async function getPatientDetail(practiceId: string, patientId: string) {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase
+    .from("patient_practice_links")
+    .select(`id, linked_at, patient:profiles!inner ( id, full_name )`)
+    .eq("practice_id", practiceId)
+    .eq("patient_profile_id", patientId)
+    .eq("status", "active")
+    .maybeSingle();
+  return data;
+}
+
+/**
+ * Dokumentierte Übungen (Selbstauskunft) eines Patienten aus Plänen
+ * DIESER Praxis. Protokolle, die unter einer früheren Praxis
+ * entstanden sind, bleiben dort (Mandantentrennung; zusätzlich per
+ * RLS durchgesetzt).
+ */
+export async function getPatientCompletionLogs(
+  practiceId: string,
+  patientId: string,
+  days: number
+) {
+  const supabase = await createSupabaseServerClient();
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  const { data } = await supabase
+    .from("completion_logs")
+    .select(
+      `id, performed_on, performed_at, status, sets_completed, pain_before,
+       pain_after, note, prescription_snapshot,
+       exercise_plan_items!inner (
+         exercises ( title ),
+         exercise_plan_versions!inner (
+           exercise_plans!exercise_plan_versions_plan_id_fkey!inner ( practice_id )
+         )
+       )`
+    )
+    .eq("patient_profile_id", patientId)
+    .eq(
+      "exercise_plan_items.exercise_plan_versions.exercise_plans.practice_id",
+      practiceId
+    )
+    .gte("performed_at", since)
+    .order("performed_at", { ascending: false })
+    .limit(200);
+  return data ?? [];
+}
+
+/** Aktiver Übungsplan des Patienten in dieser Praxis (aktuelle Version). */
+export async function getPatientCurrentPlan(practiceId: string, patientId: string) {
+  const supabase = await createSupabaseServerClient();
+  const { data: plan } = await supabase
+    .from("exercise_plans")
+    .select(
+      `id, title, current_version_id,
+       exercise_plan_versions!exercise_plans_current_version_fk ( version_number )`
+    )
+    .eq("practice_id", practiceId)
+    .eq("patient_profile_id", patientId)
+    .eq("status", "active")
+    .limit(1)
+    .maybeSingle();
+
+  if (!plan?.current_version_id) return null;
+
+  const { data: items } = await supabase
+    .from("exercise_plan_items")
+    .select(
+      `id, sort_order, sets, repetitions, hold_seconds, total_duration_seconds,
+       note, exercises ( title )`
+    )
+    .eq("plan_version_id", plan.current_version_id)
+    .order("sort_order");
+
+  return {
+    id: plan.id,
+    title: plan.title,
+    versionNumber: plan.exercise_plan_versions?.version_number ?? 1,
+    items: items ?? [],
+  };
+}
+
+/** Nächster anstehender Termin des Patienten in dieser Praxis. */
+export async function getPatientNextAppointment(
+  practiceId: string,
+  patientId: string
+) {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase
+    .from("appointments")
+    .select(
+      `id, starts_at, ends_at, timezone, status, location_name,
+       therapist:practice_members ( profiles ( full_name ) )`
+    )
+    .eq("practice_id", practiceId)
+    .eq("patient_profile_id", patientId)
+    .in("status", ["scheduled", "cancellation_requested"])
+    .gte("starts_at", new Date().toISOString())
+    .order("starts_at")
+    .limit(1)
+    .maybeSingle();
+  return data;
+}
+
 export async function listExercises(practiceId: string) {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase

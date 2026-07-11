@@ -158,6 +158,47 @@ export const de = {
       noAppointment: "Aktuell ist kein Termin geplant.",
       openInMaps: "Adresse in Karten-App öffnen",
       with: "bei",
+      loggedSuccess: "Danke! Ihre Dokumentation wurde gespeichert.",
+      painHint:
+        "Sie haben stärkere Schmerzen angegeben. Wenn die Schmerzen anhalten oder zunehmen, pausieren Sie die Übung und besprechen Sie das weitere Vorgehen mit Ihrer Praxis.",
+      openExercise: (title: string) => `Übung „${title}“ öffnen`,
+    },
+    exercise: {
+      backToToday: "Zurück zu Heute",
+      videoHeading: "Video",
+      noVideo: "Für diese Übung ist noch kein Video hinterlegt.",
+      videoUnsupported:
+        "Ihr Browser kann dieses Video nicht abspielen. Bitte folgen Sie den Schritten unten.",
+      startingPosition: "Ausgangsposition",
+      steps: "So führen Sie die Übung aus",
+      commonMistakes: "Darauf sollten Sie achten",
+      equipment: "Hilfsmittel",
+      prescriptionHeading: "Ihre Vorgaben",
+      planNote: "Hinweis Ihrer Praxis",
+      documentHeading: "Durchführung dokumentieren",
+      selfReportHint:
+        "Ihre Angaben sind eine Selbstauskunft. Sie helfen Ihrer Praxis, den Plan an Sie anzupassen.",
+      statusLabel: "Wie ist es gelaufen?",
+      status: {
+        completed: "Erledigt",
+        partial: "Teilweise erledigt",
+        too_difficult: "Zu schwierig",
+        not_possible: "Nicht möglich",
+      },
+      setsCompletedLabel: "Absolvierte Sätze (optional)",
+      painBeforeLabel: "Schmerz vor der Übung (optional)",
+      painAfterLabel: "Schmerz nach der Übung (optional)",
+      painScaleHint: "0 = kein Schmerz, 10 = stärkster vorstellbarer Schmerz",
+      painNone: "Keine Angabe",
+      noteLabel: "Notiz an Ihre Praxis (optional)",
+      submit: "Dokumentation speichern",
+      alreadyLoggedTitle: "Heute dokumentiert",
+      alreadyLoggedBody:
+        "Sie haben diese Übung heute bereits dokumentiert. Vielen Dank!",
+      errorNotFound:
+        "Diese Übung gehört nicht (mehr) zu Ihrem aktuellen Übungsplan.",
+      errorAlreadyLogged: "Sie haben diese Übung heute bereits dokumentiert.",
+      errorNotDueToday: "Diese Übung ist für heute nicht geplant.",
     },
     appointments: {
       title: "Termine",
@@ -234,6 +275,26 @@ export const de = {
         "Die Einladung konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
       noPendingInvites: "Keine offenen Einladungen.",
     },
+    patientDetail: {
+      backToList: "Zurück zur Patientenliste",
+      connectedSince: (date: string) => `Verbunden seit ${date}`,
+      nextAppointment: "Nächster Termin",
+      noAppointment: "Kein Termin geplant.",
+      currentPlan: "Aktueller Übungsplan",
+      noPlan: "Kein aktiver Übungsplan.",
+      planVersion: (version: number) => `Version ${version}`,
+      logsHeading: "Dokumentierte Übungen",
+      range7: "Letzte 7 Tage",
+      range30: "Letzte 30 Tage",
+      noLogs: "Im gewählten Zeitraum wurden keine Übungen dokumentiert.",
+      setsCompleted: (sets: number) =>
+        `${sets} ${sets === 1 ? "Satz" : "Sätze"} absolviert`,
+      painBefore: (value: number) => `Schmerz vorher: ${value}/10`,
+      painAfter: (value: number) => `Schmerz nachher: ${value}/10`,
+      patientNote: "Notiz",
+      selfReportNote:
+        "Alle Angaben sind Selbstauskünfte der Patientin/des Patienten – kein Nachweis der Ausführung.",
+    },
     exercises: {
       title: "Übungsbibliothek",
       empty:
@@ -257,6 +318,7 @@ export const de = {
     sets: "Sätze",
     repetitions: "Wiederholungen",
     holdSeconds: (s: number) => `${s} Sek. halten`,
+    restSeconds: (s: number) => `${s} Sek. Pause`,
     minutes: (m: number) => `${m} Min.`,
     timeSuffix: "Uhr",
   },

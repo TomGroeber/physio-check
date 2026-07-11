@@ -5,6 +5,7 @@ import {
   isoWeekdayInTimeZone,
   todayInTimeZone,
 } from "@/lib/datetime";
+import { isDueOn } from "@/lib/plan-schedule";
 import { branding } from "@/config/branding";
 
 export type TodayExercise = {
@@ -29,24 +30,6 @@ export type NextAppointment = {
   therapistName: string | null;
   status: string;
 };
-
-type Schedule = { weekdays?: number[]; times_per_week?: number };
-
-/** Ist ein Plan-Item nach seinem Zeitfenster und Wochenplan heute fällig? */
-function isDueToday(
-  item: { start_date: string; end_date: string | null; schedule: unknown },
-  isoToday: string,
-  weekday: number
-): boolean {
-  if (item.start_date > isoToday) return false;
-  if (item.end_date && item.end_date < isoToday) return false;
-  const schedule = (item.schedule ?? {}) as Schedule;
-  if (Array.isArray(schedule.weekdays)) {
-    return schedule.weekdays.includes(weekday);
-  }
-  // Häufigkeit pro Woche: Patient wählt die Tage selbst → immer anbieten.
-  return true;
-}
 
 /**
  * Daten für die Patienten-Startseite "Heute": fällige Übungen mit
@@ -87,9 +70,7 @@ export async function getPatientTodayData(userId: string) {
       .eq("plan_version_id", plan.current_version_id)
       .order("sort_order");
 
-    const dueItems = (items ?? []).filter((i) =>
-      isDueToday(i, isoToday, weekday)
-    );
+    const dueItems = (items ?? []).filter((i) => isDueOn(i, isoToday, weekday));
 
     const dueIds = dueItems.map((i) => i.id);
     const { data: logs } = dueIds.length
