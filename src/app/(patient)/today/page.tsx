@@ -4,6 +4,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight02Icon, Tick02Icon } from "@hugeicons/core-free-icons";
 import { getSessionContext } from "@/server/services/session";
 import { getPatientTodayData, type TodayExercise } from "@/server/services/patient";
+import { getPatientAuthorizationSummary } from "@/server/services/authorizations";
 import { AppointmentCard } from "@/components/patient/appointment-card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
@@ -33,8 +34,12 @@ export default async function TodayPage({
 }) {
   // Layout garantiert eine Session; hier nur für die Typen abgesichert.
   const session = (await getSessionContext())!;
-  const [{ exercises, hasPlan, nextAppointment }, { logged, painhint }] =
-    await Promise.all([getPatientTodayData(session.userId), searchParams]);
+  const [{ exercises, hasPlan, nextAppointment }, authorization, { logged, painhint }] =
+    await Promise.all([
+      getPatientTodayData(session.userId),
+      getPatientAuthorizationSummary(session.userId),
+      searchParams,
+    ]);
 
   const doneCount = exercises.filter((e) => e.completedToday).length;
   const firstName = session.fullName.split(" ")[0] || session.fullName;
@@ -60,6 +65,27 @@ export default async function TodayPage({
           </AlertDescription>
         </Alert>
       ) : null}
+
+      <section aria-labelledby="authorization-heading" className="flex flex-col gap-3">
+        <h2 id="authorization-heading" className="text-xl font-bold">
+          {de.patient.authorization.title}
+        </h2>
+        <Card>
+          <CardContent className="flex flex-col gap-2 p-5">
+            {authorization ? (
+              <>
+                <p className="text-2xl font-bold">
+                  {de.patient.authorization.remaining(authorization.remaining, authorization.adjustedTotal)}
+                </p>
+                <p className="text-base font-semibold">{authorization.title}</p>
+                <p className="text-sm text-muted-foreground">{de.patient.authorization.coverageHint}</p>
+              </>
+            ) : (
+              <p className="text-base text-muted-foreground">{de.patient.authorization.empty}</p>
+            )}
+          </CardContent>
+        </Card>
+      </section>
 
       <section aria-labelledby="exercises-heading" className="flex flex-col gap-3">
         <h2 id="exercises-heading" className="text-xl font-bold">

@@ -216,7 +216,7 @@ async function main() {
   if (itemsError || !items) throw new Error(`items: ${itemsError.message}`);
 
   console.log("Lege Termine an …");
-  await db.from("appointments").insert([
+  const { data: appointments, error: appointmentError } = await db.from("appointments").insert([
     {
       practice_id: practice.id,
       patient_profile_id: patientId,
@@ -249,8 +249,38 @@ async function main() {
       location_name: DEMO_PRACTICE_NAME,
       address: "Musterstraße 12, 1234 Beispielstadt",
       status: "completed",
+      completed_at: at(-7, 9, 45),
     },
-  ]);
+  ]).select("id, status");
+  if (appointmentError || !appointments) throw new Error(`appointments: ${appointmentError?.message}`);
+
+  console.log("Lege Beispiel-Verordnung an …");
+  const { data: authorization, error: authorizationError } = await db
+    .from("treatment_authorizations")
+    .insert({
+      practice_id: practice.id,
+      patient_profile_id: patientId,
+      title: "Verordnung Rückenbehandlung",
+      reference: "DEMO-2026-01",
+      prescribed_sessions: 12,
+      issued_on: isoDate(-21),
+      valid_from: isoDate(-21),
+      status: "active",
+      prescribing_doctor: "Dr. Demo",
+      created_by: therapistMemberId,
+    })
+    .select("id")
+    .single();
+  if (authorizationError || !authorization) throw new Error(`authorization: ${authorizationError?.message}`);
+  const completedAppointment = appointments.find((appointment) => appointment.status === "completed");
+  if (completedAppointment) {
+    await db.from("appointment_authorization_usages").insert({
+      authorization_id: authorization.id,
+      appointment_id: completedAppointment.id,
+      sessions_used: 1,
+      recorded_by: therapistMemberId,
+    });
+  }
 
   console.log("Dokumentiere Beispiel-Durchführungen (Selbstauskunft) …");
   await db.from("completion_logs").insert([

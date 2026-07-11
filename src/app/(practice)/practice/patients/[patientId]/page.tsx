@@ -14,6 +14,10 @@ import { formatDateShort, formatDateTime } from "@/lib/datetime";
 import { branding } from "@/config/branding";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { AuthorizationPanel } from "@/components/practice/authorization-panel";
+import { DocumentPanel } from "@/components/practice/document-panel";
+import { listPatientAuthorizations } from "@/server/services/authorizations";
+import { listPatientDocuments } from "@/server/services/documents";
 import { de } from "@/messages/de";
 
 export const metadata: Metadata = { title: de.practice.patients.title };
@@ -62,10 +66,12 @@ export default async function PatientDetailPage({
   const link = await getPatientDetail(practiceId, patientId);
   if (!link) notFound();
 
-  const [logs, plan, nextAppointment] = await Promise.all([
+  const [logs, plan, nextAppointment, authorizations, documents] = await Promise.all([
     getPatientCompletionLogs(practiceId, patientId, days),
     getPatientCurrentPlan(practiceId, patientId),
     getPatientNextAppointment(practiceId, patientId),
+    listPatientAuthorizations(practiceId, patientId),
+    listPatientDocuments(practiceId, patientId),
   ]);
 
   return (
@@ -111,6 +117,10 @@ export default async function PatientDetailPage({
           </CardContent>
         </Card>
       </section>
+
+      <AuthorizationPanel patientId={patientId} authorizations={authorizations} />
+
+      <DocumentPanel patientId={patientId} documents={documents} />
 
       <section aria-labelledby="plan-heading" className="flex flex-col gap-3">
         <h2 id="plan-heading" className="text-xl font-bold">

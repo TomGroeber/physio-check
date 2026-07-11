@@ -214,6 +214,14 @@ export const de = {
         completed: "Abgeschlossen",
       },
     },
+    authorization: {
+      title: "Ihre verordneten Sitzungen",
+      remaining: (remaining: number, total: number) =>
+        `${remaining} von ${total} Sitzungen verbleiben`,
+      coverageHint:
+        "Der angezeigte Stand dient Ihrer Übersicht. Ob eine Sitzung von der Krankenkasse übernommen wird, richtet sich nach Ihrer Verordnung und den geltenden Bedingungen.",
+      empty: "Ihre Praxis hat noch keine Sitzungsanzahl hinterlegt.",
+    },
     profile: {
       title: "Profil",
       name: "Name",
@@ -309,6 +317,13 @@ export const de = {
       title: "Termine",
       empty: "Keine Termine im ausgewählten Zeitraum.",
       addAppointment: "Termin anlegen",
+    },
+    authorizations: {
+      title: "Verordnete Sitzungen",
+      coverageHint:
+        "Hinterlegen und korrigieren Sie die verordnete Anzahl. Abgeschlossene Termine werden automatisch angerechnet.",
+      add: "Neue Verordnung anlegen",
+      save: "Verordnung speichern",
     },
     calendar: {
       title: "Praxiskalender",

@@ -216,16 +216,21 @@ export async function completeAppointmentAction(
   if (!current || current.status !== "scheduled") return { error: "Nur geplante Termine können abgeschlossen werden." };
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase
-    .from("appointments")
-    .update({ status: "completed", completed_at: new Date().toISOString() })
-    .eq("id", current.id)
-    .eq("practice_id", context.membership.practiceId);
+  const { data: authorizationId, error } = await supabase.rpc(
+    "complete_appointment_with_authorization",
+    { p_appointment_id: current.id }
+  );
   if (error) return { error: "Der Termin konnte nicht abgeschlossen werden." };
   await auditAppointment(context.session.userId, context.membership.practiceId, current.id, "appointment_completed");
   revalidatePath("/practice/calendar");
   revalidatePath(`/practice/calendar/${current.id}`);
-  return { success: "Der Termin wurde als abgeschlossen markiert." };
+  revalidatePath(`/practice/patients/${current.patient_profile_id}`);
+  revalidatePath("/today");
+  return {
+    success: authorizationId
+      ? "Der Termin wurde abgeschlossen und eine verordnete Sitzung angerechnet."
+      : "Der Termin wurde abgeschlossen. Es war keine verfügbare Verordnung hinterlegt.",
+  };
 }
 
 export async function requestAppointmentCancellationAction(

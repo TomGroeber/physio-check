@@ -884,11 +884,40 @@ export type Database = {
         }
         Relationships: []
       }
+      treatment_authorizations: {
+        Row: { created_at: string; created_by: string; id: string; issued_on: string; note: string; patient_profile_id: string; practice_id: string; prescribed_sessions: number; prescribing_doctor: string; reference: string; status: Database["public"]["Enums"]["authorization_status"]; title: string; updated_at: string; valid_from: string | null; valid_until: string | null }
+        Insert: { created_at?: string; created_by: string; id?: string; issued_on: string; note?: string; patient_profile_id: string; practice_id: string; prescribed_sessions: number; prescribing_doctor?: string; reference?: string; status?: Database["public"]["Enums"]["authorization_status"]; title?: string; updated_at?: string; valid_from?: string | null; valid_until?: string | null }
+        Update: { created_at?: string; created_by?: string; id?: string; issued_on?: string; note?: string; patient_profile_id?: string; practice_id?: string; prescribed_sessions?: number; prescribing_doctor?: string; reference?: string; status?: Database["public"]["Enums"]["authorization_status"]; title?: string; updated_at?: string; valid_from?: string | null; valid_until?: string | null }
+        Relationships: []
+      }
+      treatment_authorization_adjustments: {
+        Row: { authorization_id: string; created_at: string; created_by: string; id: string; reason: string; session_delta: number }
+        Insert: { authorization_id: string; created_at?: string; created_by: string; id?: string; reason: string; session_delta: number }
+        Update: { authorization_id?: string; created_at?: string; created_by?: string; id?: string; reason?: string; session_delta?: number }
+        Relationships: [{ foreignKeyName: "treatment_authorization_adjustments_authorization_id_fkey"; columns: ["authorization_id"]; isOneToOne: false; referencedRelation: "treatment_authorizations"; referencedColumns: ["id"] }]
+      }
+      appointment_authorization_usages: {
+        Row: { appointment_id: string; authorization_id: string; created_at: string; id: string; recorded_by: string; sessions_used: number }
+        Insert: { appointment_id: string; authorization_id: string; created_at?: string; id?: string; recorded_by: string; sessions_used?: number }
+        Update: { appointment_id?: string; authorization_id?: string; created_at?: string; id?: string; recorded_by?: string; sessions_used?: number }
+        Relationships: [
+          { foreignKeyName: "appointment_authorization_usages_appointment_id_fkey"; columns: ["appointment_id"]; isOneToOne: true; referencedRelation: "appointments"; referencedColumns: ["id"] },
+          { foreignKeyName: "appointment_authorization_usages_authorization_id_fkey"; columns: ["authorization_id"]; isOneToOne: false; referencedRelation: "treatment_authorizations"; referencedColumns: ["id"] },
+        ]
+      }
+      patient_documents: {
+        Row: { archived_at: string | null; category: Database["public"]["Enums"]["patient_document_category"]; created_at: string; document_date: string | null; id: string; mime_type: string; note: string; original_name: string; patient_profile_id: string; practice_id: string; size_bytes: number; storage_path: string; title: string; uploaded_by: string }
+        Insert: { archived_at?: string | null; category: Database["public"]["Enums"]["patient_document_category"]; created_at?: string; document_date?: string | null; id?: string; mime_type: string; note?: string; original_name: string; patient_profile_id: string; practice_id: string; size_bytes: number; storage_path: string; title: string; uploaded_by: string }
+        Update: { archived_at?: string | null; category?: Database["public"]["Enums"]["patient_document_category"]; created_at?: string; document_date?: string | null; id?: string; mime_type?: string; note?: string; original_name?: string; patient_profile_id?: string; practice_id?: string; size_bytes?: number; storage_path?: string; title?: string; uploaded_by?: string }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      authorization_adjusted_total: { Args: { p_authorization_id: string }; Returns: number }
+      authorization_remaining: { Args: { p_authorization_id: string }; Returns: number }
       can_access_plan: { Args: { p_plan_id: string }; Returns: boolean }
       can_view_profile: { Args: { p_profile_id: string }; Returns: boolean }
       is_linked_patient: { Args: { p_practice_id: string }; Returns: boolean }
@@ -914,8 +943,11 @@ export type Database = {
         Args: { p_appointment_id: string; p_reason?: string }
         Returns: string
       }
+      complete_appointment_with_authorization: { Args: { p_appointment_id: string }; Returns: string | null }
+      remove_appointment_authorization_usage: { Args: { p_appointment_id: string }; Returns: undefined }
     }
     Enums: {
+      authorization_status: "active" | "exhausted" | "expired" | "archived"
       appointment_status:
         | "scheduled"
         | "cancellation_requested"
@@ -932,6 +964,7 @@ export type Database = {
       media_kind: "video" | "thumbnail" | "captions" | "fallback_image"
       plan_status: "active" | "archived"
       practice_role: "therapist" | "admin"
+      patient_document_category: "prescription" | "finding" | "patient_record" | "therapy_report" | "other"
     }
     CompositeTypes: {
       [_ in never]: never

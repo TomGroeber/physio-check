@@ -109,9 +109,9 @@ create policy "authorization adjustments: members read"
   on public.treatment_authorization_adjustments for select
   using (
     exists (
-      select 1 from public.treatment_authorizations authorization
-      where authorization.id = authorization_id
-        and public.is_practice_member(authorization.practice_id)
+      select 1 from public.treatment_authorizations auth_rec
+      where auth_rec.id = authorization_id
+        and public.is_practice_member(auth_rec.practice_id)
     )
   );
 create policy "authorization adjustments: members create"
@@ -119,9 +119,9 @@ create policy "authorization adjustments: members create"
   with check (
     exists (
       select 1
-      from public.treatment_authorizations authorization
-      join public.practice_members member on member.practice_id = authorization.practice_id
-      where authorization.id = authorization_id
+      from public.treatment_authorizations auth_rec
+      join public.practice_members member on member.practice_id = auth_rec.practice_id
+      where auth_rec.id = authorization_id
         and member.id = created_by
         and member.profile_id = (select auth.uid())
         and member.is_active
@@ -132,18 +132,18 @@ create policy "authorization usages: members read"
   on public.appointment_authorization_usages for select
   using (
     exists (
-      select 1 from public.treatment_authorizations authorization
-      where authorization.id = authorization_id
-        and public.is_practice_member(authorization.practice_id)
+      select 1 from public.treatment_authorizations auth_rec
+      where auth_rec.id = authorization_id
+        and public.is_practice_member(auth_rec.practice_id)
     )
   );
 create policy "authorization usages: patient reads own"
   on public.appointment_authorization_usages for select
   using (
     exists (
-      select 1 from public.treatment_authorizations authorization
-      where authorization.id = authorization_id
-        and authorization.patient_profile_id = (select auth.uid())
+      select 1 from public.treatment_authorizations auth_rec
+      where auth_rec.id = authorization_id
+        and auth_rec.patient_profile_id = (select auth.uid())
     )
   );
 -- Writes happen only through the atomic functions below.
@@ -279,19 +279,19 @@ begin
   set status = 'completed', completed_at = now()
   where id = v_appointment.id;
 
-  select authorization.id into v_authorization_id
-  from public.treatment_authorizations authorization
-  where authorization.practice_id = v_appointment.practice_id
-    and authorization.patient_profile_id = v_appointment.patient_profile_id
-    and authorization.status = 'active'
-    and (authorization.valid_from is null or authorization.valid_from <= v_appointment.starts_at::date)
-    and (authorization.valid_until is null or authorization.valid_until >= v_appointment.starts_at::date)
+  select auth_rec.id into v_authorization_id
+  from public.treatment_authorizations auth_rec
+  where auth_rec.practice_id = v_appointment.practice_id
+    and auth_rec.patient_profile_id = v_appointment.patient_profile_id
+    and auth_rec.status = 'active'
+    and (auth_rec.valid_from is null or auth_rec.valid_from <= v_appointment.starts_at::date)
+    and (auth_rec.valid_until is null or auth_rec.valid_until >= v_appointment.starts_at::date)
     and (
-      authorization.prescribed_sessions
-      + coalesce((select sum(adjustment.session_delta) from public.treatment_authorization_adjustments adjustment where adjustment.authorization_id = authorization.id), 0)
-      - coalesce((select sum(usage.sessions_used) from public.appointment_authorization_usages usage where usage.authorization_id = authorization.id), 0)
+      auth_rec.prescribed_sessions
+      + coalesce((select sum(adjustment.session_delta) from public.treatment_authorization_adjustments adjustment where adjustment.authorization_id = auth_rec.id), 0)
+      - coalesce((select sum(usage.sessions_used) from public.appointment_authorization_usages usage where usage.authorization_id = auth_rec.id), 0)
     ) > 0
-  order by coalesce(authorization.valid_from, authorization.issued_on), authorization.created_at
+  order by coalesce(auth_rec.valid_from, auth_rec.issued_on), auth_rec.created_at
   limit 1
   for update;
 
@@ -325,10 +325,10 @@ declare
   v_authorization_id uuid;
   v_practice_id uuid;
 begin
-  select usage.id, usage.authorization_id, authorization.practice_id
+  select usage.id, usage.authorization_id, auth_rec.practice_id
   into v_usage_id, v_authorization_id, v_practice_id
   from public.appointment_authorization_usages usage
-  join public.treatment_authorizations authorization on authorization.id = usage.authorization_id
+  join public.treatment_authorizations auth_rec on auth_rec.id = usage.authorization_id
   where usage.appointment_id = p_appointment_id
   for update;
 
