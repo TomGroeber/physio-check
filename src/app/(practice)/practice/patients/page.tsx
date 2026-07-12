@@ -3,6 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionContext } from "@/server/services/session";
 import { listOpenPatientInvites, listPatients } from "@/server/services/practice";
+import { listAuthorizationWarningsForPractice } from "@/server/services/authorizations";
+import { Badge } from "@/components/ui/badge";
 import { revokePatientInviteAction } from "@/server/actions/invites";
 import { formatDateShort } from "@/lib/datetime";
 import { branding } from "@/config/branding";
@@ -24,16 +26,22 @@ const t = de.practice.patients;
 export default async function PatientsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; warn?: string }>;
 }) {
   const session = await getSessionContext();
   if (!session?.memberships[0]) redirect("/login");
-  const { q = "" } = await searchParams;
+  const { q = "", warn } = await searchParams;
+  const onlyWarnings = warn === "1";
   const practiceId = session.memberships[0].practiceId;
-  const [patients, invites] = await Promise.all([
+  const [allPatients, invites, authorizationWarnings] = await Promise.all([
     listPatients(practiceId, q),
     listOpenPatientInvites(practiceId),
+    listAuthorizationWarningsForPractice(practiceId, branding.defaultTimeZone),
   ]);
+  const warningPatientIds = new Set(authorizationWarnings.map((entry) => entry.patientId));
+  const patients = onlyWarnings
+    ? allPatients.filter((link) => warningPatientIds.has(link.patient.id))
+    : allPatients;
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
@@ -62,6 +70,15 @@ export default async function PatientsPage({
         </Button>
       </form>
 
+      <form method="GET" className="flex items-center gap-2">
+        {q ? <input type="hidden" name="q" value={q} /> : null}
+        {onlyWarnings ? null : <input type="hidden" name="warn" value="1" />}
+        <Button type="submit" variant={onlyWarnings ? "default" : "outline"} className="h-11 text-base">
+          {t.warningFilterLabel}
+          {onlyWarnings ? " ✕" : ""}
+        </Button>
+      </form>
+
       {patients.length === 0 ? (
         <Card>
           <CardContent className="p-5 text-base text-muted-foreground">
@@ -78,9 +95,16 @@ export default async function PatientsPage({
               >
                 <Card className="transition-colors hover:bg-muted/50">
                   <CardContent className="flex items-center justify-between gap-3 p-4">
-                    <span className="flex flex-col">
-                      <span className="text-base font-semibold">
-                        {link.patient.full_name}
+                    <span className="flex flex-col gap-1">
+                      <span className="flex flex-wrap items-center gap-2">
+                        <span className="text-base font-semibold">
+                          {link.patient.full_name}
+                        </span>
+                        {warningPatientIds.has(link.patient.id) ? (
+                          <Badge className="border-amber-600/50 bg-amber-500/10 text-foreground">
+                            {t.warningBadge}
+                          </Badge>
+                        ) : null}
                       </span>
                       {link.patient.phone ? (
                         <span className="text-sm text-muted-foreground">

@@ -26,7 +26,7 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Absagen | Patient stellt Absageanfrage, Praxis wird benachrichtigt | 🧪 | Unit-Tests | Annehmen/Ablehnen durch die Praxis fehlt noch |
 | Benachrichtigungen | In-App-Notifications bei Stornierung/Absageanfrage | 🟡 | Unit-Tests | Kein Benachrichtigungszentrum, kein Badge-Zähler |
 | Behandlungseinheiten | Verordnung anlegen, ganzzahlige Anpassung mit Pflichtgrund, vollständige Ledger-Historie, Warnung bei 0, Patientenanzeige | ✅ | UI-Durchlauf + API-Proben (12.07.2026) | Nur ganze Einheiten; Stand nie negativ; Anzeige und Anrechnung nutzen dieselbe Auswahlregel (`primary_authorization_for_patient`) |
-| Verordnungswarnungen | Warnungen bei wenig Einheiten/Ablauf | ❌ | – | Geplant: Etappe 4 |
+| Verordnungswarnungen | Warnbanner (Patientendetail), Dashboard-Karte, Listenfilter, Notification | ✅ | UI-Durchlauf + API-Probe (12.07.2026) | Schwellen: ≤2 Einheiten bzw. ≤14 Tage bis Gültigkeitsende; Notification ohne Gesundheitsdaten |
 | Patientenakten | Upload (PDF/JPEG/PNG), Ansicht über kurzlebige signierte URL, Archivieren | ✅ | UI-Durchlauf (11.07.2026) | Patient hat keinen Zugriff (Probe bestanden); Virenscan vor Pilotbetrieb erforderlich |
 | Patientenakten | Filter, endgültiges Löschen, dedizierte RLS-/Storage-Tests | ❌ | – | Geplant: Etappe 5/10 |
 | Patienten-Kurzprofil | Internes Kurzprofil auf der Detailseite | ❌ | – | Geplant: Etappe 5 |

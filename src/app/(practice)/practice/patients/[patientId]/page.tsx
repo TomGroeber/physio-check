@@ -17,7 +17,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PatientPhoneForm } from "@/components/practice/patient-phone-form";
 import { AuthorizationPanel } from "@/components/practice/authorization-panel";
 import { DocumentPanel } from "@/components/practice/document-panel";
-import { listPatientAuthorizations } from "@/server/services/authorizations";
+import { getPatientUnitStatus, listPatientAuthorizations } from "@/server/services/authorizations";
+import { evaluateAuthorizationWarnings } from "@/lib/authorization-warnings";
+import { authorizationWarningText } from "@/lib/authorization-warning-text";
+import { todayInTimeZone } from "@/lib/datetime";
+import { FormMessage } from "@/components/auth/form-message";
 import { listPatientDocuments } from "@/server/services/documents";
 import { de } from "@/messages/de";
 
@@ -67,13 +71,21 @@ export default async function PatientDetailPage({
   const link = await getPatientDetail(practiceId, patientId);
   if (!link) notFound();
 
-  const [logs, plan, nextAppointment, authorizations, documents] = await Promise.all([
+  const [logs, plan, nextAppointment, authorizations, documents, unitStatus] = await Promise.all([
     getPatientCompletionLogs(practiceId, patientId, days),
     getPatientCurrentPlan(practiceId, patientId),
     getPatientNextAppointment(practiceId, patientId),
     listPatientAuthorizations(practiceId, patientId),
     listPatientDocuments(practiceId, patientId),
+    getPatientUnitStatus(patientId),
   ]);
+  const warnings = unitStatus
+    ? evaluateAuthorizationWarnings({
+        remaining: unitStatus.remaining,
+        validUntil: unitStatus.validUntil,
+        todayIso: todayInTimeZone(branding.defaultTimeZone),
+      })
+    : [];
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
@@ -138,6 +150,10 @@ export default async function PatientDetailPage({
           </CardContent>
         </Card>
       </section>
+
+      {warnings.length > 0 ? (
+        <FormMessage warning={warnings.map((warning) => authorizationWarningText(warning)).join(" ")} />
+      ) : null}
 
       <AuthorizationPanel patientId={patientId} authorizations={authorizations} />
 

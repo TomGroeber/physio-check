@@ -1163,6 +1163,20 @@ export type Database = {
         Returns: string
       }
       is_linked_patient: { Args: { p_practice_id: string }; Returns: boolean }
+      list_authorization_warnings: {
+        Args: {
+          p_practice_id: string
+          p_units_threshold: number
+          p_expiry_days: number
+        }
+        Returns: {
+          patient_profile_id: string
+          authorization_id: string
+          title: string
+          remaining: number
+          valid_until: string | null
+        }[]
+      }
       is_practice_admin: { Args: { p_practice_id: string }; Returns: boolean }
       is_practice_member: { Args: { p_practice_id: string }; Returns: boolean }
       member_can_view_patient: {

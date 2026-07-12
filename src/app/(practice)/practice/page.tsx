@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getSessionContext } from "@/server/services/session";
 import { getDashboardData, getPractice } from "@/server/services/practice";
+import { listAuthorizationWarningsForPractice } from "@/server/services/authorizations";
+import { authorizationWarningText } from "@/lib/authorization-warning-text";
 import { branding } from "@/config/branding";
 import { formatDateShort, formatDateTime, formatTime } from "@/lib/datetime";
 import { Badge } from "@/components/ui/badge";
@@ -26,12 +29,43 @@ export default async function PracticeDashboardPage() {
   const practice = await getPractice(practiceId);
   const timezone = practice?.timezone ?? branding.defaultTimeZone;
 
-  const { todaysAppointments, pendingCancellations, recentLogs, flaggedLogs } =
-    await getDashboardData(practiceId, timezone);
+  const [{ todaysAppointments, pendingCancellations, recentLogs, flaggedLogs }, authorizationWarnings] =
+    await Promise.all([
+      getDashboardData(practiceId, timezone),
+      listAuthorizationWarningsForPractice(practiceId, timezone),
+    ]);
 
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-bold">{t.title}</h1>
+
+      <Card className={authorizationWarnings.length ? "border-amber-600/50" : undefined}>
+        <CardHeader>
+          <CardTitle className="text-lg">{t.authorizationWarnings}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {authorizationWarnings.length === 0 ? (
+            <EmptyHint>{t.emptyAuthorizationWarnings}</EmptyHint>
+          ) : (
+            <ul className="flex flex-col divide-y">
+              {authorizationWarnings.map((entry) => (
+                <li key={entry.authorizationId} className="flex flex-col gap-1 py-2.5">
+                  <Link
+                    href={`/practice/patients/${entry.patientId}`}
+                    className="text-base font-semibold text-primary"
+                  >
+                    {entry.patientName}
+                  </Link>
+                  <span className="text-sm text-muted-foreground">
+                    {entry.authorizationTitle} ·{" "}
+                    {entry.warnings.map((warning) => authorizationWarningText(warning)).join(" ")}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>

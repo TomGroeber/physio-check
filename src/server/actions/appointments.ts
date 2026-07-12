@@ -18,6 +18,8 @@ import {
   requestCancellationSchema,
 } from "@/lib/validation/appointments";
 import { zonedTimeToUtc } from "@/lib/datetime";
+import { getAuthorizationRemaining } from "@/server/services/authorizations";
+import { UNITS_WARNING_THRESHOLD } from "@/lib/authorization-warnings";
 
 export type AppointmentActionState = { error?: string; success?: string; warning?: string };
 
@@ -222,6 +224,14 @@ export async function completeAppointmentAction(
   );
   if (error) return { error: "Der Termin konnte nicht abgeschlossen werden." };
   await auditAppointment(context.session.userId, context.membership.practiceId, current.id, "appointment_completed");
+  if (authorizationId) {
+    await notifyPracticeOnLowUnits(
+      context.membership.practiceId,
+      current.patient_profile_id,
+      current.patient?.full_name ?? "",
+      authorizationId
+    );
+  }
   revalidatePath("/practice/calendar");
   revalidatePath(`/practice/calendar/${current.id}`);
   revalidatePath(`/practice/patients/${current.patient_profile_id}`);
@@ -235,6 +245,39 @@ export async function completeAppointmentAction(
   return {
     success: "Der Termin wurde abgeschlossen und genau eine Behandlungseinheit angerechnet.",
   };
+}
+
+/**
+ * Datensparsame Benachrichtigung an alle aktiven Praxismitglieder, wenn
+ * eine Anrechnung den Stand genau auf die Warnschwelle oder auf 0 bringt
+ * (nur beim Überschreiten, nicht bei jedem weiteren Abschluss). Inhalt:
+ * nur Name und Einheitenstand – keine Gesundheitsdaten.
+ */
+async function notifyPracticeOnLowUnits(
+  practiceId: string,
+  patientProfileId: string,
+  patientName: string,
+  authorizationId: string
+) {
+  const remaining = await getAuthorizationRemaining(authorizationId);
+  if (remaining !== UNITS_WARNING_THRESHOLD && remaining !== 0) return;
+  const supabase = await createSupabaseServerClient();
+  const { data: members } = await supabase
+    .from("practice_members")
+    .select("profile_id")
+    .eq("practice_id", practiceId)
+    .eq("is_active", true);
+  const body =
+    remaining === 0
+      ? `${patientName}: Es ist keine Behandlungseinheit mehr verfügbar.`
+      : `${patientName}: Es sind nur noch ${remaining} Behandlungseinheiten verfügbar.`;
+  await Promise.all(
+    (members ?? []).map((member) =>
+      notifyProfile(member.profile_id, "authorization_warning", "Verordnungswarnung", body, {
+        patientId: patientProfileId,
+      })
+    )
+  );
 }
 
 export async function reverseAppointmentCompletionAction(

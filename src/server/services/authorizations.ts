@@ -2,6 +2,12 @@ import "server-only";
 
 import { createSupabaseServerClient } from "@/server/db/server-client";
 import { createSupabaseServiceClient } from "@/server/db/service-client";
+import { todayInTimeZone } from "@/lib/datetime";
+import {
+  EXPIRY_WARNING_DAYS,
+  UNITS_WARNING_THRESHOLD,
+  evaluateAuthorizationWarnings,
+} from "@/lib/authorization-warnings";
 
 export async function auditAuthorization(
   actorId: string,
@@ -101,7 +107,8 @@ export async function getPatientAuthorizationSummary(userId: string) {
 
 /**
  * Verbleibende Einheiten der maßgeblichen Verordnung aus Praxissicht
- * (für die Warnung beim Terminabschluss). null = keine Verordnung.
+ * (für die Warnung beim Terminabschluss und die Warnhinweise).
+ * null = keine Verordnung.
  */
 export async function getPatientUnitStatus(patientId: string) {
   const supabase = await createSupabaseServerClient();
@@ -109,7 +116,59 @@ export async function getPatientUnitStatus(patientId: string) {
     p_patient_id: patientId,
   });
   if (!primaryId) return null;
-  return { authorizationId: primaryId, remaining: await remainingFor(primaryId) };
+  const [{ data: authorization }, remaining] = await Promise.all([
+    supabase
+      .from("treatment_authorizations")
+      .select("title, valid_until")
+      .eq("id", primaryId)
+      .maybeSingle(),
+    remainingFor(primaryId),
+  ]);
+  return {
+    authorizationId: primaryId,
+    remaining,
+    title: authorization?.title ?? "",
+    validUntil: authorization?.valid_until ?? null,
+  };
+}
+
+/**
+ * Alle Patienten der Praxis, deren maßgebliche Verordnung im Warnfenster
+ * liegt (wenige Einheiten oder Gültigkeit endet bald). Schwellenwerte aus
+ * `src/lib/authorization-warnings.ts`; die Auswahl der Verordnung folgt
+ * derselben DB-Regel wie Anzeige und Anrechnung.
+ */
+export async function listAuthorizationWarningsForPractice(practiceId: string, timezone: string) {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("list_authorization_warnings", {
+    p_practice_id: practiceId,
+    p_units_threshold: UNITS_WARNING_THRESHOLD,
+    p_expiry_days: EXPIRY_WARNING_DAYS,
+  });
+  if (error) throw new Error(`Warnliste konnte nicht geladen werden: ${error.message}`);
+  if (!data?.length) return [];
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, full_name")
+    .in(
+      "id",
+      data.map((row) => row.patient_profile_id)
+    );
+  const names = new Map((profiles ?? []).map((profile) => [profile.id, profile.full_name]));
+  const todayIso = todayInTimeZone(timezone);
+  return data.map((row) => ({
+    patientId: row.patient_profile_id,
+    authorizationId: row.authorization_id,
+    patientName: names.get(row.patient_profile_id) ?? "Unbekannt",
+    authorizationTitle: row.title,
+    remaining: row.remaining,
+    validUntil: row.valid_until,
+    warnings: evaluateAuthorizationWarnings({
+      remaining: row.remaining,
+      validUntil: row.valid_until,
+      todayIso,
+    }),
+  }));
 }
 
 export async function getAuthorizationForPractice(practiceId: string, authorizationId: string) {

@@ -260,6 +260,9 @@ export const de = {
       selfReportNote:
         "Alle Angaben zu durchgeführten Übungen sind Selbstauskünfte der Patientinnen und Patienten.",
       painAfter: (value: number) => `Schmerz nach der Übung: ${value} von 10`,
+      authorizationWarnings: "Verordnungswarnungen",
+      emptyAuthorizationWarnings:
+        "Keine Warnungen – Einheiten und Gültigkeit sind überall ausreichend.",
       logStatus: {
         completed: "Erledigt",
         partial: "Teilweise erledigt",
@@ -272,6 +275,8 @@ export const de = {
       searchLabel: "Nach Name suchen",
       searchPlaceholder: "Nach Name suchen …",
       searchButton: "Suchen",
+      warningFilterLabel: "Nur Patienten mit Verordnungswarnung",
+      warningBadge: "Verordnungswarnung",
       connectedSince: (date: string) => `verbunden seit ${date}`,
       empty: "Noch keine Patienten angelegt.",
       addPatient: "Patient anlegen",
@@ -336,6 +341,18 @@ export const de = {
       add: "Neue Verordnung anlegen",
       save: "Verordnung speichern",
       historyTitle: "Historie",
+      warning: {
+        no_units: "Keine Behandlungseinheit mehr verfügbar.",
+        low_units: (remaining: number) =>
+          remaining === 1
+            ? "Nur noch 1 Behandlungseinheit verfügbar."
+            : `Nur noch ${remaining} Behandlungseinheiten verfügbar.`,
+        expired: (date: string) => `Die Verordnung ist seit dem ${date} abgelaufen.`,
+        expires_soon: (date: string, daysLeft: number) =>
+          daysLeft === 0
+            ? `Die Verordnung läuft heute (${date}) ab.`
+            : `Die Verordnung läuft am ${date} ab (noch ${daysLeft === 1 ? "1 Tag" : `${daysLeft} Tage`}).`,
+      },
       ledger: {
         initial_allocation: "Anfangskontingent",
         manual_increase: "Manuelle Erhöhung",
