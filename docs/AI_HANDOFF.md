@@ -39,8 +39,7 @@ Die Phase-E/F-Implementierung lag zuvor als kompletter Parallelordner `physio-ch
 
 ## Bekannte Probleme / offene Punkte in Priorität
 
-1. **Etappe 9 (Obsidian-Sync) wartet weiterhin auf den Vault-Pfad von Tom** – nie raten.
-2. Praxisentscheidung für Absageanfragen (annehmen/ablehnen) fehlt; `decideCancellationSchema` existiert bereits ungenutzt in `src/lib/validation/appointments.ts`.
+1. Praxisentscheidung für Absageanfragen (annehmen/ablehnen) fehlt; `decideCancellationSchema` existiert bereits ungenutzt in `src/lib/validation/appointments.ts`.
 3. Virenscan/Quarantäne für Uploads vor Pilotbetrieb; aktuell nur Dateityp, Signatur und Größe.
 4. Übungs-/Videoverwaltung und Plan-Zuweisung per UI.
 5. UX-Beobachtung: Erfolgs-/Fehlermeldungen von Server-Actions gehen verloren, wenn `revalidatePath` die Formular-Komponente neu aufbaut (Abschließen/Zurücknehmen, Angebot annehmen). Der Zustandswechsel selbst ist die Rückmeldung; ein Toast-System wäre die saubere Lösung.
@@ -75,4 +74,4 @@ Remote `origin` ist `https://github.com/TomGroeber/physio-check.git` (privat). V
 
 ## Nächster konkreter Auftrag
 
-Etappe 9 (Obsidian-Sync) sobald Tom den Vault-Pfad nennt (`scripts/sync-obsidian.ts`, `pnpm docs:sync`). Parallel sinnvoll: Absageanfragen annehmen/ablehnen (Punkt 2 oben) oder Übungs-/Videoverwaltung per UI (Phase G).
+Alle Etappen des Plans vom 11.07.2026 sind abgeschlossen (Etappe 9: `pnpm docs:sync` → `02_Projekte/PhysioCheck/` in Toms Vault `~/Desktop/UNI-Wissensbasis`, `OBSIDIAN_VAULT_PATH` in `.env.local`). Sinnvolle nächste Arbeiten: Absageanfragen annehmen/ablehnen (Punkt 1 oben, `decideCancellationSchema` liegt bereit) oder Übungs-/Videoverwaltung per UI (Phase G).
