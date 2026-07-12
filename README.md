@@ -33,7 +33,7 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Kalenderfarben | Eigene Farbe pro Praxismitglied, Termin-Chips + Legende | ✅ | UI-Durchlauf + API-Proben (11.07.2026) | 8 feste Farben; Name steht immer dabei (nie nur Farbe) |
 | Markierte Patienten | Anheften mit Notiz, Badge, Filter, Dashboard-Karte | ✅ | UI-Durchlauf + RLS-Proben (12.07.2026) | Intern; Patienten sehen die Markierung nie (eigene Tabelle ohne Patienten-Policy) |
 | Warteliste | Eigene Seite: Wunschzeiten, Priorität, Notiz, erledigen/löschen | ✅ | UI-Durchlauf + RLS-Proben (12.07.2026) | Intern (Patienten sehen sie nicht); max. 1 offener Eintrag pro Patient |
-| Freie Termine | Frei gewordene Slots + Angebotsworkflow | ❌ | – | Geplant: Etappe 8 |
+| Freie Termine | Frei gewordene Zeitfenster + Terminangebote (annehmen/ablehnen/zurückziehen) | ✅ | UI-Durchlauf inkl. Konfliktfall (12.07.2026) | Annahme bucht atomar; Doppelbuchung durch DB-Überlappungsschutz ausgeschlossen |
 | PWA | Installierbares Manifest | 🟡 | manuell (frühere Phase) | Kein Offline-Modus, keine Push-Benachrichtigungen |
 | Sicherheit | RLS auf allen Patiententabellen, serverseitige Autorisierung, private Buckets | 🟡 | E2E + Negativ-Proben (11.07.2026) | Dedizierte Cross-Practice-RLS-Testsuite fehlt noch (Etappe 10) |
 | Tests | Typecheck, Lint, 55 Unit-/Komponententests, 28 E2E, Build | ✅ | lokal ausgeführt (12.07.2026) | RLS-/Storage-Testsuite und Sitzungs-/Dokument-E2E fehlen |

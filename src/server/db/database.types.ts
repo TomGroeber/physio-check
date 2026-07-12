@@ -96,6 +96,90 @@ export type Database = {
           },
         ]
       }
+      appointment_offers: {
+        Row: {
+          appointment_id: string | null
+          created_at: string
+          created_by: string | null
+          ends_at: string
+          id: string
+          location_name: string
+          patient_profile_id: string
+          practice_id: string
+          responded_at: string | null
+          starts_at: string
+          status: Database["public"]["Enums"]["offer_status"]
+          therapist_member_id: string | null
+          timezone: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          ends_at: string
+          id?: string
+          location_name?: string
+          patient_profile_id: string
+          practice_id: string
+          responded_at?: string | null
+          starts_at: string
+          status?: Database["public"]["Enums"]["offer_status"]
+          therapist_member_id?: string | null
+          timezone?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string
+          id?: string
+          location_name?: string
+          patient_profile_id?: string
+          practice_id?: string
+          responded_at?: string | null
+          starts_at?: string
+          status?: Database["public"]["Enums"]["offer_status"]
+          therapist_member_id?: string | null
+          timezone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_offers_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_offers_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "practice_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_offers_patient_profile_id_fkey"
+            columns: ["patient_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_offers_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_offers_therapist_member_id_fkey"
+            columns: ["therapist_member_id"]
+            isOneToOne: false
+            referencedRelation: "practice_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           address: string
@@ -1310,9 +1394,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_appointment_offer: {
+        Args: { p_offer_id: string }
+        Returns: string
+      }
       authorization_adjusted_total: {
         Args: { p_authorization_id: string }
         Returns: number
+      }
+      decline_appointment_offer: {
+        Args: { p_offer_id: string }
+        Returns: undefined
       }
       authorization_remaining: {
         Args: { p_authorization_id: string }
@@ -1396,6 +1488,7 @@ export type Database = {
         | "patient_record"
         | "therapy_report"
         | "other"
+      offer_status: "offered" | "accepted" | "declined" | "withdrawn"
       plan_status: "active" | "archived"
       practice_role: "therapist" | "admin"
       waitlist_priority: "normal" | "high"

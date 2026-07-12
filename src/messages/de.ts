@@ -213,6 +213,11 @@ export const de = {
         cancelled: "Abgesagt",
         completed: "Abgeschlossen",
       },
+      offersHeading: "Terminangebote Ihrer Praxis",
+      offersHint:
+        "Ihre Praxis hat Ihnen diese Zeitfenster angeboten. Wenn Sie annehmen, ist der Termin verbindlich gebucht.",
+      acceptOffer: "Termin annehmen",
+      declineOffer: "Ablehnen",
     },
     authorization: {
       title: "Ihre verordneten Sitzungen",
@@ -334,6 +339,26 @@ export const de = {
       title: "Termine",
       empty: "Keine Termine im ausgewählten Zeitraum.",
       addAppointment: "Termin anlegen",
+    },
+    offers: {
+      freedSlotsHeading: "Frei gewordene Zeitfenster",
+      freedSlotsHint: "Zukünftige Zeitfenster aus stornierten Terminen – Kandidaten für ein Angebot an die Warteliste.",
+      freedSlotsEmpty: "Keine frei gewordenen Zeitfenster.",
+      offersHeading: "Terminangebote",
+      offersEmpty: "Keine Angebote vorhanden.",
+      createTitle: "Termin anbieten",
+      dateLabel: "Datum",
+      startTimeLabel: "Startzeit",
+      durationLabel: "Dauer",
+      therapistLabel: "Behandelnde Person",
+      create: "Angebot senden",
+      withdraw: "Angebot zurückziehen",
+      status: {
+        offered: "Offen",
+        accepted: "Angenommen",
+        declined: "Abgelehnt",
+        withdrawn: "Zurückgezogen",
+      },
     },
     waitlist: {
       title: "Warteliste",
