@@ -801,6 +801,58 @@ export type Database = {
           },
         ]
       }
+      patient_internal_profiles: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          patient_profile_id: string
+          practice_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          id?: string
+          patient_profile_id: string
+          practice_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          patient_profile_id?: string
+          practice_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_internal_profiles_patient_profile_id_fkey"
+            columns: ["patient_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_internal_profiles_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_internal_profiles_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "practice_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patient_invites: {
         Row: {
           code_hash: string

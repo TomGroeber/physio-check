@@ -6,8 +6,13 @@ import { createSupabaseServerClient } from "@/server/db/server-client";
 import { createSupabaseServiceClient } from "@/server/db/service-client";
 import { getSessionContext } from "@/server/services/session";
 import { getPatientDetail } from "@/server/services/practice";
-import { auditDocument, getPracticeDocument } from "@/server/services/documents";
-import { archiveDocumentSchema, documentMetadataSchema } from "@/lib/validation/documents";
+import { auditDocument, getPracticeDocument, removePatientDocumentFile } from "@/server/services/documents";
+import {
+  archiveDocumentSchema,
+  deleteDocumentSchema,
+  documentMetadataSchema,
+  internalProfileSchema,
+} from "@/lib/validation/documents";
 
 export type DocumentActionState = { error?: string; success?: string };
 const MAX_SIZE = 20 * 1024 * 1024;
@@ -106,5 +111,77 @@ export async function archivePatientDocumentAction(formData: FormData): Promise<
   await supabase.from("patient_documents").update({ archived_at: new Date().toISOString() }).eq("id", document.id);
   await auditDocument(context.session.userId, context.membership.practiceId, document.id, "patient_document_archived");
   revalidatePath(`/practice/patients/${parsed.data.patientId}`);
+}
+
+/**
+ * Endgültiges Löschen: nur für bereits archivierte Dokumente (Zwei-Schritt-
+ * Sicherheit, auch per RLS-Policy erzwungen). Erst die Datenbankzeile über
+ * die Nutzerrechte löschen, dann die Datei aus dem privaten Bucket.
+ */
+export async function deletePatientDocumentAction(
+  _state: DocumentActionState,
+  formData: FormData
+): Promise<DocumentActionState> {
+  const parsed = deleteDocumentSchema.safeParse({
+    patientId: formData.get("patientId"),
+    documentId: formData.get("documentId"),
+    confirm: formData.get("confirm"),
+  });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  const context = await authorizedContext(parsed.data.patientId);
+  if (!context) return { error: "Kein Zugriff auf diesen Patienten." };
+  const document = await getPracticeDocument(
+    context.membership.practiceId,
+    parsed.data.patientId,
+    parsed.data.documentId
+  );
+  if (!document) return { error: "Dokument nicht gefunden." };
+  if (!document.archived_at) {
+    return { error: "Nur archivierte Dokumente können endgültig gelöscht werden." };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data: deleted, error } = await supabase
+    .from("patient_documents")
+    .delete()
+    .eq("id", document.id)
+    .select("id");
+  if (error || !deleted?.length) return { error: "Das Dokument konnte nicht gelöscht werden." };
+  await removePatientDocumentFile(document.storage_path);
+  await auditDocument(context.session.userId, context.membership.practiceId, document.id, "patient_document_deleted");
+  revalidatePath(`/practice/patients/${parsed.data.patientId}`);
+  return { success: "Das Dokument wurde endgültig gelöscht." };
+}
+
+/**
+ * Internes Kurzprofil speichern (Upsert pro Praxis+Patient). Inhalt ist
+ * für Patienten unsichtbar (eigene Tabelle ohne Patienten-Policy).
+ */
+export async function savePatientInternalProfileAction(
+  _state: DocumentActionState,
+  formData: FormData
+): Promise<DocumentActionState> {
+  const parsed = internalProfileSchema.safeParse({
+    patientId: formData.get("patientId"),
+    content: formData.get("content"),
+  });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  const context = await authorizedContext(parsed.data.patientId);
+  if (!context) return { error: "Kein Zugriff auf diesen Patienten." };
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.from("patient_internal_profiles").upsert(
+    {
+      practice_id: context.membership.practiceId,
+      patient_profile_id: parsed.data.patientId,
+      content: parsed.data.content,
+      updated_by: context.membership.memberId,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "practice_id,patient_profile_id" }
+  );
+  if (error) return { error: "Das Kurzprofil konnte nicht gespeichert werden." };
+  revalidatePath(`/practice/patients/${parsed.data.patientId}`);
+  return { success: "Das Kurzprofil wurde gespeichert." };
 }
 

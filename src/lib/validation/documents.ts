@@ -13,3 +13,17 @@ export const documentMetadataSchema = z.object({
 
 export const archiveDocumentSchema = z.object({ patientId: z.uuid(), documentId: z.uuid() });
 
+export const deleteDocumentSchema = z.object({
+  patientId: z.uuid(),
+  documentId: z.uuid(),
+  confirm: z.literal("delete", "Bitte bestätigen Sie das endgültige Löschen."),
+});
+
+export const internalProfileSchema = z.object({
+  patientId: z.uuid(),
+  content: z
+    .string()
+    .trim()
+    .max(2000, "Das Kurzprofil darf höchstens 2000 Zeichen lang sein."),
+});
+

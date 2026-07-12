@@ -334,6 +334,24 @@ export const de = {
       empty: "Keine Termine im ausgewählten Zeitraum.",
       addAppointment: "Termin anlegen",
     },
+    documents: {
+      filterCategory: "Kategorie filtern",
+      filterAllCategories: "Alle Kategorien",
+      filterShowArchived: (count: number) =>
+        count === 1 ? "1 archiviertes Dokument anzeigen" : `${count} archivierte Dokumente anzeigen`,
+      filterEmpty: "Keine Dokumente für die gewählten Filter.",
+      deleteButton: "Endgültig löschen",
+      deleteConfirm: "Ja, endgültig löschen",
+      deleteConfirmHint:
+        "Das Dokument und die Datei werden dauerhaft gelöscht. Das kann nicht rückgängig gemacht werden.",
+    },
+    internalProfile: {
+      heading: "Internes Kurzprofil",
+      hint: "Nur für die Praxis sichtbar – Patienten sehen diesen Text nicht. Bitte sachlich bleiben; keine Diagnosen nötig.",
+      label: "Kurzprofil (max. 2000 Zeichen)",
+      save: "Kurzprofil speichern",
+      updatedAt: (date: string) => `Zuletzt aktualisiert: ${date}`,
+    },
     authorizations: {
       title: "Verordnete Sitzungen",
       coverageHint:

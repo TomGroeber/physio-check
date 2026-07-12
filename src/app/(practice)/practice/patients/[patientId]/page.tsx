@@ -23,6 +23,8 @@ import { authorizationWarningText } from "@/lib/authorization-warning-text";
 import { todayInTimeZone } from "@/lib/datetime";
 import { FormMessage } from "@/components/auth/form-message";
 import { listPatientDocuments } from "@/server/services/documents";
+import { getPatientInternalProfile } from "@/server/services/internal-profile";
+import { InternalProfileForm } from "@/components/practice/internal-profile-form";
 import { de } from "@/messages/de";
 
 export const metadata: Metadata = { title: de.practice.patients.title };
@@ -71,14 +73,16 @@ export default async function PatientDetailPage({
   const link = await getPatientDetail(practiceId, patientId);
   if (!link) notFound();
 
-  const [logs, plan, nextAppointment, authorizations, documents, unitStatus] = await Promise.all([
-    getPatientCompletionLogs(practiceId, patientId, days),
-    getPatientCurrentPlan(practiceId, patientId),
-    getPatientNextAppointment(practiceId, patientId),
-    listPatientAuthorizations(practiceId, patientId),
-    listPatientDocuments(practiceId, patientId),
-    getPatientUnitStatus(patientId),
-  ]);
+  const [logs, plan, nextAppointment, authorizations, documents, unitStatus, internalProfile] =
+    await Promise.all([
+      getPatientCompletionLogs(practiceId, patientId, days),
+      getPatientCurrentPlan(practiceId, patientId),
+      getPatientNextAppointment(practiceId, patientId),
+      listPatientAuthorizations(practiceId, patientId),
+      listPatientDocuments(practiceId, patientId),
+      getPatientUnitStatus(patientId),
+      getPatientInternalProfile(practiceId, patientId),
+    ]);
   const warnings = unitStatus
     ? evaluateAuthorizationWarnings({
         remaining: unitStatus.remaining,
@@ -154,6 +158,16 @@ export default async function PatientDetailPage({
       {warnings.length > 0 ? (
         <FormMessage warning={warnings.map((warning) => authorizationWarningText(warning)).join(" ")} />
       ) : null}
+
+      <InternalProfileForm
+        patientId={patientId}
+        initialContent={internalProfile?.content ?? ""}
+        updatedAt={
+          internalProfile?.updated_at
+            ? formatDateTime(new Date(internalProfile.updated_at), branding.defaultTimeZone)
+            : null
+        }
+      />
 
       <AuthorizationPanel patientId={patientId} authorizations={authorizations} />
 

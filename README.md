@@ -28,8 +28,8 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Behandlungseinheiten | Verordnung anlegen, ganzzahlige Anpassung mit Pflichtgrund, vollständige Ledger-Historie, Warnung bei 0, Patientenanzeige | ✅ | UI-Durchlauf + API-Proben (12.07.2026) | Nur ganze Einheiten; Stand nie negativ; Anzeige und Anrechnung nutzen dieselbe Auswahlregel (`primary_authorization_for_patient`) |
 | Verordnungswarnungen | Warnbanner (Patientendetail), Dashboard-Karte, Listenfilter, Notification | ✅ | UI-Durchlauf + API-Probe (12.07.2026) | Schwellen: ≤2 Einheiten bzw. ≤14 Tage bis Gültigkeitsende; Notification ohne Gesundheitsdaten |
 | Patientenakten | Upload (PDF/JPEG/PNG), Ansicht über kurzlebige signierte URL, Archivieren | ✅ | UI-Durchlauf (11.07.2026) | Patient hat keinen Zugriff (Probe bestanden); Virenscan vor Pilotbetrieb erforderlich |
-| Patientenakten | Filter, endgültiges Löschen, dedizierte RLS-/Storage-Tests | ❌ | – | Geplant: Etappe 5/10 |
-| Patienten-Kurzprofil | Internes Kurzprofil auf der Detailseite | ❌ | – | Geplant: Etappe 5 |
+| Patientenakten | Kategorie-Filter, Archiv-Umschalter, endgültiges Löschen (nur archivierte, mit Bestätigung) | ✅ | UI-Durchlauf + RLS-Proben (12.07.2026) | Löschen entfernt Zeile und Datei; Audit-Ereignis; dedizierte Testsuite folgt in Etappe 10 |
+| Patienten-Kurzprofil | Internes Kurzprofil auf der Detailseite | ✅ | UI-Durchlauf + RLS-Proben (12.07.2026) | Eigene Tabelle ohne Patienten-Policy; Patienten können es nie lesen |
 | Kalenderfarben | Eigene Farbe pro Praxismitglied, Termin-Chips + Legende | ✅ | UI-Durchlauf + API-Proben (11.07.2026) | 8 feste Farben; Name steht immer dabei (nie nur Farbe) |
 | Markierte Patienten | Patienten anheften/priorisieren | ❌ | – | Geplant: Etappe 6 |
 | Warteliste | Praxisbezogene Warteliste mit Kriterien | ❌ | – | Geplant: Etappe 7 |

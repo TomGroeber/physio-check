@@ -34,6 +34,12 @@ export async function createPatientDocumentSignedUrl(storagePath: string) {
   return data.signedUrl;
 }
 
+export async function removePatientDocumentFile(storagePath: string) {
+  const service = createSupabaseServiceClient();
+  const { error } = await service.storage.from("patient-records").remove([storagePath]);
+  if (error) throw new Error("Die Datei konnte nicht aus dem Speicher entfernt werden.");
+}
+
 export async function auditDocument(actorId: string, practiceId: string, documentId: string, eventType: string) {
   const service = createSupabaseServiceClient();
   await service.from("audit_events").insert({
