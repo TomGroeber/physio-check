@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getSessionContext } from "@/server/services/session";
 import { listOpenPatientInvites, listPatients } from "@/server/services/practice";
 import { listAuthorizationWarningsForPractice } from "@/server/services/authorizations";
+import { listPinnedPatients } from "@/server/services/pinned-patients";
 import { Badge } from "@/components/ui/badge";
 import { revokePatientInviteAction } from "@/server/actions/invites";
 import { formatDateShort } from "@/lib/datetime";
@@ -26,22 +27,29 @@ const t = de.practice.patients;
 export default async function PatientsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; warn?: string }>;
+  searchParams: Promise<{ q?: string; warn?: string; pinned?: string }>;
 }) {
   const session = await getSessionContext();
   if (!session?.memberships[0]) redirect("/login");
-  const { q = "", warn } = await searchParams;
+  const { q = "", warn, pinned } = await searchParams;
   const onlyWarnings = warn === "1";
+  const onlyPinned = pinned === "1";
   const practiceId = session.memberships[0].practiceId;
-  const [allPatients, invites, authorizationWarnings] = await Promise.all([
+  const [allPatients, invites, authorizationWarnings, pinnedPatients] = await Promise.all([
     listPatients(practiceId, q),
     listOpenPatientInvites(practiceId),
     listAuthorizationWarningsForPractice(practiceId, branding.defaultTimeZone),
+    listPinnedPatients(practiceId),
   ]);
   const warningPatientIds = new Set(authorizationWarnings.map((entry) => entry.patientId));
-  const patients = onlyWarnings
-    ? allPatients.filter((link) => warningPatientIds.has(link.patient.id))
-    : allPatients;
+  const pinnedPatientIds = new Set(pinnedPatients.map((entry) => entry.patient_profile_id));
+  const patients = allPatients
+    .filter((link) => !onlyWarnings || warningPatientIds.has(link.patient.id))
+    .filter((link) => !onlyPinned || pinnedPatientIds.has(link.patient.id))
+    .sort(
+      (a, b) =>
+        Number(pinnedPatientIds.has(b.patient.id)) - Number(pinnedPatientIds.has(a.patient.id))
+    );
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
@@ -70,14 +78,26 @@ export default async function PatientsPage({
         </Button>
       </form>
 
-      <form method="GET" className="flex items-center gap-2">
-        {q ? <input type="hidden" name="q" value={q} /> : null}
-        {onlyWarnings ? null : <input type="hidden" name="warn" value="1" />}
-        <Button type="submit" variant={onlyWarnings ? "default" : "outline"} className="h-11 text-base">
-          {t.warningFilterLabel}
-          {onlyWarnings ? " ✕" : ""}
-        </Button>
-      </form>
+      <div className="flex flex-wrap gap-2">
+        <form method="GET">
+          {q ? <input type="hidden" name="q" value={q} /> : null}
+          {onlyPinned ? <input type="hidden" name="pinned" value="1" /> : null}
+          {onlyWarnings ? null : <input type="hidden" name="warn" value="1" />}
+          <Button type="submit" variant={onlyWarnings ? "default" : "outline"} className="h-11 text-base">
+            {t.warningFilterLabel}
+            {onlyWarnings ? " ✕" : ""}
+          </Button>
+        </form>
+        <form method="GET">
+          {q ? <input type="hidden" name="q" value={q} /> : null}
+          {onlyWarnings ? <input type="hidden" name="warn" value="1" /> : null}
+          {onlyPinned ? null : <input type="hidden" name="pinned" value="1" />}
+          <Button type="submit" variant={onlyPinned ? "default" : "outline"} className="h-11 text-base">
+            {de.practice.pinned.filterLabel}
+            {onlyPinned ? " ✕" : ""}
+          </Button>
+        </form>
+      </div>
 
       {patients.length === 0 ? (
         <Card>
@@ -100,6 +120,9 @@ export default async function PatientsPage({
                         <span className="text-base font-semibold">
                           {link.patient.full_name}
                         </span>
+                        {pinnedPatientIds.has(link.patient.id) ? (
+                          <Badge variant="secondary">{de.practice.pinned.badge}</Badge>
+                        ) : null}
                         {warningPatientIds.has(link.patient.id) ? (
                           <Badge className="border-amber-600/50 bg-amber-500/10 text-foreground">
                             {t.warningBadge}

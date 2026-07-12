@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getSessionContext } from "@/server/services/session";
 import { getDashboardData, getPractice } from "@/server/services/practice";
 import { listAuthorizationWarningsForPractice } from "@/server/services/authorizations";
+import { listPinnedPatients } from "@/server/services/pinned-patients";
 import { authorizationWarningText } from "@/lib/authorization-warning-text";
 import { branding } from "@/config/branding";
 import { formatDateShort, formatDateTime, formatTime } from "@/lib/datetime";
@@ -29,11 +30,15 @@ export default async function PracticeDashboardPage() {
   const practice = await getPractice(practiceId);
   const timezone = practice?.timezone ?? branding.defaultTimeZone;
 
-  const [{ todaysAppointments, pendingCancellations, recentLogs, flaggedLogs }, authorizationWarnings] =
-    await Promise.all([
-      getDashboardData(practiceId, timezone),
-      listAuthorizationWarningsForPractice(practiceId, timezone),
-    ]);
+  const [
+    { todaysAppointments, pendingCancellations, recentLogs, flaggedLogs },
+    authorizationWarnings,
+    pinnedPatients,
+  ] = await Promise.all([
+    getDashboardData(practiceId, timezone),
+    listAuthorizationWarningsForPractice(practiceId, timezone),
+    listPinnedPatients(practiceId),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -60,6 +65,33 @@ export default async function PracticeDashboardPage() {
                     {entry.authorizationTitle} ·{" "}
                     {entry.warnings.map((warning) => authorizationWarningText(warning)).join(" ")}
                   </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">{de.practice.pinned.dashboardTitle}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {pinnedPatients.length === 0 ? (
+            <EmptyHint>{de.practice.pinned.dashboardEmpty}</EmptyHint>
+          ) : (
+            <ul className="flex flex-col divide-y">
+              {pinnedPatients.map((entry) => (
+                <li key={entry.patient_profile_id} className="flex flex-col gap-1 py-2.5">
+                  <Link
+                    href={`/practice/patients/${entry.patient_profile_id}`}
+                    className="text-base font-semibold text-primary"
+                  >
+                    {entry.patient?.full_name ?? "Unbekannt"}
+                  </Link>
+                  {entry.note ? (
+                    <span className="text-sm text-muted-foreground">{entry.note}</span>
+                  ) : null}
                 </li>
               ))}
             </ul>

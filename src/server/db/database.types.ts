@@ -853,6 +853,55 @@ export type Database = {
           },
         ]
       }
+      pinned_patients: {
+        Row: {
+          created_at: string
+          id: string
+          note: string
+          patient_profile_id: string
+          pinned_by: string | null
+          practice_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string
+          patient_profile_id: string
+          pinned_by?: string | null
+          practice_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string
+          patient_profile_id?: string
+          pinned_by?: string | null
+          practice_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pinned_patients_patient_profile_id_fkey"
+            columns: ["patient_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pinned_patients_pinned_by_fkey"
+            columns: ["pinned_by"]
+            isOneToOne: false
+            referencedRelation: "practice_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pinned_patients_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patient_invites: {
         Row: {
           code_hash: string

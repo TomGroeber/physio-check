@@ -25,6 +25,8 @@ import { FormMessage } from "@/components/auth/form-message";
 import { listPatientDocuments } from "@/server/services/documents";
 import { getPatientInternalProfile } from "@/server/services/internal-profile";
 import { InternalProfileForm } from "@/components/practice/internal-profile-form";
+import { getPinnedPatient } from "@/server/services/pinned-patients";
+import { PinPatientForm } from "@/components/practice/pin-patient-form";
 import { de } from "@/messages/de";
 
 export const metadata: Metadata = { title: de.practice.patients.title };
@@ -73,7 +75,7 @@ export default async function PatientDetailPage({
   const link = await getPatientDetail(practiceId, patientId);
   if (!link) notFound();
 
-  const [logs, plan, nextAppointment, authorizations, documents, unitStatus, internalProfile] =
+  const [logs, plan, nextAppointment, authorizations, documents, unitStatus, internalProfile, pinned] =
     await Promise.all([
       getPatientCompletionLogs(practiceId, patientId, days),
       getPatientCurrentPlan(practiceId, patientId),
@@ -82,6 +84,7 @@ export default async function PatientDetailPage({
       listPatientDocuments(practiceId, patientId),
       getPatientUnitStatus(patientId),
       getPatientInternalProfile(practiceId, patientId),
+      getPinnedPatient(practiceId, patientId),
     ]);
   const warnings = unitStatus
     ? evaluateAuthorizationWarnings({
@@ -102,7 +105,10 @@ export default async function PatientDetailPage({
       </Link>
 
       <div>
-        <h1 className="text-2xl font-bold">{link.patient.full_name}</h1>
+        <h1 className="flex flex-wrap items-center gap-3 text-2xl font-bold">
+          {link.patient.full_name}
+          {pinned ? <Badge variant="secondary">{de.practice.pinned.badge}</Badge> : null}
+        </h1>
         <p className="text-base text-muted-foreground">
           {t.connectedSince(
             formatDateShort(new Date(link.linked_at), branding.defaultTimeZone)
@@ -158,6 +164,8 @@ export default async function PatientDetailPage({
       {warnings.length > 0 ? (
         <FormMessage warning={warnings.map((warning) => authorizationWarningText(warning)).join(" ")} />
       ) : null}
+
+      <PinPatientForm patientId={patientId} pinned={pinned ? { note: pinned.note } : null} />
 
       <InternalProfileForm
         patientId={patientId}

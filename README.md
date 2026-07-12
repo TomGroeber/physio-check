@@ -31,7 +31,7 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Patientenakten | Kategorie-Filter, Archiv-Umschalter, endgültiges Löschen (nur archivierte, mit Bestätigung) | ✅ | UI-Durchlauf + RLS-Proben (12.07.2026) | Löschen entfernt Zeile und Datei; Audit-Ereignis; dedizierte Testsuite folgt in Etappe 10 |
 | Patienten-Kurzprofil | Internes Kurzprofil auf der Detailseite | ✅ | UI-Durchlauf + RLS-Proben (12.07.2026) | Eigene Tabelle ohne Patienten-Policy; Patienten können es nie lesen |
 | Kalenderfarben | Eigene Farbe pro Praxismitglied, Termin-Chips + Legende | ✅ | UI-Durchlauf + API-Proben (11.07.2026) | 8 feste Farben; Name steht immer dabei (nie nur Farbe) |
-| Markierte Patienten | Patienten anheften/priorisieren | ❌ | – | Geplant: Etappe 6 |
+| Markierte Patienten | Anheften mit Notiz, Badge, Filter, Dashboard-Karte | ✅ | UI-Durchlauf + RLS-Proben (12.07.2026) | Intern; Patienten sehen die Markierung nie (eigene Tabelle ohne Patienten-Policy) |
 | Warteliste | Praxisbezogene Warteliste mit Kriterien | ❌ | – | Geplant: Etappe 7 |
 | Freie Termine | Frei gewordene Slots + Angebotsworkflow | ❌ | – | Geplant: Etappe 8 |
 | PWA | Installierbares Manifest | 🟡 | manuell (frühere Phase) | Kein Offline-Modus, keine Push-Benachrichtigungen |
