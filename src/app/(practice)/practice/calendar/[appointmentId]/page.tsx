@@ -3,9 +3,11 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getSessionContext } from "@/server/services/session";
 import { getAppointmentOptions, getPracticeAppointment } from "@/server/services/appointments";
+import { getPatientUnitStatus } from "@/server/services/authorizations";
 import { formatTime, isoDateInTimeZone } from "@/lib/datetime";
 import { AppointmentForm } from "@/components/practice/appointment-form";
 import { AppointmentActions } from "@/components/practice/appointment-actions";
+import { ReverseCompletionForm } from "@/components/practice/reverse-completion-form";
 import { Badge } from "@/components/ui/badge";
 import { de } from "@/messages/de";
 
@@ -20,6 +22,8 @@ export default async function AppointmentDetailPage({ params }: { params: Promis
   if (!appointment || !options.practice) notFound();
   const duration = Math.round((new Date(appointment.ends_at).getTime() - new Date(appointment.starts_at).getTime()) / 60_000);
   const final = appointment.status === "cancelled" || appointment.status === "completed";
-  return <div className="flex max-w-3xl flex-col gap-6"><Link href="/practice/calendar" className="font-semibold text-primary">← {de.common.back}</Link><div className="flex items-center justify-between gap-3"><h1 className="text-2xl font-bold">{de.practice.calendar.editTitle}</h1><Badge variant="secondary">{de.patient.appointments.status[appointment.status]}</Badge></div>{final ? <div className="rounded-xl border bg-muted p-5"><p className="font-semibold">{appointment.patient.full_name}</p><p>{isoDateInTimeZone(new Date(appointment.starts_at), appointment.timezone)} · {formatTime(new Date(appointment.starts_at), appointment.timezone)}</p>{appointment.cancellation_reason ? <p className="mt-2 text-sm text-muted-foreground">{appointment.cancellation_reason}</p> : null}</div> : <><AppointmentForm patients={options.patients.map((row) => ({ id: row.id, fullName: row.full_name }))} therapists={options.therapists.map((row) => ({ id: row.id, fullName: row.profiles.full_name }))} initial={{ appointmentId: appointment.id, patientProfileId: appointment.patient_profile_id, therapistMemberId: appointment.therapist_member_id ?? undefined, date: isoDateInTimeZone(new Date(appointment.starts_at), appointment.timezone), startTime: formatTime(new Date(appointment.starts_at), appointment.timezone), durationMinutes: duration, locationName: appointment.location_name, note: appointment.note }} /><AppointmentActions appointmentId={appointment.id} /></>}</div>;
+  const unitStatus = final ? null : await getPatientUnitStatus(appointment.patient_profile_id);
+  const noUnitsAvailable = !final && (!unitStatus || unitStatus.remaining === 0);
+  return <div className="flex max-w-3xl flex-col gap-6"><Link href="/practice/calendar" className="font-semibold text-primary">← {de.common.back}</Link><div className="flex items-center justify-between gap-3"><h1 className="text-2xl font-bold">{de.practice.calendar.editTitle}</h1><Badge variant="secondary">{de.patient.appointments.status[appointment.status]}</Badge></div>{final ? <><div className="rounded-xl border bg-muted p-5"><p className="font-semibold">{appointment.patient.full_name}</p><p>{isoDateInTimeZone(new Date(appointment.starts_at), appointment.timezone)} · {formatTime(new Date(appointment.starts_at), appointment.timezone)}</p>{appointment.cancellation_reason ? <p className="mt-2 text-sm text-muted-foreground">{appointment.cancellation_reason}</p> : null}</div>{appointment.status === "completed" ? <ReverseCompletionForm appointmentId={appointment.id} /> : null}</> : <><AppointmentForm patients={options.patients.map((row) => ({ id: row.id, fullName: row.full_name }))} therapists={options.therapists.map((row) => ({ id: row.id, fullName: row.profiles.full_name }))} initial={{ appointmentId: appointment.id, patientProfileId: appointment.patient_profile_id, therapistMemberId: appointment.therapist_member_id ?? undefined, date: isoDateInTimeZone(new Date(appointment.starts_at), appointment.timezone), startTime: formatTime(new Date(appointment.starts_at), appointment.timezone), durationMinutes: duration, locationName: appointment.location_name, note: appointment.note }} /><AppointmentActions appointmentId={appointment.id} noUnitsAvailable={noUnitsAvailable} /></>}</div>;
 }
 

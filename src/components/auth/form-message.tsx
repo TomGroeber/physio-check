@@ -8,14 +8,25 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 export function FormMessage({
   error,
   success,
+  warning,
 }: {
   error?: string;
   success?: string;
+  warning?: string;
 }) {
   if (error) {
     return (
       <Alert variant="destructive" role="alert" className="text-base">
         <AlertDescription className="text-base">{error}</AlertDescription>
+      </Alert>
+    );
+  }
+  if (warning) {
+    return (
+      <Alert role="alert" className="border-amber-600/50 bg-amber-500/10 text-foreground">
+        <AlertDescription className="text-base font-semibold text-foreground">
+          {warning}
+        </AlertDescription>
       </Alert>
     );
   }

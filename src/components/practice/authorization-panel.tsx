@@ -15,11 +15,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { de } from "@/messages/de";
+import { buildAuthorizationLedger } from "@/lib/authorization-ledger";
+import { formatDateShort } from "@/lib/datetime";
+import { branding } from "@/config/branding";
 
 type Authorization = {
   id: string;
   title: string;
   reference: string;
+  prescribed_sessions: number;
   issued_on: string;
   valid_from: string | null;
   valid_until: string | null;
@@ -27,13 +31,19 @@ type Authorization = {
   prescribing_doctor: string;
   remaining: number;
   adjustedTotal: number;
+  created_at: string;
   treatment_authorization_adjustments: {
     id: string;
     session_delta: number;
     reason: string;
     created_at: string;
   }[];
-  appointment_authorization_usages: { id: string; sessions_used: number; created_at: string }[];
+  appointment_authorization_usages: {
+    id: string;
+    sessions_used: number;
+    created_at: string;
+    reversed_at: string | null;
+  }[];
 };
 
 const statusText = {
@@ -89,10 +99,10 @@ export function AuthorizationPanel({ patientId, authorizations }: { patientId: s
 
 function AuthorizationCard({ patientId, authorization }: { patientId: string; authorization: Authorization }) {
   const [state, action, pending] = useActionState<AuthorizationActionState, FormData>(adjustAuthorizationAction, {});
-  const used = authorization.appointment_authorization_usages.reduce(
-    (sum, usage) => sum + usage.sessions_used,
-    0
-  );
+  const used = authorization.appointment_authorization_usages
+    .filter((usage) => !usage.reversed_at)
+    .reduce((sum, usage) => sum + usage.sessions_used, 0);
+  const ledger = buildAuthorizationLedger(authorization);
   return (
     <Card>
       <CardContent className="flex flex-col gap-4 p-5">
@@ -110,13 +120,21 @@ function AuthorizationCard({ patientId, authorization }: { patientId: string; au
           <p className="text-sm text-muted-foreground">Sitzungen verbleibend · {used} angerechnet</p>
         </div>
         {authorization.prescribing_doctor ? <p className="text-sm">Arzt: {authorization.prescribing_doctor}</p> : null}
-        {authorization.treatment_authorization_adjustments.length ? (
-          <ul className="text-sm text-muted-foreground">
-            {authorization.treatment_authorization_adjustments.map((adjustment) => (
-              <li key={adjustment.id}>{adjustment.session_delta > 0 ? "+" : ""}{adjustment.session_delta}: {adjustment.reason}</li>
+        <div>
+          <h4 className="text-sm font-bold">{de.practice.authorizations.historyTitle}</h4>
+          <ul className="mt-1 flex flex-col gap-0.5 text-sm text-muted-foreground">
+            {ledger.map((entry, index) => (
+              <li key={index}>
+                <span className={`font-semibold ${entry.delta < 0 ? "" : "text-foreground"}`}>
+                  {entry.delta > 0 ? "+" : ""}{entry.delta}
+                </span>{" "}
+                · {de.practice.authorizations.ledger[entry.type]}
+                {entry.reason ? `: ${entry.reason}` : ""} ·{" "}
+                {formatDateShort(new Date(entry.at), branding.defaultTimeZone)}
+              </li>
             ))}
           </ul>
-        ) : null}
+        </div>
         {authorization.status !== "archived" ? (
           <form action={action} className="grid gap-3 rounded-lg border p-4 md:grid-cols-[8rem_1fr_auto] md:items-end">
             <input type="hidden" name="authorizationId" value={authorization.id} />

@@ -332,9 +332,17 @@ export const de = {
     authorizations: {
       title: "Verordnete Sitzungen",
       coverageHint:
-        "Hinterlegen und korrigieren Sie die verordnete Anzahl. Abgeschlossene Termine werden automatisch angerechnet.",
+        "Hinterlegen und korrigieren Sie die verordnete Anzahl. Ein abgeschlossener Termin rechnet genau eine Einheit an; jede Änderung bleibt in der Historie erhalten.",
       add: "Neue Verordnung anlegen",
       save: "Verordnung speichern",
+      historyTitle: "Historie",
+      ledger: {
+        initial_allocation: "Anfangskontingent",
+        manual_increase: "Manuelle Erhöhung",
+        manual_decrease: "Manuelle Verringerung",
+        appointment_completed: "Termin angerechnet",
+        appointment_completion_reversed: "Anrechnung zurückgebucht",
+      },
     },
     calendar: {
       title: "Praxiskalender",
@@ -363,8 +371,14 @@ export const de = {
       filter: "Filtern",
       empty: "Keine Termine in diesem Zeitraum.",
       completeTitle: "Termin abschließen",
-      completeHint: "Markiert den Termin als tatsächlich durchgeführt.",
+      completeHint: "Markiert den Termin als tatsächlich durchgeführt und rechnet genau eine Behandlungseinheit an.",
       complete: "Als abgeschlossen markieren",
+      zeroUnitsWarning:
+        "Hinweis: Für diesen Patienten ist aktuell keine Behandlungseinheit verfügbar. Der Termin kann trotzdem abgeschlossen werden – es wird dann nichts angerechnet, der Stand bleibt bei 0 und wird nicht negativ.",
+      reverseTitle: "Abschluss zurücknehmen",
+      reverseHint:
+        "Setzt den Termin zurück auf „Geplant“. Eine angerechnete Behandlungseinheit wird dabei genau einmal zurückgebucht; die Historie bleibt vollständig erhalten.",
+      reverse: "Abschluss zurücknehmen",
       cancelTitle: "Termin stornieren",
       cancelHint: "Der Termin bleibt in der Historie. Der Patient wird benachrichtigt.",
       cancelReason: "Grund (optional, keine Gesundheitsdetails)",

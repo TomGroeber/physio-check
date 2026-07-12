@@ -6,7 +6,7 @@ Verbindliche Projektregeln. Der Masterprompt (Produkt- und Arbeitsgrundlage) ist
 
 App für Physiotherapiepraxen (Therapeuten-Dashboard) und Patienten (Heimübungspläne mit Videos, Termine, Adhärenz-Dokumentation). Vorläufiger Name **PhysioCheck** – Name/Logo/Farben liegen zentral in `src/config/branding.ts` und Design-Tokens; niemals hartkodieren.
 
-**Aktueller Stand:** Etappe 2 abgeschlossen (2026-07-11): Telefonnummer (Patient pflegt, Praxis sieht/korrigiert via `set_patient_phone`) und Kalenderfarben (8er-Palette, Spaltenrecht nur `calendar_color`, Legende + farbige Chips). Neueste Migration: `20260711260000_phone_and_calendar_colors.sql`. Geprüft: db:reset, Seed, Typecheck, Lint, 50 Unit-Tests, 28 E2E, Build, UI-Durchlauf mit API-Sicherheitsproben. Remote `origin` ist `TomGroeber/physio-check` (**privat**). Nächster Schritt: Etappe 3 (Behandlungskontingente strikt ganzzahlig, Ledger-Ereignisse, Warnung bei 0, einheitliche Verordnungsauswahl). Details: `docs/AI_HANDOFF.md`.
+**Aktueller Stand:** Etappe 3 abgeschlossen (2026-07-12): Behandlungskontingente strikt ganzzahlig mit append-only Ledger (Anrechnung wird bei Rücknahme nur markiert, nie gelöscht), Aktion „Abschluss zurücknehmen" (bucht genau 1 Einheit zurück), Warnung beim Abschluss mit 0 Einheiten (Stand nie negativ), gemeinsame Auswahlregel `primary_authorization_for_patient` für Anzeige und Anrechnung. Neueste Migration: `20260711280000_unit_ledger_and_completion_reversal.sql`. Geprüft: db:reset, Seed, Typecheck, Lint, 55 Unit-Tests, 28 E2E, Build, 17-Schritte-UI-Durchlauf mit Negativ-Proben. Remote `origin` ist `TomGroeber/physio-check` (**privat**). Nächster Schritt: Etappe 4 (Verordnungswarnungen; Schwellenwerte mit Tom klären). Details: `docs/AI_HANDOFF.md`.
 
 ## Kommunikation
 

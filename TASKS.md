@@ -89,7 +89,7 @@
 - [x] Patientenansicht „Noch X von Y Sitzungen“ + neutraler Kostenhinweis (keine Kassen-Garantie)
 - [x] Therapeutenansicht: Verordnungen anlegen, begründet anpassen, archivieren; Audit-Ereignisse
 - [x] Migration/Seed/Terminabschluss lokal mit Docker/Supabase end-to-end geprüft (2026-07-11: UI-Durchlauf; Migration wegen reserviertem Alias `authorization` korrigiert)
-- [ ] Anzeige bei mehreren aktiven Verordnungen vereinheitlichen: Patient sieht die neueste, angerechnet wird die älteste gültige (entdeckt 2026-07-11; Etappe 3)
+- [x] Anzeige bei mehreren aktiven Verordnungen vereinheitlichen: gemeinsame DB-Auswahlregel `primary_authorization_for_patient` für Anzeige und Anrechnung (2026-07-12, Etappe 3)
 
 ## Phase F – Private Patientenakten
 
@@ -107,7 +107,7 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 
 - [x] **Etappe 1:** Repository analysiert, Phase-E/F-Parallelordner ins Hauptprojekt konsolidiert, Migration korrigiert, alles lokal verifiziert, README-Funktionsübersicht erstellt (2026-07-11)
 - [x] **Etappe 2:** Telefonnummer (Patient pflegt, Praxis sieht/korrigiert via `set_patient_phone`) und Kalenderfarben (8er-Palette, Spaltenrecht nur für `calendar_color`, Legende + Chips im Kalender) – Migration `20260711260000`, UI-Durchlauf + API-Sicherheitsproben grün (2026-07-11)
-- [ ] **Etappe 3:** Behandlungskontingente ausschließlich in ganzen Einheiten (Ledger-Ereignisse, Warnung bei 0, einheitliche Anzeige bei mehreren Verordnungen)
+- [x] **Etappe 3:** Behandlungskontingente ausschließlich in ganzen Einheiten: append-only Ledger (`initial_allocation`/`manual_increase`/`manual_decrease`/`appointment_completed`/`appointment_completion_reversed`), Abschluss-Rücknahme bucht genau 1 Einheit zurück (Historie bleibt), deutliche Warnung beim Abschluss mit 0 Einheiten (Stand nie negativ, Verringerung unter 0 serverseitig abgelehnt), gemeinsame Auswahlregel `primary_authorization_for_patient` für Anzeige und Anrechnung – Migration `20260711280000`, 55 Unit-Tests, 28 E2E, 17-Schritte-UI-Durchlauf inkl. Negativ-Proben grün (2026-07-12)
 - [ ] **Etappe 4:** Verordnungswarnungen (Patientendetail, Dashboard, Filter, datensparsame Notifications)
 - [ ] **Etappe 5:** Patientendokumente vervollständigen (Filter, Löschen, Tests) und internes Patienten-Kurzprofil
 - [ ] **Etappe 6:** Markierte Patienten

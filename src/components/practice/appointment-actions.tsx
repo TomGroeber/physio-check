@@ -12,7 +12,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { de } from "@/messages/de";
 
-export function AppointmentActions({ appointmentId }: { appointmentId: string }) {
+export function AppointmentActions({
+  appointmentId,
+  noUnitsAvailable,
+}: {
+  appointmentId: string;
+  noUnitsAvailable?: boolean;
+}) {
   const [cancelState, cancelAction, cancelling] = useActionState<AppointmentActionState, FormData>(cancelAppointmentAction, {});
   const [completeState, completeAction, completing] = useActionState<AppointmentActionState, FormData>(completeAppointmentAction, {});
   const t = de.practice.calendar;
@@ -23,7 +29,8 @@ export function AppointmentActions({ appointmentId }: { appointmentId: string })
         <input type="hidden" name="appointmentId" value={appointmentId} />
         <h2 className="text-lg font-bold">{t.completeTitle}</h2>
         <p className="text-sm text-muted-foreground">{t.completeHint}</p>
-        <FormMessage error={completeState.error} success={completeState.success} />
+        {noUnitsAvailable ? <FormMessage warning={t.zeroUnitsWarning} /> : null}
+        <FormMessage error={completeState.error} success={completeState.success} warning={completeState.warning} />
         <Button type="submit" disabled={completing} variant="secondary" className="h-11 text-base">
           {completing ? de.common.loading : t.complete}
         </Button>

@@ -20,6 +20,10 @@ export async function auditAuthorization(
   });
 }
 
+export async function getAuthorizationRemaining(authorizationId: string): Promise<number> {
+  return remainingFor(authorizationId);
+}
+
 async function remainingFor(authorizationId: string): Promise<number> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.rpc("authorization_remaining", {
@@ -47,7 +51,7 @@ export async function listPatientAuthorizations(practiceId: string, patientId: s
        status, prescribing_doctor, note, created_at,
        treatment_authorization_adjustments ( id, session_delta, reason, created_at ),
        appointment_authorization_usages (
-         id, sessions_used, created_at, appointment_id,
+         id, sessions_used, created_at, reversed_at, appointment_id,
          appointments ( starts_at, timezone )
        )`
     )
@@ -70,15 +74,22 @@ export async function listPatientAuthorizations(practiceId: string, patientId: s
   );
 }
 
+/**
+ * Maßgebliche Verordnung des Patienten – dieselbe Auswahlregel, die auch
+ * die automatische Anrechnung beim Terminabschluss verwendet (DB-Funktion
+ * primary_authorization_for_patient). Anzeige und Anrechnung können sich
+ * dadurch nicht widersprechen.
+ */
 export async function getPatientAuthorizationSummary(userId: string) {
   const supabase = await createSupabaseServerClient();
+  const { data: primaryId } = await supabase.rpc("primary_authorization_for_patient", {
+    p_patient_id: userId,
+  });
+  if (!primaryId) return null;
   const { data } = await supabase
     .from("treatment_authorizations")
     .select("id, title, prescribed_sessions, valid_from, valid_until, status")
-    .eq("patient_profile_id", userId)
-    .in("status", ["active", "exhausted"])
-    .order("issued_on", { ascending: false })
-    .limit(1)
+    .eq("id", primaryId)
     .maybeSingle();
   if (!data) return null;
   const [remaining, adjustedTotal] = await Promise.all([
@@ -86,6 +97,19 @@ export async function getPatientAuthorizationSummary(userId: string) {
     adjustedTotalFor(data.id),
   ]);
   return { ...data, remaining, adjustedTotal };
+}
+
+/**
+ * Verbleibende Einheiten der maßgeblichen Verordnung aus Praxissicht
+ * (für die Warnung beim Terminabschluss). null = keine Verordnung.
+ */
+export async function getPatientUnitStatus(patientId: string) {
+  const supabase = await createSupabaseServerClient();
+  const { data: primaryId } = await supabase.rpc("primary_authorization_for_patient", {
+    p_patient_id: patientId,
+  });
+  if (!primaryId) return null;
+  return { authorizationId: primaryId, remaining: await remainingFor(primaryId) };
 }
 
 export async function getAuthorizationForPractice(practiceId: string, authorizationId: string) {

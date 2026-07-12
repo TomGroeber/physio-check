@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/server/db/server-client";
 import { getSessionContext } from "@/server/services/session";
-import { auditAuthorization, getAuthorizationForPractice } from "@/server/services/authorizations";
+import { auditAuthorization, getAuthorizationForPractice, getAuthorizationRemaining } from "@/server/services/authorizations";
 import { getPatientDetail } from "@/server/services/practice";
 import {
   adjustAuthorizationSchema,
@@ -89,6 +89,14 @@ export async function adjustAuthorizationAction(
   );
   if (!authorization || authorization.patient_profile_id !== parsed.data.patientId) {
     return { error: "Verordnung nicht gefunden." };
+  }
+  if (parsed.data.sessionDelta < 0) {
+    const remaining = await getAuthorizationRemaining(authorization.id);
+    if (remaining + parsed.data.sessionDelta < 0) {
+      return {
+        error: `Die Anpassung würde den Stand unter 0 senken. Aktuell verbleiben ${remaining} Einheiten – maximal -${remaining} möglich.`,
+      };
+    }
   }
 
   const supabase = await createSupabaseServerClient();

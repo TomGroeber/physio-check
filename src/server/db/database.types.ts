@@ -41,6 +41,8 @@ export type Database = {
           created_at: string
           id: string
           recorded_by: string
+          reversed_at: string | null
+          reversed_by: string | null
           sessions_used: number
         }
         Insert: {
@@ -49,6 +51,8 @@ export type Database = {
           created_at?: string
           id?: string
           recorded_by: string
+          reversed_at?: string | null
+          reversed_by?: string | null
           sessions_used?: number
         }
         Update: {
@@ -57,13 +61,15 @@ export type Database = {
           created_at?: string
           id?: string
           recorded_by?: string
+          reversed_at?: string | null
+          reversed_by?: string | null
           sessions_used?: number
         }
         Relationships: [
           {
             foreignKeyName: "appointment_authorization_usages_appointment_id_fkey"
             columns: ["appointment_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "appointments"
             referencedColumns: ["id"]
           },
@@ -77,6 +83,13 @@ export type Database = {
           {
             foreignKeyName: "appointment_authorization_usages_recorded_by_fkey"
             columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "practice_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_authorization_usages_reversed_by_fkey"
+            columns: ["reversed_by"]
             isOneToOne: false
             referencedRelation: "practice_members"
             referencedColumns: ["id"]
@@ -1160,13 +1173,13 @@ export type Database = {
         Args: { p_exercise_id: string }
         Returns: boolean
       }
+      primary_authorization_for_patient: {
+        Args: { p_patient_id: string }
+        Returns: string
+      }
       redeem_patient_invite: {
         Args: { p_code_hash: string; p_invite_id: string }
         Returns: string
-      }
-      remove_appointment_authorization_usage: {
-        Args: { p_appointment_id: string }
-        Returns: undefined
       }
       renew_patient_invite: {
         Args: { p_code_hash: string; p_expires_at: string; p_invite_id: string }
@@ -1175,6 +1188,10 @@ export type Database = {
       request_appointment_cancellation: {
         Args: { p_appointment_id: string; p_reason?: string }
         Returns: string
+      }
+      reverse_appointment_completion: {
+        Args: { p_appointment_id: string }
+        Returns: boolean
       }
       set_patient_phone: {
         Args: { new_phone: string; target_patient_id: string }

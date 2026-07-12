@@ -20,11 +20,12 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Übungsdokumentation | Selbstauskunft (erledigt/teilweise/zu schwierig/nicht möglich), Schmerz, Notiz | ✅ | E2E-Tests (11.07.2026) | Snapshot der Vorgaben; keine Doppeldokumentation pro Tag |
 | Kalender | Monats-, Wochen-, Tages- und Listenansicht mit Filtern | ✅ | Unit-Tests + UI-Durchlauf (11.07.2026) | Ohne zusätzliche Kalenderbibliothek |
 | Termine | Termin anlegen und bearbeiten | 🧪 | Unit-Tests der Validierung | UI vorhanden; kein automatischer End-zu-End-Test |
-| Termine | Termin abschließen (rechnet 1 Sitzung an) | ✅ | UI-Durchlauf (11.07.2026) | Anrechnung atomar; pro Termin höchstens einmal (DB-`unique`) |
+| Termine | Termin abschließen (rechnet genau 1 Einheit an) | ✅ | UI-Durchlauf (12.07.2026) | Anrechnung atomar; pro Termin höchstens eine aktive Anrechnung (partieller `unique`-Index) |
+| Termine | Abschluss zurücknehmen (bucht genau 1 Einheit zurück) | ✅ | UI-Durchlauf (12.07.2026) | Historie bleibt erhalten (Anrechnung wird als zurückgebucht markiert, nie gelöscht) |
 | Termine | Termin stornieren (Historie bleibt erhalten) | 🧪 | Unit-Tests der Validierung | Konfliktschutz gegen Überlappung in PostgreSQL |
 | Absagen | Patient stellt Absageanfrage, Praxis wird benachrichtigt | 🧪 | Unit-Tests | Annehmen/Ablehnen durch die Praxis fehlt noch |
 | Benachrichtigungen | In-App-Notifications bei Stornierung/Absageanfrage | 🟡 | Unit-Tests | Kein Benachrichtigungszentrum, kein Badge-Zähler |
-| Behandlungseinheiten | Verordnung anlegen, ganzzahlige Anpassung mit Pflichtgrund, Historie, Patientenanzeige | ✅ | UI-Durchlauf (11.07.2026) | Nur ganze Zahlen (`integer` in DB); Anzeige bei mehreren aktiven Verordnungen noch uneinheitlich (siehe unten) |
+| Behandlungseinheiten | Verordnung anlegen, ganzzahlige Anpassung mit Pflichtgrund, vollständige Ledger-Historie, Warnung bei 0, Patientenanzeige | ✅ | UI-Durchlauf + API-Proben (12.07.2026) | Nur ganze Einheiten; Stand nie negativ; Anzeige und Anrechnung nutzen dieselbe Auswahlregel (`primary_authorization_for_patient`) |
 | Verordnungswarnungen | Warnungen bei wenig Einheiten/Ablauf | ❌ | – | Geplant: Etappe 4 |
 | Patientenakten | Upload (PDF/JPEG/PNG), Ansicht über kurzlebige signierte URL, Archivieren | ✅ | UI-Durchlauf (11.07.2026) | Patient hat keinen Zugriff (Probe bestanden); Virenscan vor Pilotbetrieb erforderlich |
 | Patientenakten | Filter, endgültiges Löschen, dedizierte RLS-/Storage-Tests | ❌ | – | Geplant: Etappe 5/10 |
@@ -35,7 +36,7 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Freie Termine | Frei gewordene Slots + Angebotsworkflow | ❌ | – | Geplant: Etappe 8 |
 | PWA | Installierbares Manifest | 🟡 | manuell (frühere Phase) | Kein Offline-Modus, keine Push-Benachrichtigungen |
 | Sicherheit | RLS auf allen Patiententabellen, serverseitige Autorisierung, private Buckets | 🟡 | E2E + Negativ-Proben (11.07.2026) | Dedizierte Cross-Practice-RLS-Testsuite fehlt noch (Etappe 10) |
-| Tests | Typecheck, Lint, 50 Unit-/Komponententests, 28 E2E, Build | ✅ | lokal ausgeführt (11.07.2026) | RLS-/Storage-Testsuite und Sitzungs-/Dokument-E2E fehlen |
+| Tests | Typecheck, Lint, 55 Unit-/Komponententests, 28 E2E, Build | ✅ | lokal ausgeführt (12.07.2026) | RLS-/Storage-Testsuite und Sitzungs-/Dokument-E2E fehlen |
 | Deployment | Produktivbetrieb/Hosting | ❌ | – | Nur mit ausdrücklicher Zustimmung von Tom |
 
 ## Was funktioniert aktuell?
@@ -43,13 +44,12 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 - **Kompletter Patienteneinstieg:** Konto erstellen → E-Mail bestätigen → Praxiscode einlösen → mit der Praxis verbunden.
 - **Übungen:** Patienten sehen ihre Tagesübungen, dokumentieren die Durchführung als Selbstauskunft; die Praxis sieht die Rückmeldungen der letzten 7/30 Tage.
 - **Kalender:** Die Praxis arbeitet mit Monats-/Wochen-/Tages-/Listenansicht; Termine können angelegt, geändert, storniert und abgeschlossen werden.
-- **Behandlungseinheiten:** Die Praxis hinterlegt Verordnungen mit ganzzahligen Sitzungen, korrigiert mit Pflichtgrund, und ein abgeschlossener Termin rechnet genau eine Sitzung an – pro Termin höchstens einmal. Patienten sehen ihren Stand mit neutralem Kostenhinweis.
+- **Behandlungseinheiten:** Die Praxis hinterlegt Verordnungen mit ganzzahligen Einheiten und korrigiert mit Pflichtgrund. Ein abgeschlossener Termin rechnet genau eine Einheit an, eine Rücknahme des Abschlusses bucht genau eine zurück – jede Bewegung bleibt als Historie sichtbar, der Stand wird nie negativ. Beim Abschluss mit 0 verfügbaren Einheiten erscheint eine deutliche Warnung (der Termin bleibt abschließbar, angerechnet wird nichts). Patienten sehen ihren Stand mit neutralem Kostenhinweis.
 - **Patientenakten:** Die Praxis lädt PDF/JPEG/PNG in einen privaten Bucket und öffnet sie über kurzlebige signierte URLs; Patienten haben keinerlei Zugriff.
 - **Kontakt und Farben:** Patienten hinterlegen ihre Telefonnummer im Profil, die Praxis sieht und korrigiert sie; jedes Praxismitglied hat eine eigene Kalenderfarbe mit Legende im Kalender.
 
 ## Was funktioniert noch nicht vollständig?
 
-- **Anzeige bei mehreren aktiven Verordnungen:** Der Patient sieht die neueste Verordnung, Termine werden aber gegen die älteste gültige angerechnet – der angezeigte Stand kann dadurch unverändert bleiben. Wird in Etappe 3 vereinheitlicht.
 - **Absageanfragen:** Die Praxis wird benachrichtigt, kann aber noch nicht per Klick annehmen/ablehnen.
 - **Termin anlegen/bearbeiten/stornieren:** implementiert und validiert, aber ohne automatischen End-zu-End-Test.
 - **Übungsverwaltung:** Übungen und Videos können noch nicht über die Oberfläche angelegt werden (nur Demo-Seed).
@@ -57,6 +57,8 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 - **Benachrichtigungszentrum:** Notifications existieren, aber ohne gelesen/ungelesen-Übersicht und Badge.
 
 ## Letzte Änderungen
+
+- **12.07.2026 – Behandlungskontingente mit Ledger und Abschluss-Rücknahme (Etappe 3).** Behandlungseinheiten werden ausschließlich ganzzahlig geführt: Ein Terminabschluss rechnet genau eine Einheit an, eine neue Aktion „Abschluss zurücknehmen" bucht genau eine zurück – dabei wird nichts gelöscht, die Anrechnung wird nur als zurückgebucht markiert (append-only Ledger mit Historie „Anfangskontingent / manuelle Erhöhung / manuelle Verringerung / Termin angerechnet / Anrechnung zurückgebucht" auf der Patientendetailseite). Der Stand wird nie negativ; manuelle Verringerungen unter 0 lehnt der Server ab. Beim Abschluss ohne verfügbare Einheit erscheint vorab eine deutliche, sachliche Warnung – der Termin bleibt abschließbar, angerechnet wird nichts. Die bekannte Inkonsistenz aus Phase E ist behoben: Patientenanzeige und Anrechnung nutzen jetzt dieselbe DB-Auswahlregel (`primary_authorization_for_patient`). Migration `20260711280000_unit_ledger_and_completion_reversal.sql`. Geprüft: `db:reset`, Seed, Typecheck, Lint, 55 Unit-Tests, 28 E2E-Tests, Build sowie ein 17-Schritte-UI-Durchlauf inkl. Negativ-Proben (Patient darf Rücknahme-Funktion nicht aufrufen, kein Doppelabschluss, kein Fremdzugriff auf Verordnungsauswahl).
 
 - **11.07.2026 – Telefonnummer und Kalenderfarben (Etappe 2).** Patienten pflegen ihre Telefonnummer im Profil; die Praxis sieht sie in Patientenliste/-detail (als anrufbarer Link) und korrigiert sie über eine serverseitig geprüfte DB-Funktion. Jedes Praxismitglied wählt in den Einstellungen eine von 8 Kalenderfarben; der Kalender zeigt Farbpunkt, Farbrand und Legende – der Name steht immer zusätzlich dabei. Migration `20260711260000_phone_and_calendar_colors.sql`; dabei wurde das Update-Recht auf `practice_members` auf die Farbspalte eingeschränkt (Rollen-Eskalation per API jetzt auch auf Spaltenebene blockiert, per Probe verifiziert). Geprüft: Typecheck, Lint, 50 Unit-Tests, 28 E2E-Tests, Build, UI-Durchlauf mit Negativ-Proben. Einschränkung: Farbe gilt pro Mitglied (keine Kategorien-Farben).
 

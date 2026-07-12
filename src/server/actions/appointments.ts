@@ -19,7 +19,7 @@ import {
 } from "@/lib/validation/appointments";
 import { zonedTimeToUtc } from "@/lib/datetime";
 
-export type AppointmentActionState = { error?: string; success?: string };
+export type AppointmentActionState = { error?: string; success?: string; warning?: string };
 
 async function practiceContext() {
   const session = await getSessionContext();
@@ -226,10 +226,58 @@ export async function completeAppointmentAction(
   revalidatePath(`/practice/calendar/${current.id}`);
   revalidatePath(`/practice/patients/${current.patient_profile_id}`);
   revalidatePath("/today");
+  if (!authorizationId) {
+    return {
+      warning:
+        "Der Termin wurde abgeschlossen, aber es war keine Behandlungseinheit verfügbar. Es wurde nichts angerechnet; der Stand bleibt bei 0 und wird nicht negativ. Bitte klären Sie Verordnung und Kostenübernahme mit Patient und Versicherung.",
+    };
+  }
   return {
-    success: authorizationId
-      ? "Der Termin wurde abgeschlossen und eine verordnete Sitzung angerechnet."
-      : "Der Termin wurde abgeschlossen. Es war keine verfügbare Verordnung hinterlegt.",
+    success: "Der Termin wurde abgeschlossen und genau eine Behandlungseinheit angerechnet.",
+  };
+}
+
+export async function reverseAppointmentCompletionAction(
+  _state: AppointmentActionState,
+  formData: FormData
+): Promise<AppointmentActionState> {
+  const parsed = completeAppointmentSchema.safeParse({ appointmentId: formData.get("appointmentId") });
+  if (!parsed.success) return { error: "Ungültiger Termin." };
+  const context = await practiceContext();
+  if (!context) return { error: "Sie sind nicht für eine Praxis angemeldet." };
+  const current = await getPracticeAppointment(context.membership.practiceId, parsed.data.appointmentId);
+  if (!current || current.status !== "completed") {
+    return { error: "Nur abgeschlossene Termine können zurückgenommen werden." };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data: unitRebooked, error } = await supabase.rpc("reverse_appointment_completion", {
+    p_appointment_id: current.id,
+  });
+  if (error) {
+    // 23P01 = Exclusion-Constraint: der Zeitraum ist inzwischen belegt.
+    if (error.code === "23P01") {
+      return {
+        error:
+          "Die Rücknahme ist nicht möglich, weil der Zeitraum inzwischen mit einem anderen Termin belegt ist.",
+      };
+    }
+    return { error: "Der Abschluss konnte nicht zurückgenommen werden." };
+  }
+  await auditAppointment(
+    context.session.userId,
+    context.membership.practiceId,
+    current.id,
+    "appointment_completion_reversed"
+  );
+  revalidatePath("/practice/calendar");
+  revalidatePath(`/practice/calendar/${current.id}`);
+  revalidatePath(`/practice/patients/${current.patient_profile_id}`);
+  revalidatePath("/today");
+  return {
+    success: unitRebooked
+      ? "Der Abschluss wurde zurückgenommen und genau eine Behandlungseinheit zurückgebucht."
+      : "Der Abschluss wurde zurückgenommen. Es war keine Einheit angerechnet, daher wurde nichts zurückgebucht.",
   };
 }
 
