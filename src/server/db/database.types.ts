@@ -853,6 +853,67 @@ export type Database = {
           },
         ]
       }
+      practice_waitlist_entries: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string
+          patient_profile_id: string
+          practice_id: string
+          preferred_times: string
+          priority: Database["public"]["Enums"]["waitlist_priority"]
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["waitlist_status"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string
+          patient_profile_id: string
+          practice_id: string
+          preferred_times?: string
+          priority?: Database["public"]["Enums"]["waitlist_priority"]
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["waitlist_status"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string
+          patient_profile_id?: string
+          practice_id?: string
+          preferred_times?: string
+          priority?: Database["public"]["Enums"]["waitlist_priority"]
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["waitlist_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_waitlist_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "practice_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "practice_waitlist_entries_patient_profile_id_fkey"
+            columns: ["patient_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "practice_waitlist_entries_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pinned_patients: {
         Row: {
           created_at: string
@@ -1337,6 +1398,8 @@ export type Database = {
         | "other"
       plan_status: "active" | "archived"
       practice_role: "therapist" | "admin"
+      waitlist_priority: "normal" | "high"
+      waitlist_status: "waiting" | "resolved"
     }
     CompositeTypes: {
       [_ in never]: never

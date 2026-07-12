@@ -8,6 +8,7 @@ import {
   UserGroupIcon,
   Dumbbell01Icon,
   Calendar03Icon,
+  Clock01Icon,
   Settings01Icon,
 } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,7 @@ const items = [
   { href: "/practice/patients", label: de.practice.nav.patients, icon: UserGroupIcon },
   { href: "/practice/exercises", label: de.practice.nav.exercises, icon: Dumbbell01Icon },
   { href: "/practice/calendar", label: de.practice.nav.calendar, icon: Calendar03Icon },
+  { href: "/practice/waitlist", label: de.practice.nav.waitlist, icon: Clock01Icon },
   { href: "/practice/settings", label: de.practice.nav.settings, icon: Settings01Icon },
 ] as const;
 
