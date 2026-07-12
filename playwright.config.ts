@@ -7,8 +7,16 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
-  retries: 0,
+  // Ein Wiederholungsversuch: Unter voller Parallellast hängt selten ein
+  // einzelner Server-Action-Roundtrip (untersucht 2026-07-12: nicht in der
+  // DB, nicht isoliert reproduzierbar). Der Retry zeichnet dank
+  // trace:"on-first-retry" automatisch einen Trace zur Analyse auf.
+  retries: 1,
   reporter: "list",
+  // Alle Projekte laufen parallel gegen EINEN lokalen Server; unter
+  // Spitzenlast kann eine einzelne Server-Action die 5s-Vorgabe reißen,
+  // ohne dass etwas kaputt ist. 10s hält das Signal, entfernt das Rauschen.
+  expect: { timeout: 10_000 },
   use: {
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",

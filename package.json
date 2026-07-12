@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
+    "test:rls": "node --env-file=.env.local --import tsx scripts/rls-tests.ts",
     "seed": "node --env-file=.env.local --import tsx scripts/seed.ts",
     "db:reset": "supabase db reset",
     "db:types": "supabase gen types typescript --local > src/server/db/database.types.ts"
