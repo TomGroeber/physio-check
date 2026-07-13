@@ -248,16 +248,6 @@ export async function getPatientNextAppointment(
   return data;
 }
 
-export async function listExercises(practiceId: string) {
-  const supabase = await createSupabaseServerClient();
-  const { data } = await supabase
-    .from("exercises")
-    .select("id, title, description, is_active, default_dosage_type, updated_at")
-    .eq("practice_id", practiceId)
-    .order("title");
-  return data ?? [];
-}
-
 export async function listUpcomingAppointments(practiceId: string) {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase

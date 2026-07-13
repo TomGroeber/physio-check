@@ -677,6 +677,8 @@ export type Database = {
       }
       exercises: {
         Row: {
+          archived_at: string | null
+          category: string
           common_mistakes: string
           created_at: string
           created_by: string | null
@@ -685,6 +687,7 @@ export type Database = {
           default_repetitions: number | null
           default_rest_seconds: number | null
           default_sets: number | null
+          default_total_duration_seconds: number | null
           description: string
           equipment: string
           id: string
@@ -696,6 +699,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
+          category?: string
           common_mistakes?: string
           created_at?: string
           created_by?: string | null
@@ -704,6 +709,7 @@ export type Database = {
           default_repetitions?: number | null
           default_rest_seconds?: number | null
           default_sets?: number | null
+          default_total_duration_seconds?: number | null
           description?: string
           equipment?: string
           id?: string
@@ -715,6 +721,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
+          category?: string
           common_mistakes?: string
           created_at?: string
           created_by?: string | null
@@ -723,6 +731,7 @@ export type Database = {
           default_repetitions?: number | null
           default_rest_seconds?: number | null
           default_sets?: number | null
+          default_total_duration_seconds?: number | null
           description?: string
           equipment?: string
           id?: string
