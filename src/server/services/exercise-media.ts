@@ -7,7 +7,7 @@ import {
   EXERCISE_MEDIA_BUCKET,
   allowedMimeTypes,
   extensionFor,
-  maxBytes,
+  isAllowedMediaSize,
   signatureMatches,
   storagePathBelongsToExercise,
   type UploadableMediaKind,
@@ -40,7 +40,7 @@ export async function createUploadTicket(
   if (!allowedMimeTypes(kind).includes(mimeType)) {
     return { error: "Dieser Dateityp wird nicht unterstützt." };
   }
-  if (declaredBytes <= 0 || declaredBytes > maxBytes(kind)) {
+  if (!isAllowedMediaSize(kind, declaredBytes)) {
     return { error: "Die Datei überschreitet das Größenlimit." };
   }
   const storagePath = `${practiceId}/${exerciseId}/${randomUUID()}.${extensionFor(mimeType)}`;
@@ -93,7 +93,7 @@ export async function finalizeUpload(
   const { data: info, error: infoError } = await bucket.info(storagePath);
   if (infoError || !info) return { ok: false, error: "Die Datei wurde nicht gefunden." };
   const size = info.size ?? 0;
-  if (size <= 0 || size > maxBytes(kind)) {
+  if (!isAllowedMediaSize(kind, size)) {
     await removeStorageObject(storagePath);
     return { ok: false, error: "Die Datei überschreitet das Größenlimit." };
   }

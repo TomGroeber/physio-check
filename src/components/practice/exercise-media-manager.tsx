@@ -13,7 +13,7 @@ import {
   MAX_IMAGE_MB,
   MAX_VIDEO_MB,
   allowedMimeTypes,
-  maxBytes,
+  isAllowedMediaSize,
   type UploadableMediaKind,
 } from "@/config/media";
 import { Button } from "@/components/ui/button";
@@ -156,7 +156,7 @@ function MediaCard({
       setMessage({ error: copy.unsupportedType });
       return;
     }
-    if (nextFile.size <= 0 || nextFile.size > maxBytes(kind)) {
+    if (!isAllowedMediaSize(kind, nextFile.size)) {
       setFile(null);
       setMessage({ error: copy.tooLarge(limit) });
       return;

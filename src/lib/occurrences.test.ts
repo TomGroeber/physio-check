@@ -22,6 +22,29 @@ describe("isoWeekRange", () => {
 });
 
 describe("calculateOccurrenceProgress", () => {
+  it("completes a once-daily exercise with exactly one separated occurrence", () => {
+    const progress = calculateOccurrenceProgress(
+      {
+        ...base,
+        schedule: {
+          mode: "weekdays",
+          weekdays: [1],
+          times_per_day: 1,
+          preferred_times: [],
+        },
+      },
+      "2026-07-13",
+      1,
+      [log(1)]
+    );
+    expect(progress).toMatchObject({
+      plannedToday: 1,
+      documentedToday: 1,
+      nextOccurrenceIndex: null,
+      canDocument: false,
+    });
+  });
+
   it("keeps a three-times-daily exercise open after its first occurrence", () => {
     const progress = calculateOccurrenceProgress(
       {

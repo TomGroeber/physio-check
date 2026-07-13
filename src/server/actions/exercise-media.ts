@@ -11,7 +11,7 @@ import {
   finalizeUpload,
   removeMedia,
 } from "@/server/services/exercise-media";
-import { allowedMimeTypes, maxBytes } from "@/config/media";
+import { allowedMimeTypes, isAllowedMediaSize } from "@/config/media";
 
 const mediaKindSchema = z.enum(["video", "thumbnail", "fallback_image", "captions"]);
 
@@ -60,7 +60,7 @@ export async function prepareExerciseMediaUploadAction(input: {
   if (!allowedMimeTypes(parsed.data.kind).includes(parsed.data.mimeType)) {
     return { ok: false, error: "Dieser Dateityp wird nicht unterstützt." };
   }
-  if (parsed.data.declaredBytes > maxBytes(parsed.data.kind)) {
+  if (!isAllowedMediaSize(parsed.data.kind, parsed.data.declaredBytes)) {
     return { ok: false, error: "Die Datei überschreitet das Größenlimit." };
   }
   const context = await authorizedExerciseContext(parsed.data.exerciseId);

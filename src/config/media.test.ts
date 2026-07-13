@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   allowedMimeTypes,
+  isAllowedMediaSize,
   maxBytes,
   signatureMatches,
   storagePathBelongsToExercise,
@@ -13,6 +14,15 @@ describe("exercise media configuration", () => {
     expect(allowedMimeTypes("captions")).toEqual(["text/vtt"]);
     expect(maxBytes("video")).toBeGreaterThan(maxBytes("thumbnail"));
     expect(maxBytes("thumbnail")).toBeGreaterThan(maxBytes("captions"));
+  });
+
+  it("rejects unsupported MIME types and enforces exact size limits", () => {
+    expect(allowedMimeTypes("video")).not.toContain("text/plain");
+    expect(allowedMimeTypes("video")).not.toContain("video/x-msvideo");
+    expect(isAllowedMediaSize("video", maxBytes("video"))).toBe(true);
+    expect(isAllowedMediaSize("video", maxBytes("video") + 1)).toBe(false);
+    expect(isAllowedMediaSize("captions", 0)).toBe(false);
+    expect(isAllowedMediaSize("captions", 1.5)).toBe(false);
   });
 
   it("recognizes supported magic bytes and rejects disguised content", () => {

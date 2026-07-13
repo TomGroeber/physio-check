@@ -16,6 +16,7 @@
  */
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../src/server/db/database.types";
+import { hashInviteCode } from "../src/lib/invite-code";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -32,6 +33,7 @@ if (!url.includes("127.0.0.1") && !url.includes("localhost")) {
 const PASSWORD = "PhysioDemo2026!";
 const FOREIGN_PRACTICE_NAME = "RLS-Testpraxis Fremd";
 const FOREIGN_THERAPIST_EMAIL = "rls-fremd-therapeut@demo.physiocheck.test";
+const PHASE_J_PATIENT_EMAIL = "rls-phase-j-patient@demo.physiocheck.test";
 
 const service = createClient<Database>(url, serviceKey, {
   auth: { autoRefreshToken: false, persistSession: false },
@@ -60,6 +62,12 @@ async function loginClient(email: string) {
   const { error } = await client.auth.signInWithPassword({ email, password: PASSWORD });
   if (error) throw new Error(`Login ${email}: ${error.message}`);
   return client;
+}
+
+async function deleteAuthUserByEmail(email: string) {
+  const { data } = await service.auth.admin.listUsers({ perPage: 1000 });
+  const user = data?.users.find((candidate) => candidate.email === email);
+  if (user) await service.auth.admin.deleteUser(user.id);
 }
 
 async function setupForeignPractice() {
@@ -94,7 +102,8 @@ async function teardownForeignPractice() {
 
 async function main() {
   console.log("Vorbereitung: Fremdpraxis anlegen, Demo-IDs laden …");
-  await setupForeignPractice();
+  const foreignPracticeId = await setupForeignPractice();
+  await deleteAuthUserByEmail(PHASE_J_PATIENT_EMAIL);
 
   const { data: petraProfile } = await service
     .from("profiles")
@@ -135,6 +144,11 @@ async function main() {
   if (!seededFeedback) throw new Error("Demo-Rückmeldung fehlt.");
   let publishedTestVersionId: string | null = null;
   let recordedOccurrenceId: string | null = null;
+  let phaseJPatientId: string | null = null;
+  let phaseJLibraryExerciseId: string | null = null;
+  let phaseJLibraryCopyId: string | null = null;
+  let phaseJPlanId: string | null = null;
+  const phaseJInviteIds: string[] = [];
 
   // Ein Dokument mit Storage-Objekt für die Storage-/Fremdzugriffs-Proben.
   const png = Buffer.from(
@@ -153,6 +167,31 @@ async function main() {
     .eq("role", "therapist")
     .limit(1)
     .single();
+  const { data: foreignMember } = await service
+    .from("practice_members")
+    .select("id")
+    .eq("practice_id", foreignPracticeId)
+    .limit(1)
+    .single();
+  if (!memberA || !foreignMember) throw new Error("RLS-Testmitglieder fehlen.");
+
+  const { data: phaseJUser, error: phaseJUserError } = await service.auth.admin.createUser({
+    email: PHASE_J_PATIENT_EMAIL,
+    password: PASSWORD,
+    email_confirm: true,
+    user_metadata: { full_name: "Paula Phase J", locale: "de" },
+  });
+  if (phaseJUserError || !phaseJUser.user) {
+    throw new Error(`Phase-J-Patient: ${phaseJUserError?.message}`);
+  }
+  phaseJPatientId = phaseJUser.user.id;
+  const { error: phaseJLinkError } = await service.from("patient_practice_links").insert({
+    patient_profile_id: phaseJPatientId,
+    practice_id: practiceAId,
+    primary_therapist_id: memberA.id,
+    status: "active",
+  });
+  if (phaseJLinkError) throw new Error(`Phase-J-Praxislink: ${phaseJLinkError.message}`);
   const { data: testNotification, error: testNotificationError } = await service
     .from("notifications")
     .insert({
@@ -401,6 +440,22 @@ async function main() {
     check("sieht Petras Profil nicht", (data ?? []).length === 0);
   }
   {
+    const { data, error } = await foreign
+      .from("exercises")
+      .update({ title: "Fremd manipuliert" })
+      .eq("id", testExercise.id)
+      .select("id");
+    const { data: unchanged } = await service
+      .from("exercises")
+      .select("title")
+      .eq("id", testExercise.id)
+      .single();
+    check(
+      "kann Übung der fremden Praxis weder sehen noch ändern",
+      (Boolean(error) || (data ?? []).length === 0) && unchanged?.title === "RLS-Testübung"
+    );
+  }
+  {
     const { error } = await foreign.from("patient_documents").insert({
       practice_id: practiceAId,
       patient_profile_id: petraId,
@@ -522,6 +577,88 @@ async function main() {
     );
   }
   {
+    const created = await therapist
+      .from("exercises")
+      .insert({
+        practice_id: practiceAId,
+        created_by: memberA.id,
+        title: "Phase-J-Bibliothekstest",
+        description: "Fiktiver lokaler Integrationstest",
+        category: "Test",
+      })
+      .select("id, title")
+      .single();
+    phaseJLibraryExerciseId = created.data?.id ?? null;
+    check("Übungsbibliothek: legt eine Übung an", !created.error && Boolean(created.data));
+
+    const updated = phaseJLibraryExerciseId
+      ? await therapist
+          .from("exercises")
+          .update({ title: "Phase-J-Bibliothekstest bearbeitet", default_sets: 4 })
+          .eq("id", phaseJLibraryExerciseId)
+          .select("id, title, default_sets")
+          .single()
+      : { data: null, error: new Error("create failed") };
+    check(
+      "Übungsbibliothek: bearbeitet patientenunabhängige Standardwerte",
+      !updated.error &&
+        updated.data?.title === "Phase-J-Bibliothekstest bearbeitet" &&
+        updated.data.default_sets === 4
+    );
+
+    const duplicated = phaseJLibraryExerciseId
+      ? await therapist
+          .from("exercises")
+          .insert({
+            practice_id: practiceAId,
+            created_by: memberA.id,
+            title: "Phase-J-Bibliothekstest bearbeitet (Kopie)",
+            description: "Fiktiver lokaler Integrationstest",
+            category: "Test",
+            default_sets: 4,
+          })
+          .select("id, title, default_sets")
+          .single()
+      : { data: null, error: new Error("create failed") };
+    phaseJLibraryCopyId = duplicated.data?.id ?? null;
+    check(
+      "Übungsbibliothek: dupliziert Werte in eine neue ID",
+      !duplicated.error &&
+        Boolean(phaseJLibraryCopyId) &&
+        phaseJLibraryCopyId !== phaseJLibraryExerciseId &&
+        duplicated.data?.default_sets === 4
+    );
+
+    const archived = phaseJLibraryCopyId
+      ? await therapist
+          .from("exercises")
+          .update({ archived_at: new Date().toISOString() })
+          .eq("id", phaseJLibraryCopyId)
+          .select("id, archived_at")
+          .single()
+      : { data: null, error: new Error("duplicate failed") };
+    check(
+      "Übungsbibliothek: archiviert statt zu löschen",
+      !archived.error && Boolean(archived.data?.archived_at)
+    );
+
+    const destructiveDelete = await therapist
+      .from("exercises")
+      .delete()
+      .eq("id", seededPlanItem.exercise_id)
+      .select("id");
+    const { data: referencedExercise } = await service
+      .from("exercises")
+      .select("id")
+      .eq("id", seededPlanItem.exercise_id)
+      .single();
+    check(
+      "referenzierte Übung kann nicht destruktiv gelöscht werden",
+      (Boolean(destructiveDelete.error) || (destructiveDelete.data ?? []).length === 0) &&
+        referencedExercise?.id === seededPlanItem.exercise_id
+    );
+  }
+  {
     const { error } = await therapist.rpc("mark_completion_log_reviewed", {
       p_log_id: seededFeedback.id,
     });
@@ -582,6 +719,144 @@ async function main() {
       "veröffentlichte Version ersetzt den aktuellen Zeiger atomar",
       Boolean(publishedTestVersionId) && publishedTestVersionId !== seededPlan.current_version_id
     );
+    const { data: historicalLog } = await patient
+      .from("completion_logs")
+      .select("id, plan_item_id, prescription_snapshot")
+      .eq("id", seededFeedback.id)
+      .single();
+    check(
+      "alter Completion-Log bleibt nach neuer Planversion lesbar und unverändert zugeordnet",
+      historicalLog?.id === seededFeedback.id &&
+        Boolean(historicalLog.plan_item_id) &&
+        Boolean(historicalLog.prescription_snapshot)
+    );
+  }
+  {
+    const firstPublication = await therapist.rpc("publish_exercise_plan", {
+      p_practice_id: practiceAId,
+      p_patient_id: phaseJPatientId!,
+      p_title: "Phase-J-Neuanlage",
+      p_change_note: "Erste Version",
+      p_items: [
+        {
+          exercise_id: testExercise.id,
+          start_date: "2026-08-01",
+          end_date: "2026-09-15",
+          schedule: {
+            mode: "weekdays",
+            weekdays: [1, 3, 5],
+            times_per_day: 3,
+            preferred_times: ["08:00", "13:00", "18:00"],
+          },
+          sets: 4,
+          repetitions: 12,
+          hold_seconds: null,
+          total_duration_seconds: null,
+          rest_seconds: 45,
+          note: "Patientenspezifische Vorgabe",
+        },
+      ],
+      p_notification_title: "Testplan aktualisiert",
+      p_notification_body: "Datensparsamer lokaler Test",
+    });
+    phaseJPlanId = firstPublication.data ?? null;
+    const { data: firstPlan } = phaseJPlanId
+      ? await service
+          .from("exercise_plans")
+          .select("id, current_version_id, status")
+          .eq("id", phaseJPlanId)
+          .single()
+      : { data: null };
+    const firstVersionId = firstPlan?.current_version_id ?? null;
+    const { data: firstItem } = firstVersionId
+      ? await service
+          .from("exercise_plan_items")
+          .select("start_date, end_date, schedule, sets, repetitions, note")
+          .eq("plan_version_id", firstVersionId)
+          .single()
+      : { data: null };
+    check(
+      "Pläne: legt einen neuen aktiven Plan mit erster Version an",
+      !firstPublication.error && Boolean(phaseJPlanId) && firstPlan?.status === "active"
+    );
+    check(
+      "Pläne: speichert patientenspezifische Werte, Zeitraum, Wochentage und 3× täglich",
+      firstItem?.start_date === "2026-08-01" &&
+        firstItem.end_date === "2026-09-15" &&
+        firstItem.sets === 4 &&
+        firstItem.repetitions === 12 &&
+        firstItem.note === "Patientenspezifische Vorgabe" &&
+        JSON.stringify(firstItem.schedule).includes('"times_per_day":3')
+    );
+
+    const secondPublication = await therapist.rpc("publish_exercise_plan", {
+      p_practice_id: practiceAId,
+      p_patient_id: phaseJPatientId!,
+      p_title: "Phase-J-Neuanlage",
+      p_change_note: "Flexible zweite Version",
+      p_items: [
+        {
+          exercise_id: testExercise.id,
+          start_date: "2026-08-02",
+          end_date: null,
+          schedule: {
+            mode: "times_per_week",
+            times_per_week: 3,
+            times_per_day: 1,
+            preferred_times: ["09:00"],
+          },
+          sets: 2,
+          repetitions: 8,
+          hold_seconds: null,
+          total_duration_seconds: null,
+          rest_seconds: 30,
+          note: "Flexible Woche",
+        },
+      ],
+      p_notification_title: "Testplan aktualisiert",
+      p_notification_body: "Datensparsamer lokaler Test",
+    });
+    const { data: secondPlan } = await service
+      .from("exercise_plans")
+      .select("current_version_id")
+      .eq("id", phaseJPlanId!)
+      .single();
+    const { data: versions } = await service
+      .from("exercise_plan_versions")
+      .select("id, version_number")
+      .eq("plan_id", phaseJPlanId!)
+      .order("version_number");
+    const { data: activePlans, count: activePlanCount } = await service
+      .from("exercise_plans")
+      .select("id", { count: "exact" })
+      .eq("practice_id", practiceAId)
+      .eq("patient_profile_id", phaseJPatientId!)
+      .eq("status", "active");
+    const { data: secondItem } = secondPlan?.current_version_id
+      ? await service
+          .from("exercise_plan_items")
+          .select("schedule, sets")
+          .eq("plan_version_id", secondPlan.current_version_id)
+          .single()
+      : { data: null };
+    check(
+      "Pläne: neue Veröffentlichung erzeugt genau eine neue aktuelle Version",
+      !secondPublication.error &&
+        versions?.length === 2 &&
+        versions[0]?.id === firstVersionId &&
+        secondPlan?.current_version_id === versions[1]?.id &&
+        secondPlan.current_version_id !== firstVersionId
+    );
+    check(
+      "Pläne: alte Version bleibt erhalten und nur ein Plan ist aktuell",
+      (activePlanCount ?? activePlans?.length) === 1 &&
+        versions?.some((version) => version.id === firstVersionId) === true
+    );
+    check(
+      "Pläne: N-mal pro Woche bleibt typisiert in der neuen Version",
+      secondItem?.sets === 2 &&
+        JSON.stringify(secondItem.schedule).includes('"times_per_week":3')
+    );
   }
   {
     const { count: beforeCount } = await service
@@ -617,6 +892,159 @@ async function main() {
     check("ungültige Veröffentlichung wird vollständig zurückgerollt", Boolean(error) && beforeCount === afterCount);
   }
 
+  // ---------- Phase J: Einladungszustände und Praxiswechsel ----------
+  console.log("\nC2) Einladungszustände und bestätigter Praxiswechsel");
+  const phaseJPatient = await loginClient(PHASE_J_PATIENT_EMAIL);
+  const phaseJInviteHashes = [
+    "EXPR-TEST-AB23",
+    "REVK-TEST-AB23",
+    "USED-TEST-AB23",
+    "SWCH-TEST-AB23",
+    "BACK-TEST-AB23",
+  ].map(hashInviteCode);
+  await service.from("patient_invites").delete().in("code_hash", phaseJInviteHashes);
+  const inviteFixtures = [
+    {
+      key: "expired",
+      practice_id: foreignPracticeId,
+      created_by: foreignMember.id,
+      patient_display_name: "Abgelaufene Einladung",
+      code_hash: hashInviteCode("EXPR-TEST-AB23"),
+      expires_at: new Date(Date.now() - 60_000).toISOString(),
+      revoked_at: null,
+      used_at: null,
+      used_by_profile_id: null,
+    },
+    {
+      key: "revoked",
+      practice_id: foreignPracticeId,
+      created_by: foreignMember.id,
+      patient_display_name: "Widerrufene Einladung",
+      code_hash: hashInviteCode("REVK-TEST-AB23"),
+      expires_at: new Date(Date.now() + 3_600_000).toISOString(),
+      revoked_at: new Date().toISOString(),
+      used_at: null,
+      used_by_profile_id: null,
+    },
+    {
+      key: "used",
+      practice_id: foreignPracticeId,
+      created_by: foreignMember.id,
+      patient_display_name: "Verbrauchte Einladung",
+      code_hash: hashInviteCode("USED-TEST-AB23"),
+      expires_at: new Date(Date.now() + 3_600_000).toISOString(),
+      revoked_at: null,
+      used_at: new Date().toISOString(),
+      used_by_profile_id: petraId,
+    },
+    {
+      key: "switch",
+      practice_id: foreignPracticeId,
+      created_by: foreignMember.id,
+      patient_display_name: "Praxiswechsel",
+      code_hash: hashInviteCode("SWCH-TEST-AB23"),
+      expires_at: new Date(Date.now() + 3_600_000).toISOString(),
+      revoked_at: null,
+      used_at: null,
+      used_by_profile_id: null,
+    },
+    {
+      key: "return",
+      practice_id: practiceAId,
+      created_by: memberA.id,
+      patient_display_name: "Rückwechsel",
+      code_hash: hashInviteCode("BACK-TEST-AB23"),
+      expires_at: new Date(Date.now() + 3_600_000).toISOString(),
+      revoked_at: null,
+      used_at: null,
+      used_by_profile_id: null,
+    },
+  ] as const;
+  const { data: insertedInvites, error: insertedInvitesError } = await service
+    .from("patient_invites")
+    .insert(
+      inviteFixtures.map((fixture) => ({
+        practice_id: fixture.practice_id,
+        created_by: fixture.created_by,
+        patient_display_name: fixture.patient_display_name,
+        code_hash: fixture.code_hash,
+        expires_at: fixture.expires_at,
+        revoked_at: fixture.revoked_at,
+        used_at: fixture.used_at,
+        used_by_profile_id: fixture.used_by_profile_id,
+      }))
+    )
+    .select("id, patient_display_name, code_hash, used_at");
+  if (insertedInvitesError || !insertedInvites) {
+    throw new Error(`Phase-J-Einladungen: ${insertedInvitesError?.message}`);
+  }
+  phaseJInviteIds.push(...insertedInvites.map((invite) => invite.id));
+  const inviteByName = (name: string) =>
+    insertedInvites.find((invite) => invite.patient_display_name === name)!;
+
+  for (const [label, fixtureName] of [
+    ["abgelaufenen", "Abgelaufene Einladung"],
+    ["widerrufenen", "Widerrufene Einladung"],
+    ["bereits verwendeten", "Verbrauchte Einladung"],
+  ] as const) {
+    const invite = inviteByName(fixtureName);
+    const { error } = await phaseJPatient.rpc("redeem_patient_invite", {
+      p_invite_id: invite.id,
+      p_code_hash: invite.code_hash,
+    });
+    check(`Einladung: lehnt ${label} Code ab`, Boolean(error));
+  }
+
+  const switchInvite = inviteByName("Praxiswechsel");
+  const switchResult = await phaseJPatient.rpc("redeem_patient_invite", {
+    p_invite_id: switchInvite.id,
+    p_code_hash: switchInvite.code_hash,
+  });
+  const { data: linksAfterSwitch } = await service
+    .from("patient_practice_links")
+    .select("practice_id, status, ended_at")
+    .eq("patient_profile_id", phaseJPatientId!);
+  const { data: consumedSwitchInvite } = await service
+    .from("patient_invites")
+    .select("used_at, used_by_profile_id")
+    .eq("id", switchInvite.id)
+    .single();
+  check(
+    "Einladung: bestätigter Praxiswechsel beendet alten und aktiviert neuen Link",
+    !switchResult.error &&
+      linksAfterSwitch?.some(
+        (link) => link.practice_id === practiceAId && link.status === "ended" && Boolean(link.ended_at)
+      ) === true &&
+      linksAfterSwitch?.some(
+        (link) => link.practice_id === foreignPracticeId && link.status === "active"
+      ) === true
+  );
+  check(
+    "Einladung: Code wird erst nach erfolgreicher Verbindung verbraucht",
+    Boolean(consumedSwitchInvite?.used_at) &&
+      consumedSwitchInvite?.used_by_profile_id === phaseJPatientId
+  );
+
+  const returnInvite = inviteByName("Rückwechsel");
+  const wrongHash = await phaseJPatient.rpc("redeem_patient_invite", {
+    p_invite_id: returnInvite.id,
+    p_code_hash: hashInviteCode("WRNG-TEST-AB23"),
+  });
+  const { data: afterWrongHash } = await service
+    .from("patient_invites")
+    .select("used_at")
+    .eq("id", returnInvite.id)
+    .single();
+  check(
+    "Einladung: fehlgeschlagene Einlösung verbraucht den Code nicht",
+    Boolean(wrongHash.error) && !afterWrongHash?.used_at
+  );
+  const returnResult = await phaseJPatient.rpc("redeem_patient_invite", {
+    p_invite_id: returnInvite.id,
+    p_code_hash: returnInvite.code_hash,
+  });
+  check("Einladung: derselbe unverbrauchte Code kann danach korrekt eingelöst werden", !returnResult.error);
+
   // ---------- D) Unverbundenes Konto ----------
   console.log("\nD) Unverbundenes Konto (Erika): sieht nichts");
   const unconnected = await loginClient("eingeladen@demo.physiocheck.test");
@@ -650,6 +1078,16 @@ async function main() {
   if (testDocument) await service.from("patient_documents").delete().eq("id", testDocument.id);
   await service.from("patient_reminder_preferences").delete().eq("profile_id", petraId);
   await service.from("notifications").delete().eq("id", testNotification.id);
+  if (phaseJInviteIds.length > 0) {
+    await service.from("patient_invites").delete().in("id", phaseJInviteIds);
+  }
+  if (phaseJPatientId) await deleteAuthUserByEmail(PHASE_J_PATIENT_EMAIL);
+  if (phaseJLibraryCopyId) {
+    await service.from("exercises").delete().eq("id", phaseJLibraryCopyId);
+  }
+  if (phaseJLibraryExerciseId) {
+    await service.from("exercises").delete().eq("id", phaseJLibraryExerciseId);
+  }
   await service.storage.from("patient-records").remove([storagePath]);
   await service.storage.from("exercise-media").remove([actualExerciseStoragePath]);
   await service.from("exercises").delete().eq("id", testExercise.id);

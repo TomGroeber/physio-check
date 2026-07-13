@@ -34,6 +34,10 @@ export function maxBytes(kind: UploadableMediaKind): number {
   return MAX_IMAGE_MB * 1024 * 1024;
 }
 
+export function isAllowedMediaSize(kind: UploadableMediaKind, bytes: number): boolean {
+  return Number.isInteger(bytes) && bytes > 0 && bytes <= maxBytes(kind);
+}
+
 export function extensionFor(mimeType: string): string {
   switch (mimeType) {
     case "video/mp4":
