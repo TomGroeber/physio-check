@@ -117,6 +117,19 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [x] **Etappe 10:** Dedizierte RLS-/Autorisierungs-Testsuite `pnpm test:rls` (`scripts/rls-tests.ts`, 36 Proben): Patientin nur eigene Daten, Fremdpraxis-Mitglied ohne jeden Zugriff (Tabellen, RPCs, Storage-Download), keine Selbst-Eskalation, unverbundenes Konto sieht nichts, Storage-Negativtests für `patient-records`; legt eine temporäre Fremdpraxis über den Service-Key an (nur lokal, Sicherheitsstopp) und räumt auf. E2E-Härtung: `expect`-Timeout 10 s + 1 Retry mit Trace (seltener Transport-Hänger unter Parallellast untersucht und dokumentiert) (2026-07-12)
 - [x] **Etappe 11:** Abschließende Dokumentation und ehrliche Statusübersicht: README-Funktionsmatrix und „Letzte Änderungen" aktualisiert, `docs/AI_HANDOFF.md` mit vollem Stand (Etappen 3–8, 10), offene Punkte priorisiert (Obsidian-Vault-Pfad, Absage-Entscheidung, Virenscan, Übungsverwaltung, Toast-System, E2E-Hänger-Beobachtung) (2026-07-12)
 
+## Auftrag vom 13.07.2026 – Übungs-/Videoverwaltung, Pläne, geführter Modus (Phasen A–J)
+
+- [x] **Phase A:** Einladungseinstieg optimiert: „Ich habe einen Einladungscode" ist die primäre Auswahl der Startseite; Bestätigungsseite zeigt zusätzlich Ablaufdatum und einen verständlichen Hinweis (Konto selbst erstellen, Code bleibt bis zur endgültigen Verbindung gültig); QR-Code zum Einladungslink wird lokal in der Praxis-UI erzeugt (`qrcode`-Paket, keine externen Dienste). Bestehende sichere Einladungslogik (Hash, einmalig, Rate-Limit, atomare Einlösung nach Auth) unverändert wiederverwendet. UI-Durchlauf 7 Schritte grün (2026-07-13)
+- [ ] **Phase B:** Übungsbibliothek: anlegen, bearbeiten, duplizieren, deaktivieren, archivieren, Suche + Filter (Kategorie/Körperregion, Hilfsmittel, Archiv)
+- [ ] **Phase C:** Sicherer Video-Upload (MP4/WebM, Fortschritt, Vorschau, Ersetzen/Archivieren, Poster/Alternativbild, Untertitel vorgesehen)
+- [ ] **Phase D:** Individuelle Patientenpläne mit typisiertem Schedule-Modell (Wochentage / N-mal pro Woche / N-mal täglich / Kombination)
+- [ ] **Phase E:** Planversionierung vollständig nutzen (atomare Veröffentlichung, Änderungsgrund, datensparsame Notification)
+- [ ] **Phase F:** Mehrere Durchgänge pro Tag (Occurrence-Logik, „1 von 3 dokumentiert", Migration bestehender Logs)
+- [ ] **Phase G:** Geführter Patientenmodus (eine Übung pro Bildschirm, Timer, Tageszusammenfassung, WCAG 2.2 AA)
+- [ ] **Phase H:** Praxis-Auswertung (Soll/Ist-Durchgänge, 7/30 Tage, inaktive Patienten, Links zu Plan/Übung)
+- [ ] **Phase I:** Freiwillige In-App-Erinnerungen (deaktivierbar, Ruhezeiten; Push ehrlich als Ausbau dokumentiert)
+- [ ] **Phase J:** Tests (Bibliothek, Videos, Pläne, Durchgänge, Einladung) + Gesamtabschluss (db:reset, seed, test:rls, e2e, build)
+
 ## Phase G – Notifications, Terminvorschläge, Härtung und Bedienbarkeit
 
 - [ ] In-App-Benachrichtigungszentrum: gelesen/ungelesen, Badge, Zielroute, datensparsame Inhalte

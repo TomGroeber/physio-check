@@ -27,13 +27,13 @@ export default async function RootPage() {
         </div>
         <div className="flex w-full flex-col gap-3">
           <Button asChild className="h-14 text-lg">
-            <Link href="/register">{de.landing.createAccount}</Link>
+            <Link href="/invite">{de.landing.haveCode}</Link>
           </Button>
           <Button asChild variant="outline" className="h-14 text-lg">
             <Link href="/login">{de.landing.signIn}</Link>
           </Button>
           <Button asChild variant="ghost" className="h-14 text-lg">
-            <Link href="/invite">{de.landing.haveCode}</Link>
+            <Link href="/register">{de.landing.createAccount}</Link>
           </Button>
         </div>
         <p className="text-base text-muted-foreground">{de.landing.noInvite}</p>

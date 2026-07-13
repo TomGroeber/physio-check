@@ -7,6 +7,7 @@ import {
   type CreatePatientInviteState,
 } from "@/server/actions/invites";
 import { FormMessage } from "@/components/auth/form-message";
+import { InviteQrCode } from "@/components/practice/invite-qr-code";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,6 +40,7 @@ export function PatientInviteForm({
           <Label htmlFor="created-link" className="text-base">{t.inviteLink}</Label>
           <Input id="created-link" readOnly value={state.inviteLink} className="h-12 text-base" />
         </div>
+        <InviteQrCode link={state.inviteLink} />
         <Button asChild variant="outline" className="h-12 text-base">
           <Link href="/practice/patients">{de.common.back}</Link>
         </Button>

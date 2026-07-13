@@ -3,6 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getPendingInvite } from "@/server/services/invites";
 import { getSessionContext } from "@/server/services/session";
+import { formatDateShort } from "@/lib/datetime";
+import { branding } from "@/config/branding";
 import { Button } from "@/components/ui/button";
 import { de } from "@/messages/de";
 
@@ -32,7 +34,14 @@ export default async function ContinueInvitePage() {
         <p className="text-base text-muted-foreground">
           {de.connect.fromPractice(invite.practiceName)}
         </p>
+        <p className="text-base text-muted-foreground">
+          {de.connect.invitationValidUntil(
+            formatDateShort(new Date(invite.expiresAt), branding.defaultTimeZone)
+          )}
+        </p>
       </div>
+
+      <p className="text-base text-muted-foreground">{de.connect.continueHint}</p>
 
       <div className="flex flex-col gap-3">
         <Button asChild className="h-12 text-lg">

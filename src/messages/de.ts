@@ -30,7 +30,7 @@ export const de = {
   landing: {
     title: "Ihre Übungen und Termine an einem Ort",
     intro:
-      "PhysioCheck verbindet Sie sicher mit Ihrer Physiotherapiepraxis. Erstellen Sie ein Konto – Ihre Übungen und Termine sehen Sie, sobald Sie Ihr Konto mit dem Code Ihrer Praxis verbunden haben.",
+      "PhysioCheck verbindet Sie sicher mit Ihrer Physiotherapiepraxis. Haben Sie einen Einladungscode von Ihrer Praxis erhalten? Dann starten Sie am besten direkt damit.",
     createAccount: "Neues Konto erstellen",
     haveCode: "Ich habe einen Einladungscode",
     signIn: "Ich habe bereits ein Konto",
@@ -118,6 +118,9 @@ export const de = {
     continueTitle: "Einladung bestätigen",
     invitationFor: (patientName: string) => `Einladung für ${patientName}`,
     fromPractice: (practiceName: string) => `Praxis: ${practiceName}`,
+    invitationValidUntil: (date: string) => `Die Einladung ist gültig bis ${date}.`,
+    continueHint:
+      "Ihr Code ist geprüft. Erstellen Sie jetzt ein eigenes Konto mit Ihrer E-Mail-Adresse und einem selbst gewählten Passwort – oder melden Sie sich mit einem bestehenden Konto an. Die Verbindung zur Praxis wird erst danach endgültig hergestellt; der Code bleibt bis dahin gültig.",
     createAccount: "Neues Konto erstellen",
     useExistingAccount: "Mit bestehendem Konto anmelden",
     accept: "Verbindung zur Praxis bestätigen",
@@ -301,6 +304,9 @@ export const de = {
       inviteCreateError:
         "Die Einladung konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
       noPendingInvites: "Keine offenen Einladungen.",
+      qrAlt: "QR-Code mit dem Einladungslink",
+      qrHint:
+        "Der Patient kann diesen QR-Code mit der Handykamera scannen und landet direkt bei der Code-Eingabe – praktisch für Patienten, die keine Links tippen möchten.",
     },
     patientDetail: {
       backToList: "Zurück zur Patientenliste",

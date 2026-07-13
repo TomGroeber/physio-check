@@ -1,6 +1,12 @@
 # PhysioCheck – AI Handoff
 
-> Stand: 2026-07-12 · Arbeitszweig: `main` · GitHub-Remote: `TomGroeber/physio-check` (**privat**)
+> Stand: 2026-07-13 · Arbeitszweig: `main` · GitHub-Remote: `TomGroeber/physio-check` (**privat**)
+
+## Laufender Auftrag (13.07.2026): Phasen A–J
+
+Übungs-/Videoverwaltung, individuelle Pläne, flexible Häufigkeiten, geführter Patientenmodus, optimierter Einladungseinstieg. Fortschritt in `TASKS.md` (Abschnitt „Auftrag vom 13.07.2026") und `NEXT_TASK.md`.
+
+- **Phase A fertig (2026-07-13):** Startseite führt primär zum Code-Einstieg; `/invite/continue` zeigt Ablaufdatum + Hinweis (Konto selbst erstellen, Code bleibt bis zur endgültigen Verbindung gültig); QR-Code zum Einladungslink lokal erzeugt (`src/components/practice/invite-qr-code.tsx`, neues Paket `qrcode`, keine externen Aufrufe). Einladungssicherheit unverändert. Geprüft: Typecheck, Lint, 61 Unit-Tests, Build, 7-Schritte-UI-Durchlauf (frischer Code, QR sichtbar, Deep-Link, neutrale Fehlermeldung, Aufräumen).
 
 ## Produkt und Stack
 
