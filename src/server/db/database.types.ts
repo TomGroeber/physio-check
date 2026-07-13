@@ -385,6 +385,8 @@ export type Database = {
           performed_on: string
           plan_item_id: string
           prescription_snapshot: Json
+          reviewed_at: string | null
+          reviewed_by: string | null
           sets_completed: number | null
           status: Database["public"]["Enums"]["completion_status"]
         }
@@ -400,6 +402,8 @@ export type Database = {
           performed_on: string
           plan_item_id: string
           prescription_snapshot?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           sets_completed?: number | null
           status: Database["public"]["Enums"]["completion_status"]
         }
@@ -415,6 +419,8 @@ export type Database = {
           performed_on?: string
           plan_item_id?: string
           prescription_snapshot?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           sets_completed?: number | null
           status?: Database["public"]["Enums"]["completion_status"]
         }
@@ -431,6 +437,13 @@ export type Database = {
             columns: ["plan_item_id"]
             isOneToOne: false
             referencedRelation: "exercise_plan_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "completion_logs_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "practice_members"
             referencedColumns: ["id"]
           },
         ]
@@ -1457,6 +1470,10 @@ export type Database = {
       is_practice_member: { Args: { p_practice_id: string }; Returns: boolean }
       member_can_view_patient: {
         Args: { p_patient_id: string }
+        Returns: boolean
+      }
+      mark_completion_log_reviewed: {
+        Args: { p_log_id: string }
         Returns: boolean
       }
       patient_can_view_exercise: {

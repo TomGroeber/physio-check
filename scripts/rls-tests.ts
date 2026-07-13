@@ -126,6 +126,13 @@ async function main() {
     .limit(1)
     .single();
   if (!seededPlanItem) throw new Error("Demo-Übungsplan enthält keine Übung.");
+  const { data: seededFeedback } = await service
+    .from("completion_logs")
+    .select("id, reviewed_at, reviewed_by")
+    .eq("patient_profile_id", petraId)
+    .limit(1)
+    .single();
+  if (!seededFeedback) throw new Error("Demo-Rückmeldung fehlt.");
   let publishedTestVersionId: string | null = null;
   let recordedOccurrenceId: string | null = null;
 
@@ -310,6 +317,12 @@ async function main() {
     });
     check("RPC verhindert unbeabsichtigten zusätzlichen Tagesdurchgang", Boolean(duplicate.error));
   }
+  {
+    const { error } = await patient.rpc("mark_completion_log_reviewed", {
+      p_log_id: seededFeedback.id,
+    });
+    check("Patientin kann Praxis-Lesestatus nicht setzen", Boolean(error));
+  }
 
   // ---------- B) Fremdpraxis ----------
   console.log("\nB) Mitglied einer fremden Praxis: kein Zugriff auf die Demo-Praxis");
@@ -409,6 +422,12 @@ async function main() {
     });
     check("RPC record_exercise_occurrence: Fremdpraxis wird abgelehnt", Boolean(error));
   }
+  {
+    const { error } = await foreign.rpc("mark_completion_log_reviewed", {
+      p_log_id: seededFeedback.id,
+    });
+    check("RPC mark_completion_log_reviewed: Fremdpraxis wird abgelehnt", Boolean(error));
+  }
 
   // ---------- C) Selbst-Eskalation ----------
   console.log("\nC) Praxismitglied: keine Selbst-Eskalation");
@@ -435,6 +454,20 @@ async function main() {
     check(
       "Einladungs-Hash ist für normale Mitglieder nicht lesbar",
       (invites ?? []).length === 0 || (invites ?? []).every((row) => !row.code_hash)
+    );
+  }
+  {
+    const { error } = await therapist.rpc("mark_completion_log_reviewed", {
+      p_log_id: seededFeedback.id,
+    });
+    const { data: reviewed } = await service
+      .from("completion_logs")
+      .select("reviewed_at, reviewed_by")
+      .eq("id", seededFeedback.id)
+      .single();
+    check(
+      "eigene Praxis kann Rückmeldung als gelesen markieren",
+      !error && Boolean(reviewed?.reviewed_at) && Boolean(reviewed?.reviewed_by)
     );
   }
   {
@@ -538,6 +571,10 @@ async function main() {
   if (recordedOccurrenceId) {
     await service.from("completion_logs").delete().eq("id", recordedOccurrenceId);
   }
+  await service
+    .from("completion_logs")
+    .update({ reviewed_at: seededFeedback.reviewed_at, reviewed_by: seededFeedback.reviewed_by })
+    .eq("id", seededFeedback.id);
   if (publishedTestVersionId) {
     await service
       .from("exercise_plans")

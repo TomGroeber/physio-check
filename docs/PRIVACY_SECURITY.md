@@ -13,6 +13,12 @@
 - Eine Transaktionssperre plus Unique-Index verhindert unbeabsichtigte Doppelanlage bei parallelen Klicks.
 - Schmerzwerte und Notizen bleiben ausschließlich im geschützten Completion-Log; sie gelangen nicht in Audit-Metadaten oder Notifications.
 
+## Ergänzung Phase H: Auswertung und Review
+
+- Fortschrittswerte werden nur serverseitig aus Daten der verifizierten Praxis berechnet. Sie sind organisatorische Selbstauskunftsauswertungen, keine medizinische Bewertung oder Überwachung.
+- Das Audit beim Lesen speichert nur Log-ID und Ereignistyp; Gesundheitsinhalt, Schmerzwerte und Notizen werden nicht kopiert.
+- Die frühere Praxis kann ihre eigene historische Dokumentation behalten; neue Praxen erhalten durch einen Praxiswechsel keinen Zugriff darauf.
+
 ## Ergänzung Phase C: Registrierung und Übungsdokumentation
 
 - Ein registriertes, unverbundenes Konto besitzt keinerlei Zugriff auf Praxis- oder Patientendaten – weder über die Oberfläche noch über direkte URLs oder die Datenbank (RLS greift ohne Praxis-Link nicht).

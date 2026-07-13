@@ -6,6 +6,8 @@
 
 Übungs-/Videoverwaltung, individuelle Pläne, flexible Häufigkeiten, geführter Patientenmodus, optimierter Einladungseinstieg. Fortschritt in `TASKS.md` (Abschnitt „Auftrag vom 13.07.2026") und `NEXT_TASK.md`.
 
+- **Phase H implementiert (Cloud-Prüfstand, 2026-07-13):** `src/lib/adherence-analytics.ts` berechnet Soll je Schedule/Zeitraum sowie dokumentiert, completed, Status-, Schmerz- und ungelesene Zähler. `src/server/services/adherence.ts` liefert Patientendetail und Bulk-Dashboard ohne Patient-N+1. Beide Ansichten filtern 7/30 Tage, zeigen letzte Aktivität/inaktive Patienten und verlinken Patient, Plan und Übung. Migration `20260713180000_completion_feedback_review.sql` ergänzt getrennte Review-Metadaten und eine autorisierte/auditierte RPC; Action/Button markieren ungelesene Logs. RLS-Suite prüft Patient/Fremdpraxis/eigene Praxis. Cloud-geprüft: Typecheck, Lint, 88 Tests, Build. DB/RLS/E2E/UI lokal offen.
+
 - **Phase G implementiert (Cloud-Prüfstand, 2026-07-13, Commit `441fc80`):** Neue Patientenseite `/session` und Start/Fortsetzen-CTA auf `/today`. Sie zeigt genau den nächsten offenen Durchgang mit privaten Medien, großen individuellen Vorgaben, Schedule/Uhrzeiten, Schritten und optionalem Timer. Das wiederverwendbare `ExerciseLogForm` unterstützt einen streng validierten Guided-Return; nach dem Speichern wird die Queue serverseitig neu geladen. Wenn nichts offen ist, erscheint eine neutrale Tageszusammenfassung. Neue Dateien: `src/app/(patient)/session/page.tsx`, `src/components/patient/{exercise-log-form,exercise-timer}.tsx`, `src/lib/exercise-timer.ts`. Cloud-geprüft: Typecheck, Lint, 83 Tests, Build. Browser-/WCAG-Test offen. Push und Obsidian-Sync bleiben wegen fehlender Cloud-Anmeldung beziehungsweise fehlendem lokalen Vault blockiert.
 
 - **Phase F implementiert (Cloud-Prüfstand, 2026-07-13, Commit `3ffa797`):** Migration `20260713160000_completion_occurrences.sql` ergänzt `occurrence_index`, nummeriert alle alten Logs deterministisch und erzwingt eindeutige Tagesdurchgänge. `record_exercise_occurrence` prüft aktuellen Plan/Praxislink, Tages-/Wochen-Schedule und vergibt den nächsten Index atomar; der Snapshot entsteht in der DB, direkte Inserts wurden entzogen. `src/lib/occurrences.ts` berechnet Soll, dokumentiert und als erledigt gemeldet getrennt. Heute-/Detail-/Praxisansicht zeigen Einzeldurchgänge und Wochenstand. RLS-Suite um Direktinsert, Doppelanlage und Fremdzugriff ergänzt. Cloud-geprüft: Typecheck, Lint, 79 Tests, Build. DB-Reset/RLS/E2E/UI mangels lokaler Supabase offen. GitHub-Push scheitert weiterhin mangels Schreibanmeldung; Obsidian-Sync mangels `.env.local`/Vault.
@@ -61,7 +63,7 @@ Die Phase-E/F-Implementierung lag zuvor als kompletter Parallelordner `physio-ch
 
 1. Praxisentscheidung für Absageanfragen (annehmen/ablehnen) fehlt; `decideCancellationSchema` existiert bereits ungenutzt in `src/lib/validation/appointments.ts`.
 3. Virenscan/Quarantäne für Uploads vor Pilotbetrieb; aktuell nur Dateityp, Signatur und Größe.
-4. Phase C–G lokal mit `db:reset`, `test:rls` und echtem Browser/WCAG-Check prüfen. Danach Phase H (Praxis-Auswertung) abschließen.
+4. Phase C–H lokal mit `db:reset`, `test:rls` und echtem Browser/WCAG-Check prüfen. Danach Phase I (Erinnerungen) abschließen.
 5. UX-Beobachtung: Erfolgs-/Fehlermeldungen von Server-Actions gehen verloren, wenn `revalidatePath` die Formular-Komponente neu aufbaut (Abschließen/Zurücknehmen, Angebot annehmen). Der Zustandswechsel selbst ist die Rückmeldung; ein Toast-System wäre die saubere Lösung.
 6. E2E: seltener Hänger eines einzelnen Server-Action-Roundtrips nur unter voller Parallellast (untersucht 2026-07-12: keine blockierten DB-Queries, isoliert nie reproduzierbar). Handling: `expect`-Timeout 10 s, 1 Retry mit `trace: on-first-retry` – bei erneutem Auftreten liegt ein Trace in `test-results/`.
 
@@ -76,7 +78,8 @@ Die Phase-E/F-Implementierung lag zuvor als kompletter Parallelordner `physio-ch
 - Plan-Builder: `src/components/practice/exercise-plan-builder.tsx`, `src/server/{actions,services}/plans.ts`, `src/lib/{plan-schedule,validation/plans}.ts`
 - Durchgänge: `src/lib/occurrences.ts`, `src/server/services/exercise-log.ts`, `src/server/services/patient.ts`
 - Geführter Modus: `src/app/(patient)/session/page.tsx`, `src/components/patient/{exercise-log-form,exercise-timer}.tsx`
-- Neueste Migration: `supabase/migrations/20260713160000_completion_occurrences.sql`
+- Auswertung: `src/lib/adherence-analytics.ts`, `src/server/services/adherence.ts`, `src/server/actions/adherence.ts`
+- Neueste Migration: `supabase/migrations/20260713180000_completion_feedback_review.sql`
 - UI-Texte: `src/messages/de.ts`
 
 ## Lokaler Start
@@ -97,4 +100,4 @@ Remote `origin` ist `https://github.com/TomGroeber/physio-check.git` (privat). V
 
 ## Nächster konkreter Auftrag
 
-Nächster Auftrag: Phase H – Praxis-Auswertung mit Soll/Ist für 7/30 Tage, Rückmeldungen, Schmerzveränderungen, letzter Dokumentation und inaktiven Patienten. Vor dem nächsten lokalen Meilenstein Phase C–G mit Supabase/RLS/Browser prüfen. Obsidian-Sync: `pnpm docs:sync` auf Toms Mac (`OBSIDIAN_VAULT_PATH=~/Desktop/UNI-Wissensbasis`); aus der Cloud nicht direkt erreichbar.
+Nächster Auftrag: Phase I – freiwillige In-App-Erinnerungen mit Patienteneinstellungen und Ruhezeiten; Push ehrlich als späteren Ausbau belassen. Vor dem nächsten lokalen Meilenstein Phase C–H mit Supabase/RLS/Browser prüfen. Obsidian-Sync: `pnpm docs:sync` auf Toms Mac (`OBSIDIAN_VAULT_PATH=~/Desktop/UNI-Wissensbasis`); aus der Cloud nicht direkt erreichbar.

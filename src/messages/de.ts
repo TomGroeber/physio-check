@@ -326,6 +326,8 @@ export const de = {
       selfReportNote:
         "Alle Angaben zu durchgeführten Übungen sind Selbstauskünfte der Patientinnen und Patienten.",
       painAfter: (value: number) => `Schmerz nach der Übung: ${value} von 10`,
+      painIncrease: (before: number, after: number) =>
+        `Schmerzangabe gestiegen: ${before} auf ${after} von 10`,
       authorizationWarnings: "Verordnungswarnungen",
       emptyAuthorizationWarnings:
         "Keine Warnungen – Einheiten und Gültigkeit sind überall ausreichend.",
@@ -335,6 +337,42 @@ export const de = {
         too_difficult: "Zu schwierig",
         not_possible: "Nicht möglich",
       },
+    },
+    analytics: {
+      heading: "Übungsfortschritt",
+      dashboardHeading: (days: number) => `Übungsfortschritt der letzten ${days} Tage`,
+      currentPlanHint:
+        "Die Soll-Werte werden aus der aktuellen Planversion für den gewählten Zeitraum berechnet. Alle Rückmeldungen sind Selbstauskünfte.",
+      planned: "Geplante Durchgänge",
+      documented: "Dokumentierte Durchgänge",
+      completed: "Als erledigt angegeben",
+      feedback: "Andere Rückmeldungen",
+      difficult: "Zu schwierig",
+      notPossible: "Nicht möglich",
+      partial: "Teilweise",
+      painFlags: "Markierte Schmerzveränderungen",
+      unread: "Ungelesene Rückmeldungen",
+      newBadge: "Neu",
+      inactiveBadge: "Keine Dokumentation im Zeitraum",
+      lastActivity: "Letzte Dokumentation",
+      noActivity: "Noch keine Dokumentation im aktuellen Plan.",
+      noPlan: "Kein aktiver Übungsplan für die Auswertung.",
+      noPatients: "Keine aktiven Patienten für die Auswertung.",
+      exerciseBreakdown: "Aufschlüsselung nach Übung",
+      openExercise: "Übung öffnen",
+      openPlan: "Zum aktuellen Plan",
+      rangeLabel: (days: number) => `Auswertung für die letzten ${days} Tage`,
+      ratio: (documented: number, planned: number) =>
+        `${documented} von ${planned} dokumentiert`,
+      completedRatio: (completed: number, planned: number) =>
+        `${completed} von ${planned} als erledigt angegeben`,
+      issueCount: (count: number) =>
+        `${count} ${count === 1 ? "auffällige Rückmeldung" : "auffällige Rückmeldungen"}`,
+      markReviewed: "Als gelesen markieren",
+      reviewed: "Die Rückmeldung wurde als gelesen markiert.",
+      reviewError: "Die Rückmeldung konnte nicht als gelesen markiert werden.",
+      loadError: "Die Fortschrittsauswertung konnte nicht geladen werden.",
+      unknownPatient: "Unbekannter Patient",
     },
     patients: {
       title: "Patienten",

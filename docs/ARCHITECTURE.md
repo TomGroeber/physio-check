@@ -12,6 +12,10 @@ Die UI sendet keine Durchgangsnummer. `record_exercise_occurrence` verwendet die
 
 Der Guided Flow speichert keine eigene Warteschlange im Browser. `/session` lädt die aktuellen Tagesdaten, wählt den ersten offenen Durchgang und lädt dessen autorisierte Medien. Nach der Action führt ein Redirect zurück zu `/session`; der Server berechnet die Queue erneut. Timerzustand ist rein lokal, kurzlebig und ohne Persistenz oder medizinische Auswertung.
 
+## Ergänzung Phase H: Analytics
+
+`src/lib/adherence-analytics.ts` enthält die reine, testbare Schedule-/Zeitraumrechnung. Der Service lädt nur aktuelle Plan-Items und zugehörige Logs; das Dashboard nutzt Bulk-Abfragen und gruppiert im Serverprozess. Die UI zeigt absolute Soll-/Ist-Zähler und bezeichnet Daten konsequent als Selbstauskunft. Review-Metadaten laufen durch eine eng begrenzte RPC statt einer allgemeinen Log-Update-Policy.
+
 ## Phase-C-Erweiterung 2026-07-13: Übungsmedien
 
 Große Übungsmedien werden ticket-basiert hochgeladen: Server Action prüft aktive Praxis-Mitgliedschaft und die Übung, der Service erzeugt einen zufälligen Pfad `<practice_id>/<exercise_id>/<uuid>.<ext>` und eine eng begrenzte signierte Upload-URL. Der Browser lädt direkt mit echtem Fortschritt in den privaten Bucket. Eine zweite Server Action finalisiert erst nach Prüfung von Pfad, Bucket-Information, Größenlimit und Magic Bytes. Pro Übung existiert durch einen eindeutigen Index höchstens ein Medium je Art; Austausch und Entfernen löschen auch das vorherige Storage-Objekt und schreiben ein datensparsames Audit-Ereignis.

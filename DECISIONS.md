@@ -2,6 +2,12 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-07-13 – Praxis-Auswertung (Phase H)
+
+**D-044 · Lesestatus getrennt vom unveränderlichen Gesundheitsinhalt.** Completion-Logs bleiben ohne allgemeine Update-Policy. Nur `mark_completion_log_reviewed` darf nach Prüfung der planbesitzenden Praxis `reviewed_at/by` setzen; Status, Schmerz, Notiz, Snapshot und Zeitpunkt bleiben unberührt. Fremdpraxis und Patient können den Praxis-Lesestatus nicht setzen.
+
+**D-043 · Soll nach aktueller Planversion und Kalenderwochen.** 7-/30-Tage-Sollwerte verwenden Items der aktuellen Version und deren Start-/Enddatum. Feste Wochentage sind exakt zählbar. Flexible Wochenziele werden je ISO-Kalenderwoche gezählt und in Teilwochen höchstens mit der Zahl verfügbarer Tage angesetzt. Die UI bezeichnet dies ausdrücklich als Soll aus der aktuellen Planversion, nicht als Beweis der Durchführung.
+
 ## 2026-07-13 – Geführter Patientenmodus (Phase G)
 
 **D-042 · Serverberechnete Warteschlange statt Client-Sessionzustand.** `/session` zeigt immer den ersten aktuell offenen Durchgang aus `getPatientTodayData`. Nach jeder Selbstauskunft erfolgt ein Redirect und eine frische Datenbankberechnung. Dadurch kann ein alter Browserzustand weder einen inzwischen dokumentierten Durchgang wiederholen noch einen neuen Plan übersehen. Der optionale Timer bleibt eine reine Bedienhilfe und dokumentiert niemals automatisch.

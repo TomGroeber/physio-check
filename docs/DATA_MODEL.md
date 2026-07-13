@@ -13,6 +13,11 @@
 - Feste Tagespläne verwenden Indizes 1 bis `times_per_day`. Flexible Wochenpläne erlauben höchstens Index 1 pro Tag, bis das Wochenziel erreicht ist.
 - Nur die atomare Funktion `record_exercise_occurrence` darf neue Logs anlegen. Sie erstellt den `prescription_snapshot` aus dem aktuellen Item und speichert darin auch geplante Anzahl und vergebenen Index.
 
+## Ergänzung Phase H: Rückmeldungs-Lesestatus
+
+- `completion_logs.reviewed_at` und `reviewed_by` sind reine Praxis-Workflow-Metadaten. Sie ändern keine Selbstauskunft und dürfen nur über `mark_completion_log_reviewed` gesetzt werden.
+- Ein partieller Index beschleunigt ungelesene Rückmeldungen. Die RPC prüft die aktive Mitgliedschaft in der Praxis des zugehörigen Plans und schreibt ein inhaltsfreies Audit-Ereignis.
+
 ## Phase-C-Ergänzungen
 
 - Keine neuen Tabellen. Die freie Registrierung ist reine Anwendungslogik (D-018).

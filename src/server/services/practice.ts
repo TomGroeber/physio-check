@@ -62,8 +62,8 @@ export async function getDashboardData(practiceId: string, timezone: string) {
         supabase
           .from("completion_logs")
           .select(
-            `id, performed_at, status, pain_after,
-             patient:profiles ( full_name ),
+            `id, performed_at, status, pain_before, pain_after, reviewed_at,
+             patient:profiles ( id, full_name ),
              exercise_plan_items ( exercises ( title ) )`
           )
           .in("patient_profile_id", patientIds)
@@ -73,15 +73,14 @@ export async function getDashboardData(practiceId: string, timezone: string) {
         supabase
           .from("completion_logs")
           .select(
-            `id, performed_at, status, pain_after,
-             patient:profiles ( full_name ),
+            `id, performed_at, status, pain_before, pain_after, reviewed_at,
+             patient:profiles ( id, full_name ),
              exercise_plan_items ( exercises ( title ) )`
           )
           .in("patient_profile_id", patientIds)
           .gte("performed_at", weekAgo)
-          .or("status.eq.too_difficult,status.eq.not_possible,pain_after.gte.7")
           .order("performed_at", { ascending: false })
-          .limit(10),
+          .limit(100),
       ])
     : [{ data: [] }, { data: [] }];
 
@@ -89,7 +88,17 @@ export async function getDashboardData(practiceId: string, timezone: string) {
     todaysAppointments: appointmentsResult.data ?? [],
     pendingCancellations: cancellationsResult.data ?? [],
     recentLogs: recentLogsResult.data ?? [],
-    flaggedLogs: flaggedLogsResult.data ?? [],
+    flaggedLogs: (flaggedLogsResult.data ?? [])
+      .filter(
+        (log) =>
+          log.status === "too_difficult" ||
+          log.status === "not_possible" ||
+          (log.pain_after !== null && log.pain_after >= 7) ||
+          (log.pain_before !== null &&
+            log.pain_after !== null &&
+            log.pain_after > log.pain_before)
+      )
+      .slice(0, 10),
   };
 }
 
@@ -173,11 +182,11 @@ export async function getPatientCompletionLogs(
     .from("completion_logs")
     .select(
       `id, performed_on, performed_at, occurrence_index, status, sets_completed, pain_before,
-       pain_after, note, prescription_snapshot,
+       pain_after, note, prescription_snapshot, reviewed_at, reviewed_by,
        exercise_plan_items!inner (
-         exercises ( title ),
+         exercise_id, exercises ( id, title ),
          exercise_plan_versions!inner (
-           exercise_plans!exercise_plan_versions_plan_id_fkey!inner ( practice_id )
+           plan_id, exercise_plans!exercise_plan_versions_plan_id_fkey!inner ( practice_id )
          )
        )`
     )
