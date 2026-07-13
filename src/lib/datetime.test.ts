@@ -5,6 +5,7 @@ import {
   formatTime,
   isoDateInTimeZone,
   isoWeekdayInTimeZone,
+  timeValueInTimeZone,
   todayInTimeZone,
   zonedTimeToUtc,
 } from "./datetime";
@@ -74,6 +75,7 @@ describe("Formatierung", () => {
 
   it("formatiert Uhrzeiten in der Zielzeitzone", () => {
     expect(formatTime(date, TZ)).toBe("10:30");
+    expect(timeValueInTimeZone(date, TZ)).toBe("10:30");
   });
 
   it("formatiert lange Datumsangaben auf Deutsch", () => {

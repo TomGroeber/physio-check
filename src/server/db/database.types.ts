@@ -837,6 +837,44 @@ export type Database = {
           },
         ]
       }
+      patient_reminder_preferences: {
+        Row: {
+          created_at: string
+          exercise_reminders_enabled: boolean
+          plan_updates_enabled: boolean
+          profile_id: string
+          quiet_end: string
+          quiet_start: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_reminders_enabled?: boolean
+          plan_updates_enabled?: boolean
+          profile_id: string
+          quiet_end?: string
+          quiet_start?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          exercise_reminders_enabled?: boolean
+          plan_updates_enabled?: boolean
+          profile_id?: string
+          quiet_end?: string
+          quiet_start?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_reminder_preferences_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patient_documents: {
         Row: {
           archived_at: string | null
@@ -1475,6 +1513,10 @@ export type Database = {
       mark_completion_log_reviewed: {
         Args: { p_log_id: string }
         Returns: boolean
+      }
+      mark_notification_read: {
+        Args: { p_notification_id: string }
+        Returns: undefined
       }
       patient_can_view_exercise: {
         Args: { p_exercise_id: string }

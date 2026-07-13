@@ -5,7 +5,9 @@ import { ArrowRight02Icon, Tick02Icon } from "@hugeicons/core-free-icons";
 import { getSessionContext } from "@/server/services/session";
 import { getPatientTodayData, type TodayExercise } from "@/server/services/patient";
 import { getPatientAuthorizationSummary } from "@/server/services/authorizations";
+import { getPatientReminderData } from "@/server/services/reminders";
 import { AppointmentCard } from "@/components/patient/appointment-card";
+import { PlanNotificationCard } from "@/components/patient/plan-notification-card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { de } from "@/messages/de";
@@ -34,7 +36,11 @@ export default async function TodayPage({
 }) {
   // Layout garantiert eine Session; hier nur für die Typen abgesichert.
   const session = (await getSessionContext())!;
-  const [{ exercises, hasPlan, nextAppointment }, authorization, { logged, painhint }] =
+  const [
+    { exercises, hasPlan, nextAppointment, timezone },
+    authorization,
+    { logged, painhint },
+  ] =
     await Promise.all([
       getPatientTodayData(session.userId),
       getPatientAuthorizationSummary(session.userId),
@@ -50,6 +56,12 @@ export default async function TodayPage({
     (sum, exercise) => sum + exercise.completedToday,
     0
   );
+  const remainingOccurrences = Math.max(0, plannedCount - documentedCount);
+  const reminders = await getPatientReminderData({
+    userId: session.userId,
+    timezone,
+    remainingOccurrences,
+  });
   const firstName = session.fullName.split(" ")[0] || session.fullName;
 
   return (
@@ -72,6 +84,34 @@ export default async function TodayPage({
             {t.painHint}
           </AlertDescription>
         </Alert>
+      ) : null}
+
+      {reminders.showExerciseReminder ? (
+        <Alert className="border-primary/40 bg-primary/5">
+          <AlertDescription className="flex flex-col gap-3 text-base text-foreground">
+            <div>
+              <p className="font-bold">{de.patient.reminders.dueTitle}</p>
+              <p>{de.patient.reminders.dueBody(remainingOccurrences)}</p>
+            </div>
+            <Link
+              href="/session"
+              className="flex min-h-12 items-center justify-center rounded-lg bg-primary px-4 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              {de.patient.reminders.continue}
+            </Link>
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      {reminders.planUpdates.length > 0 ? (
+        <section aria-labelledby="plan-updates-heading" className="flex flex-col gap-3">
+          <h2 id="plan-updates-heading" className="text-xl font-bold">
+            {de.patient.reminders.planUpdatesHeading}
+          </h2>
+          {reminders.planUpdates.map((notification) => (
+            <PlanNotificationCard key={notification.id} notification={notification} />
+          ))}
+        </section>
       ) : null}
 
       <section aria-labelledby="authorization-heading" className="flex flex-col gap-3">

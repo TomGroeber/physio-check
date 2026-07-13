@@ -126,6 +126,19 @@ export function formatTime(date: Date, timeZone: string): string {
   }).format(date);
 }
 
+/** Lokale 24-Stunden-Uhrzeit `HH:MM` für Vergleiche und Formularwerte. */
+export function timeValueInTimeZone(date: Date, timeZone: string): string {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+  const hour = parts.find((part) => part.type === "hour")?.value ?? "00";
+  const minute = parts.find((part) => part.type === "minute")?.value ?? "00";
+  return `${hour}:${minute}`;
+}
+
 /** Datum + Uhrzeit, z. B. "Fr., 11.07.2026, 14:30". */
 export function formatDateTime(date: Date, timeZone: string): string {
   return new Intl.DateTimeFormat(LOCALE, {

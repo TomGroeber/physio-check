@@ -301,6 +301,34 @@ export const de = {
       phoneSave: "Telefonnummer speichern",
       phoneEmpty: "Keine Telefonnummer hinterlegt.",
     },
+    reminders: {
+      title: "Erinnerungen",
+      intro:
+        "Sie entscheiden selbst, welche freiwilligen Hinweise PhysioCheck in der App zeigt.",
+      exerciseTitle: "Hinweise zu fälligen Übungen",
+      exerciseHint:
+        "Zeigt auf „Heute“ einen Hinweis, wenn noch geplante Durchgänge offen sind.",
+      planUpdatesTitle: "Hinweise zu Planänderungen",
+      planUpdatesHint:
+        "Zeigt neue oder archivierte Übungspläne als ungelesenen Hinweis an.",
+      quietHours: "Ruhezeit",
+      quietHoursHint:
+        "Während dieser Zeit werden keine Hinweise zu offenen Übungen eingeblendet. Gleiche Start- und Endzeit schaltet die Ruhezeit aus.",
+      quietStart: "Beginn",
+      quietEnd: "Ende",
+      save: "Erinnerungen speichern",
+      saved: "Ihre Erinnerungseinstellungen wurden gespeichert.",
+      saveError: "Die Erinnerungseinstellungen konnten nicht gespeichert werden.",
+      dueTitle: "Für heute sind noch Übungen offen",
+      dueBody: (count: number) =>
+        count === 1
+          ? "Ein geplanter Durchgang kann noch dokumentiert werden."
+          : `${count} geplante Durchgänge können noch dokumentiert werden.`,
+      continue: "Übungen fortsetzen",
+      planUpdatesHeading: "Neue Hinweise zu Ihrem Übungsplan",
+      markRead: "Als gelesen markieren",
+      readError: "Der Hinweis konnte nicht als gelesen markiert werden.",
+    },
   },
 
   practice: {

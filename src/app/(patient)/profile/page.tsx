@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getSessionContext } from "@/server/services/session";
 import { getOwnProfile } from "@/server/services/profile";
+import { getPatientReminderPreferences } from "@/server/services/reminders";
 import { signOutAction } from "@/server/actions/auth";
 import { PhoneForm } from "@/components/patient/phone-form";
+import { ReminderPreferencesForm } from "@/components/patient/reminder-preferences-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { de } from "@/messages/de";
@@ -14,7 +16,10 @@ const t = de.patient.profile;
 
 export default async function ProfilePage() {
   const session = (await getSessionContext())!;
-  const profile = await getOwnProfile(session.userId);
+  const [profile, reminderPreferences] = await Promise.all([
+    getOwnProfile(session.userId),
+    getPatientReminderPreferences(session.userId),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -42,6 +47,12 @@ export default async function ProfilePage() {
       <Card>
         <CardContent className="p-5">
           <PhoneForm initialPhone={profile?.phone ?? ""} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-5">
+          <ReminderPreferencesForm preferences={reminderPreferences} />
         </CardContent>
       </Card>
 

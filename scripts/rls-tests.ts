@@ -148,11 +148,24 @@ async function main() {
   });
   const { data: memberA } = await service
     .from("practice_members")
-    .select("id")
+    .select("id, profile_id")
     .eq("practice_id", practiceAId)
     .eq("role", "therapist")
     .limit(1)
     .single();
+  const { data: testNotification, error: testNotificationError } = await service
+    .from("notifications")
+    .insert({
+      recipient_profile_id: petraId,
+      type: "exercise_plan_published",
+      title: "RLS-Testhinweis",
+      body: "Datensparsamer lokaler Test",
+    })
+    .select("id")
+    .single();
+  if (testNotificationError || !testNotification) {
+    throw new Error(`RLS-Testhinweis: ${testNotificationError?.message}`);
+  }
   const { data: testExercise, error: testExerciseError } = await service
     .from("exercises")
     .insert({
@@ -323,6 +336,45 @@ async function main() {
     });
     check("Patientin kann Praxis-Lesestatus nicht setzen", Boolean(error));
   }
+  {
+    const { error } = await patient.from("patient_reminder_preferences").upsert({
+      profile_id: petraId,
+      exercise_reminders_enabled: false,
+      plan_updates_enabled: true,
+      quiet_start: "21:00",
+      quiet_end: "07:00",
+    });
+    const { data } = await patient
+      .from("patient_reminder_preferences")
+      .select("profile_id, exercise_reminders_enabled")
+      .eq("profile_id", petraId)
+      .single();
+    check(
+      "kann ausschließlich eigene Erinnerungseinstellungen pflegen",
+      !error && data?.profile_id === petraId && data.exercise_reminders_enabled === false
+    );
+  }
+  {
+    const { error } = await patient
+      .from("notifications")
+      .update({ title: "Manipuliert" })
+      .eq("id", testNotification.id);
+    check("kann serverseitigen Benachrichtigungsinhalt nicht ändern", Boolean(error));
+  }
+  {
+    const { error } = await patient.rpc("mark_notification_read", {
+      p_notification_id: testNotification.id,
+    });
+    const { data } = await service
+      .from("notifications")
+      .select("read_at, title")
+      .eq("id", testNotification.id)
+      .single();
+    check(
+      "kann eigenen Hinweis ausschließlich als gelesen markieren",
+      !error && Boolean(data?.read_at) && data?.title === "RLS-Testhinweis"
+    );
+  }
 
   // ---------- B) Fremdpraxis ----------
   console.log("\nB) Mitglied einer fremden Praxis: kein Zugriff auf die Demo-Praxis");
@@ -427,6 +479,19 @@ async function main() {
       p_log_id: seededFeedback.id,
     });
     check("RPC mark_completion_log_reviewed: Fremdpraxis wird abgelehnt", Boolean(error));
+  }
+  {
+    const { data } = await foreign
+      .from("patient_reminder_preferences")
+      .select("profile_id")
+      .eq("profile_id", petraId);
+    check("sieht keine Erinnerungseinstellungen der Patientin", (data ?? []).length === 0);
+  }
+  {
+    const { error } = await foreign.rpc("mark_notification_read", {
+      p_notification_id: testNotification.id,
+    });
+    check("kann Patientenhinweis nicht als gelesen markieren", Boolean(error));
   }
 
   // ---------- C) Selbst-Eskalation ----------
@@ -583,6 +648,8 @@ async function main() {
     await service.from("exercise_plan_versions").delete().eq("id", publishedTestVersionId);
   }
   if (testDocument) await service.from("patient_documents").delete().eq("id", testDocument.id);
+  await service.from("patient_reminder_preferences").delete().eq("profile_id", petraId);
+  await service.from("notifications").delete().eq("id", testNotification.id);
   await service.storage.from("patient-records").remove([storagePath]);
   await service.storage.from("exercise-media").remove([actualExerciseStoragePath]);
   await service.from("exercises").delete().eq("id", testExercise.id);
