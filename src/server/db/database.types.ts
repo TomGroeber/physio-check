@@ -377,6 +377,7 @@ export type Database = {
           created_at: string
           id: string
           note: string
+          occurrence_index: number
           pain_after: number | null
           pain_before: number | null
           patient_profile_id: string
@@ -391,6 +392,7 @@ export type Database = {
           created_at?: string
           id?: string
           note?: string
+          occurrence_index?: number
           pain_after?: number | null
           pain_before?: number | null
           patient_profile_id: string
@@ -405,6 +407,7 @@ export type Database = {
           created_at?: string
           id?: string
           note?: string
+          occurrence_index?: number
           pain_after?: number | null
           pain_before?: number | null
           patient_profile_id?: string
@@ -1473,6 +1476,17 @@ export type Database = {
           p_patient_id: string
           p_practice_id: string
           p_title: string
+        }
+        Returns: string
+      }
+      record_exercise_occurrence: {
+        Args: {
+          p_note: string
+          p_pain_after: number | null
+          p_pain_before: number | null
+          p_plan_item_id: string
+          p_sets_completed: number | null
+          p_status: Database["public"]["Enums"]["completion_status"]
         }
         Returns: string
       }

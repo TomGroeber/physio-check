@@ -2,6 +2,12 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-07-13 – Mehrere Durchgänge (Phase F)
+
+**D-041 · Dokumentiert ist nicht automatisch erledigt.** Jeder Status verbraucht den betreffenden geplanten Durchgang als dokumentierte Selbstauskunft. Nur `completed` zählt zusätzlich als vollständig erledigt. So bleibt eine Rückmeldung „teilweise“, „zu schwierig“ oder „nicht möglich“ sichtbar, ohne fälschlich Erfolg zu behaupten.
+
+**D-040 · Serververgebener Occurrence-Index statt Client-Zähler.** `record_exercise_occurrence` bestimmt Praxisdatum, Wochenstand und nächsten freien Tagesindex unter einer Transaktionssperre. Der Client kann keine Durchgangsnummer erfinden; ein Unique-Index verhindert parallele Doppelanlage. Historische Logs werden nach Zeitstempel nummeriert und niemals gelöscht oder zusammengeführt. Flexible Wochenziele erlauben höchstens einen dokumentierten Durchgang pro Tag.
+
 ## 2026-07-13 – Individuelle Übungspläne (Phase D/E)
 
 **D-039 · Patienten lesen Pläne nur aus der aktuell verbundenen Praxis.** `can_access_plan`, `patient_can_view_exercise` und die Plan-Select-Policy verlangen zusätzlich den aktiven Praxislink. Ein Praxiswechsel überträgt oder öffnet keine alten Plan-/Mediendaten; die frühere Praxis behält ihre Dokumentationshistorie.

@@ -172,7 +172,7 @@ export async function getPatientCompletionLogs(
   const { data } = await supabase
     .from("completion_logs")
     .select(
-      `id, performed_on, performed_at, status, sets_completed, pain_before,
+      `id, performed_on, performed_at, occurrence_index, status, sets_completed, pain_before,
        pain_after, note, prescription_snapshot,
        exercise_plan_items!inner (
          exercises ( title ),

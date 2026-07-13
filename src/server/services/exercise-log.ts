@@ -3,7 +3,7 @@ import "server-only";
 import { createSupabaseServerClient } from "@/server/db/server-client";
 import { createSupabaseServiceClient } from "@/server/db/service-client";
 import { isoWeekdayInTimeZone, todayInTimeZone } from "@/lib/datetime";
-import { isDueOn } from "@/lib/plan-schedule";
+import { calculateOccurrenceProgress, isoWeekRange } from "@/lib/occurrences";
 import type { CompletionLogInput } from "@/lib/validation/exercise-logs";
 import { branding } from "@/config/branding";
 
@@ -27,7 +27,14 @@ export type ExerciseDetail = {
   posterUrl: string | null;
   fallbackImageUrl: string | null;
   captionsUrl: string | null;
-  completedToday: boolean;
+  plannedToday: number;
+  documentedToday: number;
+  completedToday: number;
+  nextOccurrenceIndex: number | null;
+  canDocument: boolean;
+  fullyDocumentedToday: boolean;
+  fullyCompletedToday: boolean;
+  weeklyProgress: { target: number; documented: number; completed: number } | null;
   dueToday: boolean;
 };
 
@@ -110,23 +117,6 @@ async function getOwnedCurrentPlanItem(
   };
 }
 
-async function hasLogForDay(
-  userId: string,
-  planItemId: string,
-  isoDay: string
-): Promise<boolean> {
-  const supabase = await createSupabaseServerClient();
-  const { data } = await supabase
-    .from("completion_logs")
-    .select("id")
-    .eq("patient_profile_id", userId)
-    .eq("plan_item_id", planItemId)
-    .eq("performed_on", isoDay)
-    .limit(1)
-    .maybeSingle();
-  return Boolean(data);
-}
-
 /**
  * Übungsdetail für die Patientenansicht. Das Video liegt im privaten
  * Bucket; die kurzlebige signierte URL wird erst NACH der
@@ -143,13 +133,24 @@ export async function getExerciseDetailForPatient(
   const now = new Date();
   const isoToday = todayInTimeZone(item.timezone, now);
   const weekday = isoWeekdayInTimeZone(now, item.timezone);
+  const week = isoWeekRange(isoToday);
 
   const supabase = await createSupabaseServerClient();
-  const { data: media } = await supabase
-    .from("exercise_media")
-    .select("kind, storage_path")
-    .eq("exercise_id", item.exercise.id)
-    .in("kind", ["video", "thumbnail", "fallback_image", "captions"]);
+  const [{ data: media }, { data: logs }] = await Promise.all([
+    supabase
+      .from("exercise_media")
+      .select("kind, storage_path")
+      .eq("exercise_id", item.exercise.id)
+      .in("kind", ["video", "thumbnail", "fallback_image", "captions"]),
+    supabase
+      .from("completion_logs")
+      .select("performed_on, occurrence_index, status")
+      .eq("patient_profile_id", userId)
+      .eq("plan_item_id", item.id)
+      .gte("performed_on", week.start)
+      .lte("performed_on", week.end),
+  ]);
+  const progress = calculateOccurrenceProgress(item, isoToday, weekday, logs ?? []);
 
   let videoUrl: string | null = null;
   let posterUrl: string | null = null;
@@ -205,8 +206,15 @@ export async function getExerciseDetailForPatient(
     posterUrl,
     fallbackImageUrl,
     captionsUrl,
-    completedToday: await hasLogForDay(userId, item.id, isoToday),
-    dueToday: isDueOn(item, isoToday, weekday),
+    plannedToday: progress.plannedToday,
+    documentedToday: progress.documentedToday,
+    completedToday: progress.completedToday,
+    nextOccurrenceIndex: progress.nextOccurrenceIndex,
+    canDocument: progress.canDocument,
+    fullyDocumentedToday: progress.fullyDocumentedToday,
+    fullyCompletedToday: progress.fullyCompletedToday,
+    weeklyProgress: progress.weekly,
+    dueToday: progress.plannedToday > 0,
   };
 }
 
@@ -216,52 +224,30 @@ export type LogCompletionResult =
 
 /**
  * Dokumentiert eine Übung als Selbstauskunft. Serverseitige Prüfungen:
- * eigenes Item im aktuellen Plan, heute fällig, keine Doppelerfassung
- * am selben Kalendertag. `prescription_snapshot` friert die Vorgaben
- * zum Zeitpunkt der Durchführung ein. Der Insert läuft mit den Rechten
- * des Patienten (RLS als zweite Verteidigungslinie).
+ * eigenes Item im aktuellen Plan und heute fälliger, noch freier
+ * Durchgang. Die Datenbank leitet Datum und nächste Durchgangsnummer
+ * atomar her und erstellt dort auch den unveränderlichen Snapshot.
  */
 export async function logExerciseCompletion(
-  userId: string,
   input: CompletionLogInput
 ): Promise<LogCompletionResult> {
-  const item = await getOwnedCurrentPlanItem(userId, input.planItemId);
-  if (!item) return { ok: false, reason: "not_found" };
-
-  const now = new Date();
-  const isoToday = todayInTimeZone(item.timezone, now);
-  const weekday = isoWeekdayInTimeZone(now, item.timezone);
-  if (!isDueOn(item, isoToday, weekday)) {
-    return { ok: false, reason: "not_due" };
-  }
-
-  if (await hasLogForDay(userId, item.id, isoToday)) {
-    return { ok: false, reason: "already_logged" };
-  }
-
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.from("completion_logs").insert({
-    patient_profile_id: userId,
-    plan_item_id: item.id,
-    performed_on: isoToday,
-    status: input.status,
-    sets_completed: input.setsCompleted ?? null,
-    pain_before: input.painBefore ?? null,
-    pain_after: input.painAfter ?? null,
-    note: input.note,
-    prescription_snapshot: {
-      exercise_id: item.exercise.id,
-      exercise_title: item.exercise.title,
-      sets: item.sets,
-      repetitions: item.repetitions,
-      hold_seconds: item.hold_seconds,
-      total_duration_seconds: item.total_duration_seconds,
-      rest_seconds: item.rest_seconds,
-      schedule: item.schedule as never,
-      note: item.note,
-    },
+  const { error } = await supabase.rpc("record_exercise_occurrence", {
+    p_plan_item_id: input.planItemId,
+    p_status: input.status,
+    p_sets_completed: input.setsCompleted ?? null,
+    p_pain_before: input.painBefore ?? null,
+    p_pain_after: input.painAfter ?? null,
+    p_note: input.note,
   });
 
-  if (error) return { ok: false, reason: "failed" };
+  if (error) {
+    if (/not_found/.test(error.message)) return { ok: false, reason: "not_found" };
+    if (/not_due/.test(error.message)) return { ok: false, reason: "not_due" };
+    if (/all_occurrences_logged|duplicate_occurrence|23505/.test(error.message)) {
+      return { ok: false, reason: "already_logged" };
+    }
+    return { ok: false, reason: "failed" };
+  }
   return { ok: true };
 }

@@ -152,10 +152,30 @@ export default async function ExerciseDetailPage({
         <h2 id="log-heading" className="text-xl font-bold">
           {t.documentHeading}
         </h2>
-        {detail.completedToday ? (
+        {detail.dueToday ? (
           <Card>
-            <CardContent className="flex items-center gap-4 p-5">
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-success text-success-foreground">
+            <CardContent className="flex flex-col gap-1 p-5" role="status">
+              <p className="text-lg font-bold">
+                {t.occurrenceProgress(detail.documentedToday, detail.plannedToday)}
+              </p>
+              <p className="text-base text-muted-foreground">
+                {t.completedProgress(detail.completedToday, detail.plannedToday)}
+              </p>
+              {detail.weeklyProgress ? (
+                <p className="text-base text-muted-foreground">
+                  {t.weeklyProgress(
+                    detail.weeklyProgress.documented,
+                    detail.weeklyProgress.target
+                  )}
+                </p>
+              ) : null}
+            </CardContent>
+          </Card>
+        ) : null}
+        {detail.fullyDocumentedToday ? (
+          <Card>
+            <CardContent className="flex items-start gap-4 p-5">
+              <span className={`flex size-10 shrink-0 items-center justify-center rounded-full ${detail.fullyCompletedToday ? "bg-success text-success-foreground" : "border-2 border-warning bg-warning/15"}`}>
                 <HugeiconsIcon icon={Tick02Icon} strokeWidth={2.5} className="size-6" aria-hidden />
               </span>
               <div>
@@ -163,11 +183,21 @@ export default async function ExerciseDetailPage({
                 <p className="text-base text-muted-foreground">
                   {t.alreadyLoggedBody}
                 </p>
+                {!detail.fullyCompletedToday ? (
+                  <p className="mt-2 text-base text-muted-foreground">
+                    {t.documentedNotCompleted}
+                  </p>
+                ) : null}
               </div>
             </CardContent>
           </Card>
-        ) : detail.dueToday ? (
-          <LogForm planItemId={detail.planItemId} maxSets={detail.sets} />
+        ) : detail.canDocument && detail.nextOccurrenceIndex ? (
+          <LogForm
+            planItemId={detail.planItemId}
+            maxSets={detail.sets}
+            occurrenceIndex={detail.nextOccurrenceIndex}
+            plannedOccurrences={detail.plannedToday}
+          />
         ) : (
           <Card>
             <CardContent className="p-5 text-lg text-muted-foreground">

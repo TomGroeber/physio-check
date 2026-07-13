@@ -43,9 +43,13 @@ function PainSelect({ id, name, label }: { id: string; name: string; label: stri
 export function LogForm({
   planItemId,
   maxSets,
+  occurrenceIndex,
+  plannedOccurrences,
 }: {
   planItemId: string;
   maxSets: number | null;
+  occurrenceIndex: number;
+  plannedOccurrences: number;
 }) {
   const [state, formAction, isPending] = useActionState<LogFormState, FormData>(
     logCompletionAction,
@@ -56,6 +60,10 @@ export function LogForm({
     <form action={formAction} className="flex flex-col gap-5">
       <input type="hidden" name="planItemId" value={planItemId} />
       <FormMessage error={state.error} />
+
+      <p className="rounded-lg bg-primary/10 p-4 text-xl font-bold" role="status">
+        {t.occurrenceHeading(occurrenceIndex, plannedOccurrences)}
+      </p>
 
       <fieldset className="flex flex-col gap-2">
         <legend className="pb-1 text-base font-semibold">{t.statusLabel}</legend>

@@ -41,7 +41,15 @@ export default async function TodayPage({
       searchParams,
     ]);
 
-  const doneCount = exercises.filter((e) => e.completedToday).length;
+  const plannedCount = exercises.reduce((sum, exercise) => sum + exercise.plannedToday, 0);
+  const documentedCount = exercises.reduce(
+    (sum, exercise) => sum + exercise.documentedToday,
+    0
+  );
+  const completedCount = exercises.reduce(
+    (sum, exercise) => sum + exercise.completedToday,
+    0
+  );
   const firstName = session.fullName.split(" ")[0] || session.fullName;
 
   return (
@@ -106,7 +114,10 @@ export default async function TodayPage({
         ) : (
           <>
             <p className="text-lg text-muted-foreground" role="status">
-              {t.progress(doneCount, exercises.length)}
+              {t.progress(documentedCount, plannedCount)}
+            </p>
+            <p className="text-base text-muted-foreground">
+              {t.completionProgress(completedCount, plannedCount)}
             </p>
             <ul className="flex flex-col gap-3">
               {exercises.map((exercise) => (
@@ -120,18 +131,25 @@ export default async function TodayPage({
                       <CardContent className="flex items-center gap-4 p-5">
                         <span
                           className={
-                            exercise.completedToday
+                            exercise.fullyCompletedToday
                               ? "flex size-10 shrink-0 items-center justify-center rounded-full bg-success text-success-foreground"
-                              : "flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-border"
+                              : exercise.fullyDocumentedToday
+                                ? "flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-warning bg-warning/15 text-sm font-bold"
+                                : "flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-border text-sm font-bold"
                           }
-                          aria-hidden
+                          aria-label={t.occurrenceProgress(
+                            exercise.documentedToday,
+                            exercise.plannedToday
+                          )}
                         >
-                          {exercise.completedToday && (
+                          {exercise.fullyCompletedToday ? (
                             <HugeiconsIcon
                               icon={Tick02Icon}
                               strokeWidth={2.5}
                               className="size-6"
                             />
+                          ) : (
+                            `${exercise.documentedToday}/${exercise.plannedToday}`
                           )}
                         </span>
                         <div className="min-w-0 flex-1">
@@ -141,11 +159,30 @@ export default async function TodayPage({
                               {prescriptionSummary(exercise)}
                             </p>
                           )}
-                          {exercise.completedToday && (
-                            <p className="text-base font-semibold text-success">
-                              {t.alreadyLogged}
+                          <p className="text-base font-semibold">
+                            {t.occurrenceProgress(
+                              exercise.documentedToday,
+                              exercise.plannedToday
+                            )}
+                          </p>
+                          {exercise.weeklyProgress ? (
+                            <p className="text-base text-muted-foreground">
+                              {t.weeklyProgress(
+                                exercise.weeklyProgress.documented,
+                                exercise.weeklyProgress.target
+                              )}
                             </p>
-                          )}
+                          ) : null}
+                          {exercise.fullyDocumentedToday && !exercise.fullyCompletedToday ? (
+                            <p className="text-base text-muted-foreground">
+                              {t.documentedNotCompleted}
+                            </p>
+                          ) : null}
+                          {exercise.canDocument && exercise.documentedToday > 0 ? (
+                            <p className="text-base font-semibold text-primary">
+                              {t.continueOccurrences}
+                            </p>
+                          ) : null}
                         </div>
                         <HugeiconsIcon
                           icon={ArrowRight02Icon}

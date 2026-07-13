@@ -121,12 +121,13 @@ async function main() {
   if (!seededPlan?.current_version_id) throw new Error("Aktiver Demo-Übungsplan fehlt.");
   const { data: seededPlanItem } = await service
     .from("exercise_plan_items")
-    .select("exercise_id")
+    .select("id, exercise_id")
     .eq("plan_version_id", seededPlan.current_version_id)
     .limit(1)
     .single();
   if (!seededPlanItem) throw new Error("Demo-Übungsplan enthält keine Übung.");
   let publishedTestVersionId: string | null = null;
+  let recordedOccurrenceId: string | null = null;
 
   // Ein Dokument mit Storage-Objekt für die Storage-/Fremdzugriffs-Proben.
   const png = Buffer.from(
@@ -278,6 +279,37 @@ async function main() {
     });
     check("RPC publish_exercise_plan: Patientin wird abgelehnt", Boolean(error));
   }
+  {
+    const { error } = await patient.from("completion_logs").insert({
+      patient_profile_id: petraId,
+      plan_item_id: seededPlanItem.id,
+      performed_on: new Date().toISOString().slice(0, 10),
+      occurrence_index: 99,
+      status: "completed",
+    });
+    check("kann Durchgänge nicht direkt mit erfundener Nummer einfügen", Boolean(error));
+  }
+  {
+    const first = await patient.rpc("record_exercise_occurrence", {
+      p_plan_item_id: seededPlanItem.id,
+      p_status: "partial",
+      p_sets_completed: 1,
+      p_pain_before: null,
+      p_pain_after: null,
+      p_note: "Lokaler RLS-Test",
+    });
+    recordedOccurrenceId = first.data ?? null;
+    check("RPC dokumentiert einen eigenen fälligen Durchgang", !first.error && Boolean(first.data));
+    const duplicate = await patient.rpc("record_exercise_occurrence", {
+      p_plan_item_id: seededPlanItem.id,
+      p_status: "completed",
+      p_sets_completed: 1,
+      p_pain_before: null,
+      p_pain_after: null,
+      p_note: "Darf nicht doppelt entstehen",
+    });
+    check("RPC verhindert unbeabsichtigten zusätzlichen Tagesdurchgang", Boolean(duplicate.error));
+  }
 
   // ---------- B) Fremdpraxis ----------
   console.log("\nB) Mitglied einer fremden Praxis: kein Zugriff auf die Demo-Praxis");
@@ -365,6 +397,17 @@ async function main() {
       p_notification_body: "Test",
     });
     check("RPC publish_exercise_plan: Fremdpraxis wird abgelehnt", Boolean(error));
+  }
+  {
+    const { error } = await foreign.rpc("record_exercise_occurrence", {
+      p_plan_item_id: seededPlanItem.id,
+      p_status: "completed",
+      p_sets_completed: null,
+      p_pain_before: null,
+      p_pain_after: null,
+      p_note: "",
+    });
+    check("RPC record_exercise_occurrence: Fremdpraxis wird abgelehnt", Boolean(error));
   }
 
   // ---------- C) Selbst-Eskalation ----------
@@ -492,6 +535,9 @@ async function main() {
 
   // ---------- Aufräumen ----------
   console.log("\nAufräumen …");
+  if (recordedOccurrenceId) {
+    await service.from("completion_logs").delete().eq("id", recordedOccurrenceId);
+  }
   if (publishedTestVersionId) {
     await service
       .from("exercise_plans")

@@ -148,11 +148,20 @@ export const de = {
     today: {
       title: "Heute",
       exercisesHeading: "Ihre Übungen heute",
-      alreadyLogged: "Heute bereits dokumentiert",
+      alreadyLogged: "Heute vollständig dokumentiert",
       greeting: "Guten Tag",
       startExercises: "Heutige Übungen starten",
-      progress: (done: number, total: number) =>
-        `${done} von ${total} Übungen erledigt`,
+      progress: (documented: number, total: number) =>
+        `${documented} von ${total} geplanten Durchgängen dokumentiert`,
+      completionProgress: (completed: number, total: number) =>
+        `${completed} von ${total} Durchgängen als erledigt angegeben`,
+      occurrenceProgress: (documented: number, total: number) =>
+        `${documented} von ${total} Durchgängen dokumentiert`,
+      weeklyProgress: (documented: number, total: number) =>
+        `${documented} von ${total} Durchgängen in dieser Woche dokumentiert`,
+      continueOccurrences: "Weiteren Durchgang dokumentieren",
+      documentedNotCompleted:
+        "Alle geplanten Durchgänge haben eine Rückmeldung. Mindestens einer wurde nicht als vollständig erledigt angegeben.",
       noExercisesToday:
         "Für heute sind keine Übungen geplant. Gönnen Sie sich die Pause!",
       noPlanYet:
@@ -181,6 +190,14 @@ export const de = {
       prescriptionHeading: "Ihre Vorgaben",
       planNote: "Hinweis Ihrer Praxis",
       documentHeading: "Durchführung dokumentieren",
+      occurrenceHeading: (current: number, total: number) =>
+        `Durchgang ${current} von ${total}`,
+      occurrenceProgress: (documented: number, total: number) =>
+        `${documented} von ${total} Durchgängen heute dokumentiert`,
+      completedProgress: (completed: number, total: number) =>
+        `${completed} von ${total} Durchgängen als erledigt angegeben`,
+      weeklyProgress: (documented: number, total: number) =>
+        `${documented} von ${total} Durchgängen in dieser Woche dokumentiert`,
       selfReportHint:
         "Ihre Angaben sind eine Selbstauskunft. Sie helfen Ihrer Praxis, den Plan an Sie anzupassen.",
       statusLabel: "Wie ist es gelaufen?",
@@ -199,10 +216,12 @@ export const de = {
       submit: "Dokumentation speichern",
       alreadyLoggedTitle: "Heute dokumentiert",
       alreadyLoggedBody:
-        "Sie haben diese Übung heute bereits dokumentiert. Vielen Dank!",
+        "Sie haben alle für heute geplanten Durchgänge dokumentiert. Vielen Dank!",
+      documentedNotCompleted:
+        "Mindestens ein Durchgang wurde als teilweise, zu schwierig oder nicht möglich angegeben und zählt deshalb nicht als vollständig erledigt.",
       errorNotFound:
         "Diese Übung gehört nicht (mehr) zu Ihrem aktuellen Übungsplan.",
-      errorAlreadyLogged: "Sie haben diese Übung heute bereits dokumentiert.",
+      errorAlreadyLogged: "Alle aktuell geplanten Durchgänge sind bereits dokumentiert.",
       errorNotDueToday: "Diese Übung ist für heute nicht geplant.",
     },
     appointments: {
@@ -329,6 +348,7 @@ export const de = {
       patientNote: "Notiz",
       selfReportNote:
         "Alle Angaben sind Selbstauskünfte der Patientin/des Patienten – kein Nachweis der Ausführung.",
+      occurrence: (index: number) => `Durchgang ${index}`,
       contactHeading: "Kontakt",
       phoneLabel: "Telefonnummer",
       phoneEmpty: "Keine Telefonnummer hinterlegt.",

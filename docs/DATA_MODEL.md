@@ -7,6 +7,12 @@
 - Planänderungen laufen ausschließlich über `publish_exercise_plan`: eine Transaktion erzeugt die unveränderliche Version samt vollständigem Item-Satz und setzt erst danach `current_version_id`. Direkte Client-Schreib-Policies auf Plan/Version/Item wurden entfernt.
 - Planarchivierung beendet nur die aktive Zuweisung. Alte Versionen, Items und referenzierende Selbstauskünfte bleiben erhalten.
 
+## Ergänzung Phase F: Durchgänge
+
+- `completion_logs.occurrence_index` ist pro Patient, Plan-Item und Praxiskalendertag eindeutig. Alte Zeilen werden nach `performed_at, id` durchnummeriert und bleiben unverändert erhalten.
+- Feste Tagespläne verwenden Indizes 1 bis `times_per_day`. Flexible Wochenpläne erlauben höchstens Index 1 pro Tag, bis das Wochenziel erreicht ist.
+- Nur die atomare Funktion `record_exercise_occurrence` darf neue Logs anlegen. Sie erstellt den `prescription_snapshot` aus dem aktuellen Item und speichert darin auch geplante Anzahl und vergebenen Index.
+
 ## Phase-C-Ergänzungen
 
 - Keine neuen Tabellen. Die freie Registrierung ist reine Anwendungslogik (D-018).

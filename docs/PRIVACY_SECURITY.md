@@ -7,6 +7,12 @@
 - Nach einem Praxiswechsel begrenzen RLS-Helfer den Patientenzugriff auf Pläne und Übungsmedien der aktuell verbundenen Praxis. Historische Daten bleiben bei der früheren Praxis und werden nicht übertragen.
 - Audit-Metadaten speichern ausschließlich Plan-ID und Versionsnummer, keine Inhalte des Übungsplans.
 
+## Ergänzung Phase F: sichere Selbstauskunft je Durchgang
+
+- Durchgangsnummer, Praxiskalendertag und Vorgaben-Snapshot entstehen serverseitig. Patienten können weder fremde/alte Items noch zusätzliche erfundene Occurrences direkt einfügen.
+- Eine Transaktionssperre plus Unique-Index verhindert unbeabsichtigte Doppelanlage bei parallelen Klicks.
+- Schmerzwerte und Notizen bleiben ausschließlich im geschützten Completion-Log; sie gelangen nicht in Audit-Metadaten oder Notifications.
+
 ## Ergänzung Phase C: Registrierung und Übungsdokumentation
 
 - Ein registriertes, unverbundenes Konto besitzt keinerlei Zugriff auf Praxis- oder Patientendaten – weder über die Oberfläche noch über direkte URLs oder die Datenbank (RLS greift ohne Praxis-Link nicht).

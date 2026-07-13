@@ -225,6 +225,7 @@ export default async function PatientDetailPage({
                         new Date(log.performed_at),
                         branding.defaultTimeZone
                       )}
+                      {` · ${t.occurrence(log.occurrence_index)}`}
                     </p>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
                       {log.sets_completed !== null ? (

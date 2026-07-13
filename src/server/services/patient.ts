@@ -6,6 +6,7 @@ import {
   todayInTimeZone,
 } from "@/lib/datetime";
 import { isDueOn } from "@/lib/plan-schedule";
+import { calculateOccurrenceProgress, isoWeekRange } from "@/lib/occurrences";
 import { branding } from "@/config/branding";
 
 export type TodayExercise = {
@@ -17,7 +18,13 @@ export type TodayExercise = {
   totalDurationSeconds: number | null;
   note: string;
   sortOrder: number;
-  completedToday: boolean;
+  plannedToday: number;
+  documentedToday: number;
+  completedToday: number;
+  canDocument: boolean;
+  fullyDocumentedToday: boolean;
+  fullyCompletedToday: boolean;
+  weeklyProgress: { target: number; documented: number; completed: number } | null;
 };
 
 export type NextAppointment = {
@@ -73,28 +80,44 @@ export async function getPatientTodayData(userId: string) {
     const dueItems = (items ?? []).filter((i) => isDueOn(i, isoToday, weekday));
 
     const dueIds = dueItems.map((i) => i.id);
+    const week = isoWeekRange(isoToday);
     const { data: logs } = dueIds.length
       ? await supabase
           .from("completion_logs")
-          .select("plan_item_id")
+          .select("plan_item_id, performed_on, occurrence_index, status")
           .eq("patient_profile_id", userId)
-          .eq("performed_on", isoToday)
+          .gte("performed_on", week.start)
+          .lte("performed_on", week.end)
           .in("plan_item_id", dueIds)
       : { data: [] };
 
-    const completedIds = new Set((logs ?? []).map((l) => l.plan_item_id));
-
-    exercises = dueItems.map((i) => ({
-      planItemId: i.id,
-      title: i.exercises?.title ?? "Übung",
-      sets: i.sets,
-      repetitions: i.repetitions,
-      holdSeconds: i.hold_seconds,
-      totalDurationSeconds: i.total_duration_seconds,
-      note: i.note,
-      sortOrder: i.sort_order,
-      completedToday: completedIds.has(i.id),
-    }));
+    exercises = dueItems
+      .map((i) => {
+        const progress = calculateOccurrenceProgress(
+          i,
+          isoToday,
+          weekday,
+          (logs ?? []).filter((log) => log.plan_item_id === i.id)
+        );
+        return {
+          planItemId: i.id,
+          title: i.exercises?.title ?? "Übung",
+          sets: i.sets,
+          repetitions: i.repetitions,
+          holdSeconds: i.hold_seconds,
+          totalDurationSeconds: i.total_duration_seconds,
+          note: i.note,
+          sortOrder: i.sort_order,
+          plannedToday: progress.plannedToday,
+          documentedToday: progress.documentedToday,
+          completedToday: progress.completedToday,
+          canDocument: progress.canDocument,
+          fullyDocumentedToday: progress.fullyDocumentedToday,
+          fullyCompletedToday: progress.fullyCompletedToday,
+          weeklyProgress: progress.weekly,
+        };
+      })
+      .filter((exercise) => exercise.plannedToday > 0);
   }
 
   const nextAppointment = await getNextAppointment(userId);

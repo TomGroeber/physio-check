@@ -35,7 +35,7 @@ export async function logCompletionAction(
   if (!session) redirect("/login");
   if (!session.patientLink) redirect("/connect");
 
-  const result = await logExerciseCompletion(session.userId, parsed.data);
+  const result = await logExerciseCompletion(parsed.data);
   if (!result.ok) {
     switch (result.reason) {
       case "not_found":

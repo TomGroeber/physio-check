@@ -4,6 +4,10 @@
 
 Der Client hält nur den Entwurf. Die Server Action validiert den vollständigen Plan mit Zod und leitet die Praxis-ID ausschließlich aus der verifizierten Mitgliedschaft ab. `publish_exercise_plan` prüft den aktiven Patientenlink sowie jede aktive, nicht archivierte Übung erneut und veröffentlicht Version, Items, aktuellen Zeiger, datensparsame Notification und Audit atomar. Direkte Tabellenmutationen sind nicht freigegeben. Leser normalisieren historische Schedule-Formate zentral in `src/lib/plan-schedule.ts`.
 
+## Ergänzung Phase F: Occurrence-Pipeline
+
+Die UI sendet keine Durchgangsnummer. `record_exercise_occurrence` verwendet die authentifizierte Patienten-ID, das Praxisdatum und den aktuellen Plan, serialisiert parallele Aufrufe pro Item/Tag und vergibt den nächsten zulässigen Index. Erst danach entsteht der Log samt Snapshot. Reine Logik in `src/lib/occurrences.ts` berechnet aus Schedule und Logs die getrennten Zähler für geplant, dokumentiert und vollständig erledigt.
+
 ## Phase-C-Erweiterung 2026-07-13: Übungsmedien
 
 Große Übungsmedien werden ticket-basiert hochgeladen: Server Action prüft aktive Praxis-Mitgliedschaft und die Übung, der Service erzeugt einen zufälligen Pfad `<practice_id>/<exercise_id>/<uuid>.<ext>` und eine eng begrenzte signierte Upload-URL. Der Browser lädt direkt mit echtem Fortschritt in den privaten Bucket. Eine zweite Server Action finalisiert erst nach Prüfung von Pfad, Bucket-Information, Größenlimit und Magic Bytes. Pro Übung existiert durch einen eindeutigen Index höchstens ein Medium je Art; Austausch und Entfernen löschen auch das vorherige Storage-Objekt und schreiben ein datensparsames Audit-Ereignis.
