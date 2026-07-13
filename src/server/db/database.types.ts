@@ -1407,6 +1407,16 @@ export type Database = {
         Args: { p_offer_id: string }
         Returns: string
       }
+      archive_exercise_plan: {
+        Args: {
+          p_notification_body: string
+          p_notification_title: string
+          p_patient_id: string
+          p_plan_id: string
+          p_practice_id: string
+        }
+        Returns: boolean
+      }
       authorization_adjusted_total: {
         Args: { p_authorization_id: string }
         Returns: number
@@ -1452,6 +1462,18 @@ export type Database = {
       }
       primary_authorization_for_patient: {
         Args: { p_patient_id: string }
+        Returns: string
+      }
+      publish_exercise_plan: {
+        Args: {
+          p_change_note: string
+          p_items: Json
+          p_notification_body: string
+          p_notification_title: string
+          p_patient_id: string
+          p_practice_id: string
+          p_title: string
+        }
         Returns: string
       }
       redeem_patient_invite: {
@@ -1661,4 +1683,3 @@ export const Constants = {
     },
   },
 } as const
-

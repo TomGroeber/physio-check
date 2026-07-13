@@ -1,5 +1,9 @@
 # PhysioCheck – Architektur
 
+## Ergänzung Phase D/E: Plan-Builder und Veröffentlichung
+
+Der Client hält nur den Entwurf. Die Server Action validiert den vollständigen Plan mit Zod und leitet die Praxis-ID ausschließlich aus der verifizierten Mitgliedschaft ab. `publish_exercise_plan` prüft den aktiven Patientenlink sowie jede aktive, nicht archivierte Übung erneut und veröffentlicht Version, Items, aktuellen Zeiger, datensparsame Notification und Audit atomar. Direkte Tabellenmutationen sind nicht freigegeben. Leser normalisieren historische Schedule-Formate zentral in `src/lib/plan-schedule.ts`.
+
 ## Phase-C-Erweiterung 2026-07-13: Übungsmedien
 
 Große Übungsmedien werden ticket-basiert hochgeladen: Server Action prüft aktive Praxis-Mitgliedschaft und die Übung, der Service erzeugt einen zufälligen Pfad `<practice_id>/<exercise_id>/<uuid>.<ext>` und eine eng begrenzte signierte Upload-URL. Der Browser lädt direkt mit echtem Fortschritt in den privaten Bucket. Eine zweite Server Action finalisiert erst nach Prüfung von Pfad, Bucket-Information, Größenlimit und Magic Bytes. Pro Übung existiert durch einen eindeutigen Index höchstens ein Medium je Art; Austausch und Entfernen löschen auch das vorherige Storage-Objekt und schreiben ein datensparsames Audit-Ereignis.

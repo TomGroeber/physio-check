@@ -1,5 +1,12 @@
 # PhysioCheck – Datenschutz und Sicherheit
 
+## Ergänzung Phase D/E: Planintegrität und Praxiswechsel
+
+- Pläne werden nur über atomare, serverseitig autorisierte Datenbankfunktionen veröffentlicht oder archiviert; halbfertige Versionen können nicht aktiv werden.
+- Notifications enthalten nur den neutralen Hinweis, dass ein Plan aktualisiert oder beendet wurde – keine Übungsnamen, Dosierungen oder gesundheitlichen Notizen.
+- Nach einem Praxiswechsel begrenzen RLS-Helfer den Patientenzugriff auf Pläne und Übungsmedien der aktuell verbundenen Praxis. Historische Daten bleiben bei der früheren Praxis und werden nicht übertragen.
+- Audit-Metadaten speichern ausschließlich Plan-ID und Versionsnummer, keine Inhalte des Übungsplans.
+
 ## Ergänzung Phase C: Registrierung und Übungsdokumentation
 
 - Ein registriertes, unverbundenes Konto besitzt keinerlei Zugriff auf Praxis- oder Patientendaten – weder über die Oberfläche noch über direkte URLs oder die Datenbank (RLS greift ohne Praxis-Link nicht).

@@ -2,7 +2,7 @@
 
 App für Physiotherapiepraxen und ihre Patientinnen und Patienten: Heimübungspläne mit Videos, Termine, verordnete Sitzungen und selbst dokumentierte Durchführung (Adhärenz).
 
-> **Stand 13.07.2026:** Einladungseinstieg und Übungsbibliothek sind verifiziert; der sichere Medien-Upload (Video, Vorschaubild, Alternativbild, WebVTT-Untertitel) ist implementiert und durch Typecheck, Lint, 69 Unit-Tests und Build geprüft. Datenbank-/RLS-/Browserprüfung der neuen Migration steht noch aus. Produktumfang: `docs/PRODUCT_SPEC.md` · Übergabe: `docs/AI_HANDOFF.md`.
+> **Stand 13.07.2026:** Einladungseinstieg und Übungsbibliothek sind verifiziert. Sicherer Medien-Upload sowie der individuelle Plan-Builder mit atomarer Versionierung sind implementiert und durch Typecheck, Lint, 74 Unit-Tests und Build geprüft. Datenbank-/RLS-/Browserprüfung der neuen Migrationen steht noch aus. Produktumfang: `docs/PRODUCT_SPEC.md` · Übergabe: `docs/AI_HANDOFF.md`.
 
 ## Funktionsübersicht
 
@@ -18,6 +18,7 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Heimübungen | Übungsanzeige „Heute“ + Detailseite mit Vorgaben | ✅ | E2E-Tests (11.07.2026) | Übungen stammen aus Demo-Seed |
 | Heimübungen | Übungsbibliothek durch die Praxis | ✅ | 65 Unit-Tests + UI-Durchlauf (13.07.2026) | Anlegen, bearbeiten, duplizieren, deaktivieren, archivieren; nie Hard-Delete |
 | Heimübungen | Privater Medien-Upload durch die Praxis | 🧪 | Typecheck, Lint, 69 Unit-Tests, Build (13.07.2026) | MP4/WebM, JPEG/PNG und WebVTT; Fortschritt, Vorschau, Ersetzen/Entfernen, Signaturprüfung; DB/RLS/UI noch lokal prüfen |
+| Heimübungen | Individuelle Pläne und Versionierung | 🧪 | Typecheck, Lint, 74 Unit-Tests, Build (13.07.2026) | Dosierung, feste Wochentage, 1–6× täglich oder 1–7× wöchentlich, Uhrzeiten, Sortierung, Historie und Archivierung; atomare DB-Funktion, lokaler DB-/UI-Lauf offen |
 | Übungsdokumentation | Selbstauskunft (erledigt/teilweise/zu schwierig/nicht möglich), Schmerz, Notiz | ✅ | E2E-Tests (11.07.2026) | Snapshot der Vorgaben; keine Doppeldokumentation pro Tag |
 | Kalender | Monats-, Wochen-, Tages- und Listenansicht mit Filtern | ✅ | Unit-Tests + UI-Durchlauf (11.07.2026) | Ohne zusätzliche Kalenderbibliothek |
 | Termine | Termin anlegen und bearbeiten | 🧪 | Unit-Tests der Validierung | UI vorhanden; kein automatischer End-zu-End-Test |
@@ -37,7 +38,7 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Freie Termine | Frei gewordene Zeitfenster + Terminangebote (annehmen/ablehnen/zurückziehen) | ✅ | UI-Durchlauf inkl. Konfliktfall (12.07.2026) | Annahme bucht atomar; Doppelbuchung durch DB-Überlappungsschutz ausgeschlossen |
 | PWA | Installierbares Manifest | 🟡 | manuell (frühere Phase) | Kein Offline-Modus, keine Push-Benachrichtigungen |
 | Sicherheit | RLS auf allen Patiententabellen, serverseitige Autorisierung, private Buckets | ✅ | 36 RLS-Proben `pnpm test:rls` (12.07.2026) | Patient/Fremdpraxis/Selbst-Eskalation/Storage negativ getestet; Virenscan vor Pilot weiterhin offen |
-| Tests | Typecheck, Lint, 69 Unit-Tests, 28 E2E, erweiterte RLS-Suite, Build | 🧪 | Cloud-Prüfungen 13.07.; letzte vollständige DB-/E2E-Prüfung 12.07. | Neue Medienmigration und zusätzliche Medien-RLS-Proben benötigen lokalen Supabase-Lauf |
+| Tests | Typecheck, Lint, 74 Unit-Tests, 28 E2E, erweiterte RLS-Suite, Build | 🧪 | Cloud-Prüfungen 13.07.; letzte vollständige DB-/E2E-Prüfung 12.07. | Neue Medien-/Planmigrationen und zusätzliche RLS-Proben benötigen lokalen Supabase-Lauf |
 | Deployment | Produktivbetrieb/Hosting | ❌ | – | Nur mit ausdrücklicher Zustimmung von Tom |
 
 ## Was funktioniert aktuell?
@@ -45,6 +46,7 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 - **Kompletter Patienteneinstieg:** Konto erstellen → E-Mail bestätigen → Praxiscode einlösen → mit der Praxis verbunden.
 - **Übungen:** Patienten sehen ihre Tagesübungen, dokumentieren die Durchführung als Selbstauskunft; die Praxis sieht die Rückmeldungen der letzten 7/30 Tage.
 - **Übungsbibliothek und Medien:** Die Praxis legt Übungen vollständig über die Oberfläche an. Videos, Vorschaubilder, Alternativbilder und WebVTT-Untertitel werden über eng begrenzte Upload-Tickets direkt in den privaten Bucket geladen, danach serverseitig auf Größe und Dateisignatur geprüft und nur berechtigten Patienten über kurzlebige URLs angezeigt.
+- **Individuelle Übungspläne:** Im Patientendetail stellt die Praxis Übungen zusammen, sortiert sie und überschreibt Dosierung, Zeitraum und Häufigkeit. Jede Veröffentlichung erzeugt atomar eine vollständige neue Version; alte Versionen und damalige Selbstauskünfte bleiben unverändert. Pläne können archiviert, aber nicht rückwirkend gelöscht werden.
 - **Kalender:** Die Praxis arbeitet mit Monats-/Wochen-/Tages-/Listenansicht; Termine können angelegt, geändert, storniert und abgeschlossen werden.
 - **Behandlungseinheiten:** Die Praxis hinterlegt Verordnungen mit ganzzahligen Einheiten und korrigiert mit Pflichtgrund. Ein abgeschlossener Termin rechnet genau eine Einheit an, eine Rücknahme des Abschlusses bucht genau eine zurück – jede Bewegung bleibt als Historie sichtbar, der Stand wird nie negativ. Beim Abschluss mit 0 verfügbaren Einheiten erscheint eine deutliche Warnung (der Termin bleibt abschließbar, angerechnet wird nichts). Patienten sehen ihren Stand mit neutralem Kostenhinweis.
 - **Patientenakten:** Die Praxis lädt PDF/JPEG/PNG in einen privaten Bucket und öffnet sie über kurzlebige signierte URLs; Patienten haben keinerlei Zugriff.
@@ -62,6 +64,8 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 - **Benachrichtigungszentrum:** Notifications existieren, aber ohne gelesen/ungelesen-Übersicht und Badge.
 
 ## Letzte Änderungen
+
+- **13.07.2026 – Phase D/E (individuelle Pläne und Versionen).** Neuer Plan-Builder im Praxis-Patientendetail mit Bibliotheksauswahl, Sortierung, individuellen Dosierungswerten, Gültigkeitszeitraum sowie typisierten festen/flexiblen Häufigkeiten. `publish_exercise_plan` prüft Mitgliedschaft, aktive Patientenverbindung und jede Übung erneut und veröffentlicht Version+Items+aktuellen Zeiger+Notification+Audit in einer Transaktion. Direkte Planmutationen sind für Clients gesperrt; nach Praxiswechsel sieht der Patient nur Pläne der aktuell verbundenen Praxis. Migration `20260713140000_publish_exercise_plans.sql`; Typecheck, Lint, 74 Unit-Tests und Build grün, lokaler DB-/RLS-/Browserlauf offen.
 
 - **13.07.2026 – Phase C (sicherer Übungsmedien-Upload).** Praxisoberfläche pro Übung für MP4/WebM-Videos, JPEG/PNG-Vorschau- und Alternativbilder sowie WebVTT-Untertitel; Dateivorschau vor dem Upload, echter Fortschrittsbalken, Ersetzen und bestätigtes Entfernen. Ein serverseitig autorisiertes Ticket bestimmt einen zufälligen Praxis-/Übungspfad; erst nach serverseitiger Größen- und Magic-Byte-Prüfung wird das Medium per Upsert registriert und auditiert. Patienten erhalten Video, Poster, Untertitel oder Alternativbild ausschließlich nach Prüfung ihres aktuellen Plans über kurzlebige signierte URLs. Migration `20260713120000_unique_exercise_media_kind.sql`; 69 Unit-Tests, Typecheck, Lint und Build grün. Lokaler DB-/RLS-/UI-Lauf offen, da in der Cloud weder `.env.local` noch Docker/Supabase CLI verfügbar sind.
 

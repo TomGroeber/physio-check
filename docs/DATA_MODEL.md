@@ -1,5 +1,12 @@
 # PhysioCheck – Datenmodell
 
+## Ergänzung Phase D/E: typisierte Planversionen
+
+- `exercise_plan_items.schedule` akzeptiert Legacy-Werte und für neue Versionen zwei typisierte Formen: feste ISO-Wochentage mit `times_per_day`/`preferred_times` oder ein flexibles `times_per_week`-Ziel.
+- Ein partieller Unique-Index erlaubt je Praxis und Patient höchstens einen aktiven Plan.
+- Planänderungen laufen ausschließlich über `publish_exercise_plan`: eine Transaktion erzeugt die unveränderliche Version samt vollständigem Item-Satz und setzt erst danach `current_version_id`. Direkte Client-Schreib-Policies auf Plan/Version/Item wurden entfernt.
+- Planarchivierung beendet nur die aktive Zuweisung. Alte Versionen, Items und referenzierende Selbstauskünfte bleiben erhalten.
+
 ## Phase-C-Ergänzungen
 
 - Keine neuen Tabellen. Die freie Registrierung ist reine Anwendungslogik (D-018).

@@ -6,7 +6,6 @@ import { ArrowLeft02Icon } from "@hugeicons/core-free-icons";
 import { getSessionContext } from "@/server/services/session";
 import {
   getPatientCompletionLogs,
-  getPatientCurrentPlan,
   getPatientDetail,
   getPatientNextAppointment,
 } from "@/server/services/practice";
@@ -27,29 +26,14 @@ import { getPatientInternalProfile } from "@/server/services/internal-profile";
 import { InternalProfileForm } from "@/components/practice/internal-profile-form";
 import { getPinnedPatient } from "@/server/services/pinned-patients";
 import { PinPatientForm } from "@/components/practice/pin-patient-form";
+import { ExercisePlanBuilder } from "@/components/practice/exercise-plan-builder";
+import { getPlanEditorData } from "@/server/services/plans";
 import { de } from "@/messages/de";
 
 export const metadata: Metadata = { title: de.practice.patients.title };
 
 const t = de.practice.patientDetail;
 const logStatus = de.practice.dashboard.logStatus;
-
-/** Kurzzusammenfassung der Vorgaben eines Plan-Items. */
-function itemSummary(item: {
-  sets: number | null;
-  repetitions: number | null;
-  hold_seconds: number | null;
-  total_duration_seconds: number | null;
-}): string {
-  const u = de.units;
-  const parts: string[] = [];
-  if (item.sets) parts.push(`${item.sets} ${item.sets === 1 ? u.set : u.sets}`);
-  if (item.repetitions) parts.push(`${item.repetitions} ${u.repetitions}`);
-  if (item.hold_seconds) parts.push(u.holdSeconds(item.hold_seconds));
-  if (item.total_duration_seconds)
-    parts.push(u.minutes(Math.round(item.total_duration_seconds / 60)));
-  return parts.join(" · ");
-}
 
 const statusVariant: Record<string, "default" | "secondary" | "destructive"> = {
   completed: "default",
@@ -75,10 +59,10 @@ export default async function PatientDetailPage({
   const link = await getPatientDetail(practiceId, patientId);
   if (!link) notFound();
 
-  const [logs, plan, nextAppointment, authorizations, documents, unitStatus, internalProfile, pinned] =
+  const [logs, planEditor, nextAppointment, authorizations, documents, unitStatus, internalProfile, pinned] =
     await Promise.all([
       getPatientCompletionLogs(practiceId, patientId, days),
-      getPatientCurrentPlan(practiceId, patientId),
+      getPlanEditorData(practiceId, patientId),
       getPatientNextAppointment(practiceId, patientId),
       listPatientAuthorizations(practiceId, patientId),
       listPatientDocuments(practiceId, patientId),
@@ -181,37 +165,11 @@ export default async function PatientDetailPage({
 
       <DocumentPanel patientId={patientId} documents={documents} />
 
-      <section aria-labelledby="plan-heading" className="flex flex-col gap-3">
-        <h2 id="plan-heading" className="text-xl font-bold">
-          {t.currentPlan}
-        </h2>
-        {plan ? (
-          <Card>
-            <CardContent className="flex flex-col gap-3 p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-base font-semibold">{plan.title}</span>
-                <Badge variant="secondary">{t.planVersion(plan.versionNumber)}</Badge>
-              </div>
-              <ul className="flex flex-col gap-2">
-                {plan.items.map((item) => (
-                  <li key={item.id} className="text-base">
-                    <span className="font-semibold">{item.exercises?.title}</span>
-                    {itemSummary(item) ? (
-                      <span className="text-muted-foreground"> – {itemSummary(item)}</span>
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardContent className="p-4 text-base text-muted-foreground">
-              {t.noPlan}
-            </CardContent>
-          </Card>
-        )}
-      </section>
+      <ExercisePlanBuilder
+        key={planEditor.plan?.currentVersionId ?? "new-plan"}
+        patientId={patientId}
+        data={planEditor}
+      />
 
       <section aria-labelledby="logs-heading" className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">

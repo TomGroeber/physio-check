@@ -6,6 +6,8 @@
 
 Übungs-/Videoverwaltung, individuelle Pläne, flexible Häufigkeiten, geführter Patientenmodus, optimierter Einladungseinstieg. Fortschritt in `TASKS.md` (Abschnitt „Auftrag vom 13.07.2026") und `NEXT_TASK.md`.
 
+- **Phase D/E implementiert (Cloud-Prüfstand, 2026-07-13):** `ExercisePlanBuilder` im Praxis-Patientendetail verwaltet Übungsauswahl, Reihenfolge, Dosierung, Zeitraum und typisierte Häufigkeiten (feste Wochentage mit 1–6 Durchgängen/Uhrzeiten oder 1–7 frei gewählte Tage pro Woche). Migration `20260713140000_publish_exercise_plans.sql` ergänzt Schedule-Constraint, einen partiellen Unique-Index und atomare RPCs für Veröffentlichen/Archivieren. Direkte Plan-Tabellenmutationen sind entfernt; Patientenzugriff verlangt den aktiven Link zur aktuellen Praxis. Neue Services/Actions/Validierungen und RLS-Proben. Cloud-geprüft: Typecheck, Lint, 74 Unit-Tests, Build. Nicht ausgeführt: DB-Reset, RLS, E2E und UI-Durchlauf (keine `.env.local`/lokale Supabase).
+
 - **Phase C implementiert (2026-07-13, Commit `61638bd`, lokaler Zwischenstand aus Claude übernommen):** `src/config/media.ts` und `src/server/services/exercise-media.ts` wurden fertig angeschlossen und gehärtet. Neue Server-Actions autorisieren jede Übung über die aktuelle Praxis-Mitgliedschaft. `ExerciseMediaManager` bietet Video, Poster, Alternativbild und WebVTT-Untertitel mit Vorschau, echtem XHR-Uploadfortschritt, Ersetzen und Entfernen. Finalisierung liest nur den ersten Stream-Chunk, prüft Größe und Magic Bytes, registriert per eindeutigem `(exercise_id, kind)`-Upsert und auditiert ohne Dateinamen. Patienten erhalten die vier Medienarten erst nach Prüfung ihres aktuellen Plans über 10 Minuten gültige URLs. Migration `20260713120000_unique_exercise_media_kind.sql`; RLS-Suite um nicht zugewiesene/fremde Übungsmedien und direkte Storage-Zugriffe ergänzt. Cloud-geprüft: Typecheck, Lint, 69 Unit-Tests, Build. Nicht ausgeführt: DB-Reset, RLS, E2E und UI-Upload (keine `.env.local`, Docker/Supabase CLI in der Cloud). Malware-Scan bleibt Pilot-Blocker.
 
 ### Synchronisationsstatus nach Phase C
@@ -55,7 +57,7 @@ Die Phase-E/F-Implementierung lag zuvor als kompletter Parallelordner `physio-ch
 
 1. Praxisentscheidung für Absageanfragen (annehmen/ablehnen) fehlt; `decideCancellationSchema` existiert bereits ungenutzt in `src/lib/validation/appointments.ts`.
 3. Virenscan/Quarantäne für Uploads vor Pilotbetrieb; aktuell nur Dateityp, Signatur und Größe.
-4. Phase C lokal mit `db:reset`, `test:rls` und echtem Browser-Upload prüfen; danach individuellen Plan-Builder und Plan-Zuweisung per UI (Phase D/E) abschließen.
+4. Phase C–E lokal mit `db:reset`, `test:rls` und echtem Browser prüfen. Danach Phase F/G (Occurrence-Logik und geführter Patientenmodus) abschließen.
 5. UX-Beobachtung: Erfolgs-/Fehlermeldungen von Server-Actions gehen verloren, wenn `revalidatePath` die Formular-Komponente neu aufbaut (Abschließen/Zurücknehmen, Angebot annehmen). Der Zustandswechsel selbst ist die Rückmeldung; ein Toast-System wäre die saubere Lösung.
 6. E2E: seltener Hänger eines einzelnen Server-Action-Roundtrips nur unter voller Parallellast (untersucht 2026-07-12: keine blockierten DB-Queries, isoliert nie reproduzierbar). Handling: `expect`-Timeout 10 s, 1 Retry mit `trace: on-first-retry` – bei erneutem Auftreten liegt ein Trace in `test-results/`.
 
@@ -67,7 +69,8 @@ Die Phase-E/F-Implementierung lag zuvor als kompletter Parallelordner `physio-ch
 - Dokumente/Kurzprofil: `src/server/{actions,services}/documents.ts`, `src/server/services/internal-profile.ts`, `src/components/practice/{document-panel,internal-profile-form}.tsx`
 - Markierungen/Warteliste/Angebote: `src/server/{actions,services}/{pinned-patients,waitlist,offers}.ts`, `src/components/practice/{pin-patient-form,waitlist-panel,offer-panel}.tsx`, `src/components/patient/offer-response.tsx`, Seite `src/app/(practice)/practice/waitlist/page.tsx`
 - RLS-Tests: `scripts/rls-tests.ts` (`pnpm test:rls`)
-- Neueste Migration: `supabase/migrations/20260712180000_appointment_offers.sql`
+- Plan-Builder: `src/components/practice/exercise-plan-builder.tsx`, `src/server/{actions,services}/plans.ts`, `src/lib/{plan-schedule,validation/plans}.ts`
+- Neueste Migration: `supabase/migrations/20260713140000_publish_exercise_plans.sql`
 - UI-Texte: `src/messages/de.ts`
 
 ## Lokaler Start
@@ -88,4 +91,4 @@ Remote `origin` ist `https://github.com/TomGroeber/physio-check.git` (privat). V
 
 ## Nächster konkreter Auftrag
 
-Nächster Auftrag: Phase D/E – individueller Plan-Builder mit typisiertem Schedule und atomarer Versionierung. Danach Phase F – mehrere dokumentierbare Durchgänge pro Tag. Vor dem nächsten lokalen Meilenstein Phase C mit Supabase/RLS/Browser prüfen. Obsidian-Sync: `pnpm docs:sync` auf Toms Mac (`OBSIDIAN_VAULT_PATH=~/Desktop/UNI-Wissensbasis`); aus der Cloud nicht direkt erreichbar.
+Nächster Auftrag: Phase F/G – mehrere dokumentierbare Durchgänge pro Tag samt Wochenziel und geführter, barrierearmer Patientenmodus. Vor dem nächsten lokalen Meilenstein Phase C–E mit Supabase/RLS/Browser prüfen. Obsidian-Sync: `pnpm docs:sync` auf Toms Mac (`OBSIDIAN_VAULT_PATH=~/Desktop/UNI-Wissensbasis`); aus der Cloud nicht direkt erreichbar.

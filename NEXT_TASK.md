@@ -2,18 +2,13 @@
 
 > Stand: 2026-07-13 · Laufender Auftrag: Übungs-/Videoverwaltung, individuelle Pläne, flexible Häufigkeiten, geführter Patientenmodus, optimierter Einladungseinstieg (Phasen A–J, Details in `TASKS.md`). Der frühere Inhalt dieser Datei (Folgeauftrag Phase D–G) ist vollständig erledigt und dokumentiert in `docs/AI_HANDOFF.md`.
 
-## Erledigt in diesem Auftrag
-
-- **Phase A** (2026-07-13): Einladungseinstieg – primärer Code-Weg auf der Startseite, Ablaufdatum + Hinweistext auf `/invite/continue`, lokal erzeugter QR-Code beim Einladungsergebnis (`src/components/practice/invite-qr-code.tsx`, Paket `qrcode`). Verifiziert per 7-Schritte-UI-Durchlauf.
-- **Phase B** (2026-07-13): Übungsbibliothek komplett (Suche, Filter, anlegen, bearbeiten, duplizieren, deaktivieren, archivieren; nie Hard-Delete). Migration `20260713100000`. Verifiziert per 8-Schritte-UI-Durchlauf; 65 Unit-Tests.
-
-## Erledigt in diesem Auftrag
-
-- **Phase C implementiert (Cloud-Prüfstand, 2026-07-13):** Sicherer Ticket-Upload für Video, Poster, Alternativbild und WebVTT-Untertitel; Vorschau, Fortschritt, Ersetzen/Entfernen, serverseitige Größen-/Signaturprüfung, Audit und Patientenzugriff über kurzlebige signierte URLs. Migration `20260713120000`; Typecheck, Lint, 69 Unit-Tests und Build grün. Lokaler DB-/RLS-/Browserlauf bleibt offen.
+- **Phase A/B:** Einladungseinstieg und vollständige Übungsbibliothek fertig und lokal verifiziert.
+- **Phase C (Cloud-Prüfstand):** Sicherer Medien-Ticket-Upload für Video, Bilder und WebVTT fertig; lokale Supabase-/Browserprüfung offen.
+- **Phase D/E (Cloud-Prüfstand, 2026-07-13):** Typisierter individueller Plan-Builder und atomare, unveränderliche Planversionen samt Archivierung, Audit und datensparsamer Notification implementiert. Migration `20260713140000`; Typecheck, Lint, 74 Unit-Tests und Build grün. Lokaler DB-/RLS-/Browserlauf bleibt offen.
 
 ## Jetzt dran
 
-**Phase D/E – Individueller Plan-Builder und Versionierung:** typisiertes Schedule-Modell (Wochentage, N-mal/Woche, N-mal/Tag, Kombination), patientenspezifische Dosierung, atomare Veröffentlichung als neue Planversion mit Änderungsgrund und datensparsamer Notification. Danach Phase F (mehrere Durchgänge pro Tag).
+**Phase F/G – echte Durchgänge und geführter Patientenmodus:** bestehende Tagesprotokolle auf Occurrences erweitern, mehrere Durchgänge pro Tag einzeln dokumentierbar machen („1 von 3“), flexible Wochenziele korrekt zählen und anschließend den barrierearmen Ablauf mit einer Übung pro Bildschirm, Timer und Tageszusammenfassung bauen.
 
 ## Regeln (Kurzfassung)
 

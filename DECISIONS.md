@@ -2,6 +2,14 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-07-13 – Individuelle Übungspläne (Phase D/E)
+
+**D-039 · Patienten lesen Pläne nur aus der aktuell verbundenen Praxis.** `can_access_plan`, `patient_can_view_exercise` und die Plan-Select-Policy verlangen zusätzlich den aktiven Praxislink. Ein Praxiswechsel überträgt oder öffnet keine alten Plan-/Mediendaten; die frühere Praxis behält ihre Dokumentationshistorie.
+
+**D-038 · Planmutationen ausschließlich atomar per RPC.** Direkte Client-Policies für Plan-, Versions- und Item-Schreibzugriffe wurden entfernt. `publish_exercise_plan` prüft Mitgliedschaft, aktiven Patientenlink, Übungen, Grenzen und Schedule, erzeugt dann Version, vollständige Items, aktuellen Zeiger, Notification und Audit in einer Transaktion. Parallelaufrufe werden je Praxis+Patient serialisiert; höchstens ein aktiver Plan ist erlaubt.
+
+**D-037 · Zwei explizite Schedule-Modi mit Legacy-Normalisierung.** Neue Planversionen speichern entweder feste ISO-Wochentage mit 1–6 Tagesdurchgängen und optionalen Uhrzeiten oder ein flexibles Ziel von 1–7 Durchgängen pro Woche. Alte `{weekdays}`-/`{times_per_week}`-Werte bleiben lesbar und werden beim nächsten Veröffentlichen in das typisierte Format überführt.
+
 ## 2026-07-13 – Übungsmedien (Phase C)
 
 **D-036 · Repository aktuell öffentlich, Secrets bleiben strikt extern.** Tom hat das Repository für die Zusammenarbeit zwischen Claude und ChatGPT öffentlich geschaltet. Der Quellcode enthält ausschließlich fiktive Seed-Daten und Platzhalter; `.env.local`, Schlüssel, Uploads und echte Patientendaten bleiben ausgeschlossen. Vor jedem Push wird der Diff weiterhin auf Geheimnisse und personenbezogene Daten geprüft.

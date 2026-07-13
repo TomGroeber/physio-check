@@ -111,6 +111,22 @@ async function main() {
   }
   const petraId = petraProfile.id;
   const practiceAId = demoPractice.id;
+  const { data: seededPlan } = await service
+    .from("exercise_plans")
+    .select("id, title, current_version_id")
+    .eq("practice_id", practiceAId)
+    .eq("patient_profile_id", petraId)
+    .eq("status", "active")
+    .single();
+  if (!seededPlan?.current_version_id) throw new Error("Aktiver Demo-Übungsplan fehlt.");
+  const { data: seededPlanItem } = await service
+    .from("exercise_plan_items")
+    .select("exercise_id")
+    .eq("plan_version_id", seededPlan.current_version_id)
+    .limit(1)
+    .single();
+  if (!seededPlanItem) throw new Error("Demo-Übungsplan enthält keine Übung.");
+  let publishedTestVersionId: string | null = null;
 
   // Ein Dokument mit Storage-Objekt für die Storage-/Fremdzugriffs-Proben.
   const png = Buffer.from(
@@ -250,6 +266,18 @@ async function main() {
       .download(actualExerciseStoragePath);
     check("Storage: kann Übungsmedium nicht direkt herunterladen", Boolean(error) && !data);
   }
+  {
+    const { error } = await patient.rpc("publish_exercise_plan", {
+      p_practice_id: practiceAId,
+      p_patient_id: petraId,
+      p_title: "Unzulässiger Patientenplan",
+      p_change_note: "",
+      p_items: [],
+      p_notification_title: "Test",
+      p_notification_body: "Test",
+    });
+    check("RPC publish_exercise_plan: Patientin wird abgelehnt", Boolean(error));
+  }
 
   // ---------- B) Fremdpraxis ----------
   console.log("\nB) Mitglied einer fremden Praxis: kein Zugriff auf die Demo-Praxis");
@@ -326,6 +354,18 @@ async function main() {
       .download(actualExerciseStoragePath);
     check("Storage: kann fremdes Übungsmedium nicht herunterladen", Boolean(error) && !data);
   }
+  {
+    const { error } = await foreign.rpc("publish_exercise_plan", {
+      p_practice_id: practiceAId,
+      p_patient_id: petraId,
+      p_title: "Fremder Plan",
+      p_change_note: "",
+      p_items: [],
+      p_notification_title: "Test",
+      p_notification_body: "Test",
+    });
+    check("RPC publish_exercise_plan: Fremdpraxis wird abgelehnt", Boolean(error));
+  }
 
   // ---------- C) Selbst-Eskalation ----------
   console.log("\nC) Praxismitglied: keine Selbst-Eskalation");
@@ -354,6 +394,87 @@ async function main() {
       (invites ?? []).length === 0 || (invites ?? []).every((row) => !row.code_hash)
     );
   }
+  {
+    const { error } = await therapist.from("exercise_plan_versions").insert({
+      plan_id: seededPlan.id,
+      version_number: 999,
+      change_note: "Direkter Schreibversuch",
+    });
+    check("kann Planversionen nicht direkt und halb-fertig anlegen", Boolean(error));
+  }
+  {
+    const { data, error } = await therapist.rpc("publish_exercise_plan", {
+      p_practice_id: practiceAId,
+      p_patient_id: petraId,
+      p_title: "RLS-Testplan",
+      p_change_note: "Atomare Testversion",
+      p_items: [
+        {
+          exercise_id: seededPlanItem.exercise_id,
+          start_date: new Date().toISOString().slice(0, 10),
+          end_date: null,
+          schedule: {
+            mode: "weekdays",
+            weekdays: [1, 3, 5],
+            times_per_day: 2,
+            preferred_times: ["08:00", "18:00"],
+          },
+          sets: 3,
+          repetitions: 10,
+          hold_seconds: null,
+          total_duration_seconds: null,
+          rest_seconds: 30,
+          note: "",
+        },
+      ],
+      p_notification_title: "Testplan aktualisiert",
+      p_notification_body: "Lokaler RLS-Test",
+    });
+    check("RPC veröffentlicht gültige Planversion für eigene Praxis", !error && data === seededPlan.id);
+    const { data: afterPublish } = await service
+      .from("exercise_plans")
+      .select("current_version_id")
+      .eq("id", seededPlan.id)
+      .single();
+    publishedTestVersionId = afterPublish?.current_version_id ?? null;
+    check(
+      "veröffentlichte Version ersetzt den aktuellen Zeiger atomar",
+      Boolean(publishedTestVersionId) && publishedTestVersionId !== seededPlan.current_version_id
+    );
+  }
+  {
+    const { count: beforeCount } = await service
+      .from("exercise_plan_versions")
+      .select("id", { count: "exact", head: true })
+      .eq("plan_id", seededPlan.id);
+    const { error } = await therapist.rpc("publish_exercise_plan", {
+      p_practice_id: practiceAId,
+      p_patient_id: petraId,
+      p_title: "Ungültiger Plan",
+      p_change_note: "Muss zurückrollen",
+      p_items: [
+        {
+          exercise_id: seededPlanItem.exercise_id,
+          start_date: new Date().toISOString().slice(0, 10),
+          end_date: null,
+          schedule: { mode: "weekdays", weekdays: [], times_per_day: 2, preferred_times: [] },
+          sets: 3,
+          repetitions: 10,
+          hold_seconds: null,
+          total_duration_seconds: null,
+          rest_seconds: 30,
+          note: "",
+        },
+      ],
+      p_notification_title: "Test",
+      p_notification_body: "Test",
+    });
+    const { count: afterCount } = await service
+      .from("exercise_plan_versions")
+      .select("id", { count: "exact", head: true })
+      .eq("plan_id", seededPlan.id);
+    check("ungültige Veröffentlichung wird vollständig zurückgerollt", Boolean(error) && beforeCount === afterCount);
+  }
 
   // ---------- D) Unverbundenes Konto ----------
   console.log("\nD) Unverbundenes Konto (Erika): sieht nichts");
@@ -371,6 +492,13 @@ async function main() {
 
   // ---------- Aufräumen ----------
   console.log("\nAufräumen …");
+  if (publishedTestVersionId) {
+    await service
+      .from("exercise_plans")
+      .update({ current_version_id: seededPlan.current_version_id, title: seededPlan.title })
+      .eq("id", seededPlan.id);
+    await service.from("exercise_plan_versions").delete().eq("id", publishedTestVersionId);
+  }
   if (testDocument) await service.from("patient_documents").delete().eq("id", testDocument.id);
   await service.storage.from("patient-records").remove([storagePath]);
   await service.storage.from("exercise-media").remove([actualExerciseStoragePath]);
