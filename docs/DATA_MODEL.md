@@ -18,6 +18,11 @@
 - `completion_logs.reviewed_at` und `reviewed_by` sind reine Praxis-Workflow-Metadaten. Sie ändern keine Selbstauskunft und dürfen nur über `mark_completion_log_reviewed` gesetzt werden.
 - Ein partieller Index beschleunigt ungelesene Rückmeldungen. Die RPC prüft die aktive Mitgliedschaft in der Praxis des zugehörigen Plans und schreibt ein inhaltsfreies Audit-Ereignis.
 
+## Ergänzung Phase I: Erinnerungseinstellungen
+
+- `patient_reminder_preferences` besitzt genau eine Zeile pro Profil: getrennte Schalter für Übungshinweise und Planänderungen sowie `quiet_start`/`quiet_end` als lokale Uhrzeiten. RLS erlaubt ausschließlich dem eigenen Profil Lesen, Einfügen und Ändern.
+- Notifications bleiben unverändert. `mark_notification_read` setzt ausschließlich `read_at` einer eigenen Zeile; das direkte Update-Recht für `authenticated` ist entzogen.
+
 ## Phase-C-Ergänzungen
 
 - Keine neuen Tabellen. Die freie Registrierung ist reine Anwendungslogik (D-018).
@@ -57,6 +62,7 @@ erDiagram
     practice_members ||--o{ appointments : "behandelnde Person"
     appointments ||--o{ cancellation_requests : "hat Anfrage"
     profiles ||--o{ notifications : "empfängt"
+    profiles ||--o| patient_reminder_preferences : "konfiguriert"
     profiles ||--o{ consent_records : "willigt ein"
     profiles ||--o{ audit_events : "handelt als Akteur"
 

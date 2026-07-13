@@ -14,7 +14,7 @@
 
 - **Terminverschiebungs-Anfrage** (analog zur Absageanfrage; `cancellation_requests` dient als Muster)
 - **Automatische Bestätigung fristgerechter Absagen** (Praxis-Einstellung in `practices.settings`)
-- **Push- und E-Mail-Benachrichtigungen** (Benachrichtigungszentrum existiert als Tabelle; Versandkanäle andocken, keine Gesundheitsdaten in Vorschau/Betreff)
+- **Push- und E-Mail-Benachrichtigungen** (freiwillige In-App-Präferenzen existieren; Versandkanäle erst mit Einwilligung/Opt-out andocken, keine Gesundheitsdaten in Vorschau/Betreff)
 - **Weitere Sprachen: Französisch, Luxemburgisch** (`src/messages/fr.ts`, `lb.ts` nach dem Muster von `de.ts`)
 - **Dunkles Farbschema aktivieren** (Tokens in `globals.css` sind vorbereitet)
 - **Echte App-Icons + Offline-Verhalten der PWA** (Manifest existiert; Service Worker, Icon-Satz)
@@ -25,7 +25,7 @@
 
 - Parallele aktive Praxen pro Patient mit bewusster Praxisauswahl (im MVP ist genau eine Praxis aktiv; Praxiswechsel ist bereits möglich)
 - Kalender-Abo (ICS) für Termine
-- Erinnerungs-Feineinstellungen pro Übung
+- Erinnerungs-Feineinstellungen pro einzelner Übung (globale Übungs-/Planhinweise und Ruhezeiten sind umgesetzt)
 - Statistiken für Praxen (aggregiert, ohne medizinische Bewertung)
 
 ## Bewusst ausgeschlossen (siehe Produktspezifikation)

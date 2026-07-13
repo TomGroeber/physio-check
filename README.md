@@ -2,7 +2,7 @@
 
 App für Physiotherapiepraxen und ihre Patientinnen und Patienten: Heimübungspläne mit Videos, Termine, verordnete Sitzungen und selbst dokumentierte Durchführung (Adhärenz).
 
-> **Stand 13.07.2026:** Einladungseinstieg und Übungsbibliothek sind verifiziert. Sicherer Medien-Upload, Planversionen, mehrere Tagesdurchgänge, geführter Modus und Praxis-Auswertung sind implementiert und durch Typecheck, Lint, 88 Tests und Build geprüft. Datenbank-/RLS-/Browserprüfung der neuen Phasen steht noch aus. Produktumfang: `docs/PRODUCT_SPEC.md` · Übergabe: `docs/AI_HANDOFF.md`.
+> **Stand 13.07.2026:** Einladungseinstieg und Übungsbibliothek sind verifiziert. Sicherer Medien-Upload, Planversionen, mehrere Tagesdurchgänge, geführter Modus, Praxis-Auswertung und freiwillige In-App-Erinnerungen sind implementiert und durch Typecheck, Lint, 97 Tests und Build geprüft. Datenbank-/RLS-/Browserprüfung der neuen Phasen steht noch aus. Produktumfang: `docs/PRODUCT_SPEC.md` · Übergabe: `docs/AI_HANDOFF.md`.
 
 ## Funktionsübersicht
 
@@ -23,13 +23,14 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Übungsdokumentation | Mehrere Durchgänge und flexible Wochenziele | 🧪 | Typecheck, Lint, 79 Unit-Tests, Build (13.07.2026) | Jeder Durchgang eigener Zeitstempel/Index; Doppeltipp atomar verhindert; geplant/dokumentiert/erledigt getrennt; DB/RLS/UI lokal offen |
 | Patientenmodus | Geführter Tagesablauf mit optionalem Timer | 🧪 | Typecheck, Lint, 83 Tests, Build (13.07.2026) | Eine Übung/ein Durchgang pro Ansicht, automatische nächste Aufgabe, Tageszusammenfassung; Browser-/WCAG-Prüfung offen |
 | Praxis-Auswertung | Soll/Ist, Rückmeldungen und Inaktivität für 7/30 Tage | 🧪 | Typecheck, Lint, 88 Tests, Build (13.07.2026) | Dashboard + Patientendetail, Übungsaufschlüsselung, ungelesen-Markierung, Links; DB/RLS/UI lokal offen |
+| Patientenerinnerungen | Freiwillige Hinweise, Ruhezeiten und Planänderungen | 🧪 | Typecheck, Lint, 97 Tests, Build (13.07.2026) | Im Profil getrennt deaktivierbar; mehrere offene Tagesdurchgänge; DB/RLS/UI lokal offen; kein Push |
 | Kalender | Monats-, Wochen-, Tages- und Listenansicht mit Filtern | ✅ | Unit-Tests + UI-Durchlauf (11.07.2026) | Ohne zusätzliche Kalenderbibliothek |
 | Termine | Termin anlegen und bearbeiten | 🧪 | Unit-Tests der Validierung | UI vorhanden; kein automatischer End-zu-End-Test |
 | Termine | Termin abschließen (rechnet genau 1 Einheit an) | ✅ | UI-Durchlauf (12.07.2026) | Anrechnung atomar; pro Termin höchstens eine aktive Anrechnung (partieller `unique`-Index) |
 | Termine | Abschluss zurücknehmen (bucht genau 1 Einheit zurück) | ✅ | UI-Durchlauf (12.07.2026) | Historie bleibt erhalten (Anrechnung wird als zurückgebucht markiert, nie gelöscht) |
 | Termine | Termin stornieren (Historie bleibt erhalten) | 🧪 | Unit-Tests der Validierung | Konfliktschutz gegen Überlappung in PostgreSQL |
 | Absagen | Patient stellt Absageanfrage, Praxis wird benachrichtigt | 🧪 | Unit-Tests | Annehmen/Ablehnen durch die Praxis fehlt noch |
-| Benachrichtigungen | In-App-Notifications bei Stornierung/Absageanfrage | 🟡 | Unit-Tests | Kein Benachrichtigungszentrum, kein Badge-Zähler |
+| Benachrichtigungen | In-App-Notifications bei Planänderungen, Stornierung und Absageanfrage | 🟡 | Unit-Tests | Planhinweise patientenseitig gelesen/ungelesen; vollständiges Zentrum und Badge fehlen |
 | Behandlungseinheiten | Verordnung anlegen, ganzzahlige Anpassung mit Pflichtgrund, vollständige Ledger-Historie, Warnung bei 0, Patientenanzeige | ✅ | UI-Durchlauf + API-Proben (12.07.2026) | Nur ganze Einheiten; Stand nie negativ; Anzeige und Anrechnung nutzen dieselbe Auswahlregel (`primary_authorization_for_patient`) |
 | Verordnungswarnungen | Warnbanner (Patientendetail), Dashboard-Karte, Listenfilter, Notification | ✅ | UI-Durchlauf + API-Probe (12.07.2026) | Schwellen: ≤2 Einheiten bzw. ≤14 Tage bis Gültigkeitsende; Notification ohne Gesundheitsdaten |
 | Patientenakten | Upload (PDF/JPEG/PNG), Ansicht über kurzlebige signierte URL, Archivieren | ✅ | UI-Durchlauf (11.07.2026) | Patient hat keinen Zugriff (Probe bestanden); Virenscan vor Pilotbetrieb erforderlich |
@@ -41,7 +42,7 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Freie Termine | Frei gewordene Zeitfenster + Terminangebote (annehmen/ablehnen/zurückziehen) | ✅ | UI-Durchlauf inkl. Konfliktfall (12.07.2026) | Annahme bucht atomar; Doppelbuchung durch DB-Überlappungsschutz ausgeschlossen |
 | PWA | Installierbares Manifest | 🟡 | manuell (frühere Phase) | Kein Offline-Modus, keine Push-Benachrichtigungen |
 | Sicherheit | RLS auf allen Patiententabellen, serverseitige Autorisierung, private Buckets | ✅ | 36 RLS-Proben `pnpm test:rls` (12.07.2026) | Patient/Fremdpraxis/Selbst-Eskalation/Storage negativ getestet; Virenscan vor Pilot weiterhin offen |
-| Tests | Typecheck, Lint, 88 Unit-/Komponententests, 28 E2E, erweiterte RLS-Suite, Build | 🧪 | Cloud-Prüfungen 13.07.; letzte vollständige DB-/E2E-Prüfung 12.07. | Neue Medien-/Plan-/Occurrence-/Review-Migrationen und zusätzliche RLS-/Browserproben benötigen lokalen Lauf |
+| Tests | Typecheck, Lint, 97 Unit-/Komponententests, 28 E2E, erweiterte RLS-Suite, Build | 🧪 | Cloud-Prüfungen 13.07.; letzte vollständige DB-/E2E-Prüfung 12.07. | Neue Medien-/Plan-/Occurrence-/Review-/Reminder-Migrationen und zusätzliche RLS-/Browserproben benötigen lokalen Lauf |
 | Deployment | Produktivbetrieb/Hosting | ❌ | – | Nur mit ausdrücklicher Zustimmung von Tom |
 
 ## Was funktioniert aktuell?
@@ -53,6 +54,7 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 - **Mehrere Durchgänge:** Bei z. B. drei täglichen Durchgängen bleibt die Übung nach dem ersten offen. Jeder Durchgang wird einzeln mit Zeitstempel dokumentiert. Die Oberfläche trennt Rückmeldungen von tatsächlich als „Erledigt“ angegebenen Durchgängen; ein Status „teilweise“ oder „zu schwierig“ wird niemals als vollständig erledigt dargestellt.
 - **Geführter Modus:** Der Patient startet auf „Heute“ und sieht jeweils nur den nächsten offenen Durchgang. Video, Vorgaben und optionale Timersteuerung sind groß dargestellt. Nach der Selbstauskunft berechnet der Server die Warteschlange neu; am Ende folgt eine Tageszusammenfassung ohne Wertung oder beschämende Gamification.
 - **Praxis-Auswertung:** Praxisnutzer wählen 7 oder 30 Tage und sehen geplante, dokumentierte und als erledigt angegebene Durchgänge getrennt. Schwierige/nicht mögliche Durchgänge, relevante Schmerzveränderungen, ungelesene Rückmeldungen und Patienten ohne aktuelle Dokumentation sind direkt mit Patient, Plan und Übung verknüpft.
+- **Freiwillige Erinnerungen:** Patienten schalten Hinweise zu offenen Übungen und Planänderungen getrennt ein oder aus und legen eine Ruhezeit fest. „Heute“ erinnert außerhalb der Ruhezeit neutral an noch offene Durchgänge; Planhinweise lassen sich als gelesen markieren.
 - **Kalender:** Die Praxis arbeitet mit Monats-/Wochen-/Tages-/Listenansicht; Termine können angelegt, geändert, storniert und abgeschlossen werden.
 - **Behandlungseinheiten:** Die Praxis hinterlegt Verordnungen mit ganzzahligen Einheiten und korrigiert mit Pflichtgrund. Ein abgeschlossener Termin rechnet genau eine Einheit an, eine Rücknahme des Abschlusses bucht genau eine zurück – jede Bewegung bleibt als Historie sichtbar, der Stand wird nie negativ. Beim Abschluss mit 0 verfügbaren Einheiten erscheint eine deutliche Warnung (der Termin bleibt abschließbar, angerechnet wird nichts). Patienten sehen ihren Stand mit neutralem Kostenhinweis.
 - **Patientenakten:** Die Praxis lädt PDF/JPEG/PNG in einen privaten Bucket und öffnet sie über kurzlebige signierte URLs; Patienten haben keinerlei Zugriff.
@@ -67,9 +69,11 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 - **Termin anlegen/bearbeiten/stornieren:** implementiert und validiert, aber ohne automatischen End-zu-End-Test.
 - **Übungsmedien:** Implementiert; die neue Migration, Storage-RLS und der tatsächliche MP4/WebM-Upload müssen noch mit der lokalen Supabase-Instanz und im Browser geprüft werden.
 - **Uploads:** Ein Malware-/Virenscan mit Quarantäne bleibt vor einem echten Pilotbetrieb erforderlich.
-- **Benachrichtigungszentrum:** Notifications existieren, aber ohne gelesen/ungelesen-Übersicht und Badge.
+- **Benachrichtigungszentrum:** Planänderungen sind patientenseitig gelesen/ungelesen sichtbar; eine gemeinsame Übersicht für alle Notification-Arten und ein Badge fehlen noch.
 
 ## Letzte Änderungen
+
+- **13.07.2026 – Phase I (freiwillige Erinnerungen).** Neue RLS-geschützte Patienteneinstellungen steuern Übungshinweise, Planänderungen und praxiszeitzonensichere Ruhezeiten. „Heute“ zeigt nur außerhalb der Ruhezeit einen neutralen Hinweis mit der Zahl offener Durchgänge und höchstens fünf ungelesene Planänderungen. `mark_notification_read` erlaubt ausschließlich den Lesestatus, nicht das Umschreiben servererzeugter Inhalte. Migration `20260713200000_patient_reminder_preferences.sql`; Typecheck, Lint, 97 Tests und Build grün, lokaler DB-/RLS-/Browserlauf offen. Push/E-Mail bleiben bewusst eine spätere Erweiterung.
 
 - **13.07.2026 – Phase H (Praxis-Auswertung).** Reine Analytics-Logik berechnet Soll-Durchgänge aus fester oder flexibler aktueller Schedule und trennt dokumentiert/erledigt/andere Rückmeldung. Dashboard und Patientendetail bieten 7-/30-Tage-Filter, Übungsaufschlüsselung, letzte Aktivität, Inaktivität, ungelesene Rückmeldungen sowie steigende/hohe Schmerzmarkierungen. `reviewed_at/reviewed_by` ist ausschließlich über eine praxisautorisierte RPC änderbar; klinischer Loginhalt bleibt unveränderlich. Migration `20260713180000_completion_feedback_review.sql`; Typecheck, Lint, 88 Tests und Build grün, lokaler DB-/RLS-/Browserlauf offen.
 

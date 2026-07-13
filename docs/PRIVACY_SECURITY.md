@@ -19,6 +19,13 @@
 - Das Audit beim Lesen speichert nur Log-ID und Ereignistyp; Gesundheitsinhalt, Schmerzwerte und Notizen werden nicht kopiert.
 - Die frühere Praxis kann ihre eigene historische Dokumentation behalten; neue Praxen erhalten durch einen Praxiswechsel keinen Zugriff darauf.
 
+## Ergänzung Phase I: freiwillige In-App-Hinweise
+
+- Reminder-Präferenzen sind Daten des Patienten und ausschließlich über eigene RLS-Policies sichtbar. Praxismitglieder können sie weder lesen noch ändern.
+- Übungshinweise werden nur innerhalb der angemeldeten App angezeigt. Plan-Notifications nennen weder Übung, Dosierung, Schmerz noch andere Gesundheitsdetails.
+- Der Empfänger kann ausschließlich `read_at` setzen; servererzeugte Notification-Inhalte sind nicht überschreibbar.
+- Push und E-Mail sind nicht implementiert. Bei späterer Einführung müssen Vorschau und Betreff weiterhin vollständig ohne Gesundheitsdaten bleiben und die freiwilligen Einstellungen respektieren.
+
 ## Ergänzung Phase C: Registrierung und Übungsdokumentation
 
 - Ein registriertes, unverbundenes Konto besitzt keinerlei Zugriff auf Praxis- oder Patientendaten – weder über die Oberfläche noch über direkte URLs oder die Datenbank (RLS greift ohne Praxis-Link nicht).

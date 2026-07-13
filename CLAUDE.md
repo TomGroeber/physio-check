@@ -6,7 +6,7 @@ Verbindliche Projektregeln. Der Masterprompt (Produkt- und Arbeitsgrundlage) ist
 
 App für Physiotherapiepraxen (Therapeuten-Dashboard) und Patienten (Heimübungspläne mit Videos, Termine, Adhärenz-Dokumentation). Vorläufiger Name **PhysioCheck** – Name/Logo/Farben liegen zentral in `src/config/branding.ts` und Design-Tokens; niemals hartkodieren.
 
-**Aktueller Stand:** Phasen A–H des Auftrags vom 13.07.2026 sind implementiert (A/B lokal verifiziert; C–H Cloud-Prüfstand). Medien, Planversionen, Occurrences, Guided Flow und Praxis-Auswertung bestehen Typecheck, Lint, 88 Tests und Build; lokale DB-/RLS-/Browserprüfung der neuen Phasen steht aus. Als Nächstes Phase I (freiwillige Erinnerungen). Remote `origin` ist `TomGroeber/physio-check` (aktuell öffentlich, keine Secrets oder echten Patientendaten). Etappe 9 synchronisiert Projektdoku auf Toms Mac per `pnpm docs:sync`. Details: `docs/AI_HANDOFF.md`.
+**Aktueller Stand:** Phasen A–I des Auftrags vom 13.07.2026 sind implementiert (A/B lokal verifiziert; C–I Cloud-Prüfstand). Medien, Planversionen, Occurrences, Guided Flow, Praxis-Auswertung und freiwillige Erinnerungen bestehen Typecheck, Lint, 97 Tests und Build; lokale DB-/RLS-/Browserprüfung der neuen Phasen steht aus. Als Nächstes Phase J (Testlücken und Gesamtprüfung). Remote `origin` ist `TomGroeber/physio-check` (aktuell öffentlich, keine Secrets oder echten Patientendaten). Etappe 9 synchronisiert Projektdoku auf Toms Mac per `pnpm docs:sync`. Details: `docs/AI_HANDOFF.md`.
 
 ## Kommunikation
 

@@ -2,6 +2,12 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-07-13 – Freiwillige Erinnerungen (Phase I)
+
+**D-046 · Notification-Inhalte sind für Empfänger unveränderlich.** Das bisher breite Tabellen-Update-Recht wurde entzogen. `mark_notification_read` darf unter RLS ausschließlich `read_at` für eine eigene Notification setzen; Titel, Text, Typ, Referenz und Empfänger bleiben servererzeugt. Reminder-Präferenzen liegen in einer eigenen Tabelle und sind ausschließlich für das eigene Profil les-/schreibbar.
+
+**D-045 · In-App zuerst, Push später.** Übungshinweise werden aus dem aktuellen Soll-/Dokumentiert-Stand berechnet und nur außerhalb einer selbst gewählten Ruhezeit in der Praxiszeitzone angezeigt. Patienten können Übungs- und Planhinweise getrennt deaktivieren. Es gibt bewusst noch keinen Push-/E-Mail-Versand; dadurch wird keine unverhältnismäßige Infrastruktur vorgetäuscht und es gelangen keine Gesundheitsdaten in Geräte- oder E-Mail-Vorschauen.
+
 ## 2026-07-13 – Praxis-Auswertung (Phase H)
 
 **D-044 · Lesestatus getrennt vom unveränderlichen Gesundheitsinhalt.** Completion-Logs bleiben ohne allgemeine Update-Policy. Nur `mark_completion_log_reviewed` darf nach Prüfung der planbesitzenden Praxis `reviewed_at/by` setzen; Status, Schmerz, Notiz, Snapshot und Zeitpunkt bleiben unberührt. Fremdpraxis und Patient können den Praxis-Lesestatus nicht setzen.

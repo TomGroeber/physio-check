@@ -16,6 +16,10 @@ Der Guided Flow speichert keine eigene Warteschlange im Browser. `/session` läd
 
 `src/lib/adherence-analytics.ts` enthält die reine, testbare Schedule-/Zeitraumrechnung. Der Service lädt nur aktuelle Plan-Items und zugehörige Logs; das Dashboard nutzt Bulk-Abfragen und gruppiert im Serverprozess. Die UI zeigt absolute Soll-/Ist-Zähler und bezeichnet Daten konsequent als Selbstauskunft. Review-Metadaten laufen durch eine eng begrenzte RPC statt einer allgemeinen Log-Update-Policy.
 
+## Ergänzung Phase I: In-App-Erinnerungen
+
+`src/server/services/reminders.ts` kombiniert eigene RLS-geschützte Präferenzen, praxislokale Uhrzeit und bereits berechnete offene Tagesdurchgänge. Die reine Logik in `src/lib/reminders.ts` unterdrückt Hinweise innerhalb auch mitternachtsübergreifender Ruhezeiten. Plan-Notifications bleiben servererzeugt; eine SECURITY-INVOKER-RPC setzt nur den eigenen Lesestatus. Es gibt keinen externen Scheduler, Push- oder E-Mail-Dienst.
+
 ## Phase-C-Erweiterung 2026-07-13: Übungsmedien
 
 Große Übungsmedien werden ticket-basiert hochgeladen: Server Action prüft aktive Praxis-Mitgliedschaft und die Übung, der Service erzeugt einen zufälligen Pfad `<practice_id>/<exercise_id>/<uuid>.<ext>` und eine eng begrenzte signierte Upload-URL. Der Browser lädt direkt mit echtem Fortschritt in den privaten Bucket. Eine zweite Server Action finalisiert erst nach Prüfung von Pfad, Bucket-Information, Größenlimit und Magic Bytes. Pro Übung existiert durch einen eindeutigen Index höchstens ein Medium je Art; Austausch und Entfernen löschen auch das vorherige Storage-Objekt und schreiben ein datensparsames Audit-Ereignis.
