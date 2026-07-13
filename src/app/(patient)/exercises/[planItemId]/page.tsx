@@ -66,8 +66,24 @@ export default async function ExerciseDetailPage({
             className="w-full rounded-xl border bg-black"
           >
             <source src={detail.videoUrl} />
+            {detail.captionsUrl ? (
+              <track
+                kind="captions"
+                src={detail.captionsUrl}
+                srcLang="de"
+                label={t.germanCaptions}
+                default
+              />
+            ) : null}
             {t.videoUnsupported}
           </video>
+        ) : detail.fallbackImageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- kurzlebige signierte Storage-URL.
+          <img
+            src={detail.fallbackImageUrl}
+            alt={t.fallbackImageAlt(detail.title)}
+            className="w-full rounded-xl border object-contain"
+          />
         ) : (
           <Card>
             <CardContent className="p-5 text-lg text-muted-foreground">

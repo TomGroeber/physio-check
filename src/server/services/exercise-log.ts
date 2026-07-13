@@ -25,6 +25,8 @@ export type ExerciseDetail = {
   planNote: string;
   videoUrl: string | null;
   posterUrl: string | null;
+  fallbackImageUrl: string | null;
+  captionsUrl: string | null;
   completedToday: boolean;
   dueToday: boolean;
 };
@@ -147,24 +149,40 @@ export async function getExerciseDetailForPatient(
     .from("exercise_media")
     .select("kind, storage_path")
     .eq("exercise_id", item.exercise.id)
-    .in("kind", ["video", "thumbnail"]);
+    .in("kind", ["video", "thumbnail", "fallback_image", "captions"]);
 
   let videoUrl: string | null = null;
   let posterUrl: string | null = null;
+  let fallbackImageUrl: string | null = null;
+  let captionsUrl: string | null = null;
   const videoPath = media?.find((m) => m.kind === "video")?.storage_path;
   const posterPath = media?.find((m) => m.kind === "thumbnail")?.storage_path;
+  const fallbackPath = media?.find((m) => m.kind === "fallback_image")?.storage_path;
+  const captionsPath = media?.find((m) => m.kind === "captions")?.storage_path;
+  const service = createSupabaseServiceClient();
   if (videoPath) {
-    const service = createSupabaseServiceClient();
     const { data: signed } = await service.storage
       .from("exercise-media")
       .createSignedUrl(videoPath, VIDEO_URL_SECONDS);
     videoUrl = signed?.signedUrl ?? null;
-    if (posterPath) {
-      const { data: signedPoster } = await service.storage
-        .from("exercise-media")
-        .createSignedUrl(posterPath, VIDEO_URL_SECONDS);
-      posterUrl = signedPoster?.signedUrl ?? null;
-    }
+  }
+  if (posterPath) {
+    const { data: signedPoster } = await service.storage
+      .from("exercise-media")
+      .createSignedUrl(posterPath, VIDEO_URL_SECONDS);
+    posterUrl = signedPoster?.signedUrl ?? null;
+  }
+  if (fallbackPath) {
+    const { data: signedFallback } = await service.storage
+      .from("exercise-media")
+      .createSignedUrl(fallbackPath, VIDEO_URL_SECONDS);
+    fallbackImageUrl = signedFallback?.signedUrl ?? null;
+  }
+  if (captionsPath) {
+    const { data: signedCaptions } = await service.storage
+      .from("exercise-media")
+      .createSignedUrl(captionsPath, VIDEO_URL_SECONDS);
+    captionsUrl = signedCaptions?.signedUrl ?? null;
   }
 
   return {
@@ -185,6 +203,8 @@ export async function getExerciseDetailForPatient(
     planNote: item.note,
     videoUrl,
     posterUrl,
+    fallbackImageUrl,
+    captionsUrl,
     completedToday: await hasLogForDay(userId, item.id, isoToday),
     dueToday: isDueOn(item, isoToday, weekday),
   };

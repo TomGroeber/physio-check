@@ -2,6 +2,14 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-07-13 – Übungsmedien (Phase C)
+
+**D-036 · Repository aktuell öffentlich, Secrets bleiben strikt extern.** Tom hat das Repository für die Zusammenarbeit zwischen Claude und ChatGPT öffentlich geschaltet. Der Quellcode enthält ausschließlich fiktive Seed-Daten und Platzhalter; `.env.local`, Schlüssel, Uploads und echte Patientendaten bleiben ausgeschlossen. Vor jedem Push wird der Diff weiterhin auf Geheimnisse und personenbezogene Daten geprüft.
+
+**D-035 · Genau ein Medium je Art und Übung.** Der eindeutige Index `(exercise_id, kind)` erlaubt pro Übung höchstens ein Video, ein Vorschaubild, ein Alternativbild und eine Untertiteldatei. Ersetzen erfolgt per Upsert; die bisherige Storage-Datei wird anschließend entfernt. Alte signierte URLs liefern nach der Objektlöschung keinen Inhalt mehr.
+
+**D-034 · Direkter Ticket-Upload, serverseitige Finalisierung.** Große Videos laufen nicht durch eine Next.js Server Action. Nach Mitgliedschafts- und Übungsprüfung erzeugt der Server einen zufälligen, eng begrenzten signierten Upload-Pfad; der Browser lädt mit echtem Fortschritt direkt in den privaten Bucket. Erst die anschließende Server-Finalisierung prüft Pfad, Größe und Magic Bytes, registriert das Medium und auditiert die Aktion. Nicht finalisierte Objekte werden bestmöglich entfernt. Ein Malware-Scanner ist weiterhin Voraussetzung vor echtem Pilotbetrieb.
+
 ## 2026-07-11 – Etappe 2
 
 **D-033 · Kalenderfarbe als einziges selbst änderbares Mitgliedsfeld.** Das breite Update-Recht auf `practice_members` wurde entzogen und durch ein Spaltenrecht nur für `calendar_color` plus eine RLS-Policy auf die eigene Zeile ersetzt. Damit kann ein Mitglied seine Farbe selbst wählen, aber niemals Rolle oder Aktiv-Status ändern – per API-Probe verifiziert. Farben sind eine feste 8er-Palette; im Kalender steht der Name immer neben der Farbe (WCAG 1.4.1).

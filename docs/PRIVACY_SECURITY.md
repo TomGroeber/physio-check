@@ -57,10 +57,10 @@ Supabase (PostgreSQL + Auth + Storage)
 | Praxis X liest Daten von Praxis Y | RLS über `practice_members`-Mitgliedschaft | RLS aktiv; Tests Phase 2 |
 | Selbst-Eskalation zur Therapeutenrolle | Rollen nur in `practice_members`, ausschließlich serverseitig beschreibbar; kein Frontend-Weg | umgesetzt |
 | Einladungscode erraten | 12 Zeichen ohne leicht verwechselbare Zeichen, nur Hash gespeichert, 7 Tage gültig, einmalig, widerrufbar, persistentes Rate Limiting | Phase B umgesetzt; lokaler DB-/E2E-Test offen |
-| Videoabruf durch Unbefugte | privater Bucket, signierte URLs mit kurzer Laufzeit nach serverseitiger Prüfung | Bucket + Policies fertig; Upload/Abruf Phase C |
+| Videoabruf durch Unbefugte | privater Bucket, signierte URLs mit kurzer Laufzeit erst nach Prüfung des aktuellen Patientenplans | umgesetzt; erweiterte RLS-Proben lokal noch auszuführen |
 | XSS | React-Escaping, kein `dangerouslySetInnerHTML` mit Nutzerdaten; CSP in Phase 4 | teilweise |
 | CSRF | Next.js Server Actions mit Origin-Prüfung; Cookies SameSite (Supabase-Default) | umgesetzt |
-| Unsichere Uploads | MIME-Typ- und Größen-Limit im Bucket (100 MB, Video/Bild/VTT) + serverseitige Validierung beim Upload (Phase C) | teilweise |
+| Unsichere Uploads | eng begrenztes Upload-Ticket; zufälliger Pfad; Bucket-Limit; serverseitige Pfad-, Größen- und Magic-Byte-Prüfung vor Registrierung | technische Prüfung umgesetzt; Malware-Scan/Quarantäne vor Pilotbetrieb offen |
 | Datenabfluss über Logs | keine Gesundheitsdaten in Logs/Audit-Metadaten (Projektregel); Review in Phase 4 | Regel aktiv |
 
 ## 4. Technische Sicherheitsentscheidungen

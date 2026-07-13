@@ -172,6 +172,8 @@ export const de = {
       noVideo: "Für diese Übung ist noch kein Video hinterlegt.",
       videoUnsupported:
         "Ihr Browser kann dieses Video nicht abspielen. Bitte folgen Sie den Schritten unten.",
+      germanCaptions: "Deutsche Untertitel",
+      fallbackImageAlt: (title: string) => `Alternativbild zur Übung ${title}`,
       startingPosition: "Ausgangsposition",
       steps: "So führen Sie die Übung aus",
       commonMistakes: "Darauf sollten Sie achten",
@@ -380,6 +382,36 @@ export const de = {
       archiveHint:
         "Archivierte Übungen sind aus der Bibliothek ausgeblendet. Alte Pläne und Dokumentationen bleiben vollständig lesbar – Übungen werden nie endgültig gelöscht.",
       saved: "Die Übung wurde gespeichert.",
+      media: {
+        heading: "Video und weitere Medien",
+        securityHint:
+          "Alle Dateien bleiben privat. Patienten erhalten nur dann einen kurzlebigen Zugriff, wenn die Übung ihrem aktuellen Plan zugewiesen ist.",
+        kind: {
+          video: "Übungsvideo",
+          thumbnail: "Vorschaubild",
+          fallback_image: "Alternativbild",
+          captions: "Untertitel",
+        },
+        hint: {
+          video: (limit: string) => `MP4 oder WebM, maximal ${limit}. Kein automatischer Tonstart.`,
+          thumbnail: (limit: string) => `JPEG oder PNG, maximal ${limit}. Wird vor dem Video angezeigt.`,
+          fallback_image: (limit: string) =>
+            `JPEG oder PNG, maximal ${limit}. Wird angezeigt, wenn kein Video vorhanden ist.`,
+          captions: (limit: string) => `WebVTT-Datei (.vtt), maximal ${limit}.`,
+        },
+        none: "Noch keine Datei hinterlegt.",
+        chooseFile: "Datei auswählen",
+        chooseReplacement: "Neue Datei zum Ersetzen auswählen",
+        upload: "Hochladen",
+        replace: "Datei ersetzen",
+        remove: "Entfernen",
+        removeConfirm: (label: string) => `${label} wirklich entfernen?`,
+        progress: (value: number) => `Upload: ${value} %`,
+        unsupportedType: "Dieser Dateityp wird nicht unterstützt.",
+        tooLarge: (limit: string) => `Die Datei ist größer als ${limit}.`,
+        uploadFailed: "Der Upload ist fehlgeschlagen.",
+        openCaptions: "Untertiteldatei öffnen",
+      },
     },
     appointments: {
       title: "Termine",

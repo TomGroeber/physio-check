@@ -5,6 +5,8 @@ import { getSessionContext } from "@/server/services/session";
 import { getPracticeExercise } from "@/server/services/exercises";
 import { ExerciseForm } from "@/components/practice/exercise-form";
 import { ExerciseAdminActions } from "@/components/practice/exercise-admin-actions";
+import { ExerciseMediaManager } from "@/components/practice/exercise-media-manager";
+import { getMediaPreviewUrls } from "@/server/services/exercise-media";
 import { Badge } from "@/components/ui/badge";
 import { de } from "@/messages/de";
 
@@ -22,6 +24,7 @@ export default async function EditExercisePage({
   const { exerciseId } = await params;
   const exercise = await getPracticeExercise(session.memberships[0].practiceId, exerciseId);
   if (!exercise) notFound();
+  const media = await getMediaPreviewUrls(exercise.id);
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
@@ -39,6 +42,8 @@ export default async function EditExercisePage({
         isActive={exercise.is_active}
         isArchived={Boolean(exercise.archived_at)}
       />
+
+      <ExerciseMediaManager exerciseId={exercise.id} media={media} />
 
       <ExerciseForm
         initial={{

@@ -9,7 +9,7 @@
  *  B) Mitglied einer FREMDEN Praxis sieht/ändert nichts der Demo-Praxis
  *  C) Praxismitglied kann die eigene Rolle nicht eskalieren
  *  D) Unverbundenes Konto sieht nichts
- *  E) Storage: privater Bucket `patient-records` ist ohne Server nicht lesbar
+ *  E) Storage: private Buckets sind für Patienten/Fremdpraxen nicht direkt lesbar
  *
  * Die Fremdpraxis wird über den Service-Role-Key angelegt und am Ende
  * entfernt. NIEMALS gegen eine echte Umgebung ausführen.
@@ -129,6 +129,38 @@ async function main() {
     .eq("role", "therapist")
     .limit(1)
     .single();
+  const { data: testExercise, error: testExerciseError } = await service
+    .from("exercises")
+    .insert({
+      practice_id: practiceAId,
+      created_by: memberA!.id,
+      title: "RLS-Testübung",
+      description: "Nur für die lokale RLS-Prüfung.",
+    })
+    .select("id")
+    .single();
+  if (testExerciseError || !testExercise) {
+    throw new Error(`RLS-Testübung: ${testExerciseError?.message}`);
+  }
+  const actualExerciseStoragePath = `${practiceAId}/${testExercise.id}/rls-test-image.png`;
+  await service.storage.from("exercise-media").upload(actualExerciseStoragePath, png, {
+    contentType: "image/png",
+    upsert: true,
+  });
+  const { data: testExerciseMedia, error: testMediaError } = await service
+    .from("exercise_media")
+    .insert({
+      exercise_id: testExercise.id,
+      kind: "fallback_image",
+      storage_path: actualExerciseStoragePath,
+      mime_type: "image/png",
+      size_bytes: png.length,
+    })
+    .select("id")
+    .single();
+  if (testMediaError || !testExerciseMedia) {
+    throw new Error(`RLS-Testmedium: ${testMediaError?.message}`);
+  }
   const { data: testDocument } = await service
     .from("patient_documents")
     .insert({
@@ -205,6 +237,19 @@ async function main() {
       .createSignedUrl(storagePath, 60);
     check("Storage: kann keine signierte URL erzeugen", Boolean(error));
   }
+  {
+    const { data } = await patient
+      .from("exercise_media")
+      .select("id")
+      .eq("id", testExerciseMedia.id);
+    check("sieht kein Medium einer nicht zugewiesenen Übung", (data ?? []).length === 0);
+  }
+  {
+    const { data, error } = await patient.storage
+      .from("exercise-media")
+      .download(actualExerciseStoragePath);
+    check("Storage: kann Übungsmedium nicht direkt herunterladen", Boolean(error) && !data);
+  }
 
   // ---------- B) Fremdpraxis ----------
   console.log("\nB) Mitglied einer fremden Praxis: kein Zugriff auf die Demo-Praxis");
@@ -220,6 +265,8 @@ async function main() {
     "appointments",
     "treatment_authorizations",
     "completion_logs",
+    "exercises",
+    "exercise_media",
   ] as const) {
     const { data } = await foreign.from(table).select("id");
     check(`liest 0 Zeilen aus ${table}`, (data ?? []).length === 0, `bekam ${data?.length}`);
@@ -273,6 +320,12 @@ async function main() {
     const { data, error } = await foreign.storage.from("patient-records").download(storagePath);
     check("Storage: kann fremdes Dokument nicht herunterladen", Boolean(error) && !data);
   }
+  {
+    const { data, error } = await foreign.storage
+      .from("exercise-media")
+      .download(actualExerciseStoragePath);
+    check("Storage: kann fremdes Übungsmedium nicht herunterladen", Boolean(error) && !data);
+  }
 
   // ---------- C) Selbst-Eskalation ----------
   console.log("\nC) Praxismitglied: keine Selbst-Eskalation");
@@ -320,6 +373,8 @@ async function main() {
   console.log("\nAufräumen …");
   if (testDocument) await service.from("patient_documents").delete().eq("id", testDocument.id);
   await service.storage.from("patient-records").remove([storagePath]);
+  await service.storage.from("exercise-media").remove([actualExerciseStoragePath]);
+  await service.from("exercises").delete().eq("id", testExercise.id);
   await teardownForeignPractice();
 
   console.log(`\nErgebnis: ${passed} bestanden, ${failed} fehlgeschlagen`);

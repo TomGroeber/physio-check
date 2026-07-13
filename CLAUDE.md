@@ -6,7 +6,7 @@ Verbindliche Projektregeln. Der Masterprompt (Produkt- und Arbeitsgrundlage) ist
 
 App für Physiotherapiepraxen (Therapeuten-Dashboard) und Patienten (Heimübungspläne mit Videos, Termine, Adhärenz-Dokumentation). Vorläufiger Name **PhysioCheck** – Name/Logo/Farben liegen zentral in `src/config/branding.ts` und Design-Tokens; niemals hartkodieren.
 
-**Aktueller Stand:** Etappen 3–8, 10 und 11 abgeschlossen (2026-07-12): ganzzahlige Behandlungskontingente mit Ledger und Abschluss-Rücknahme; Verordnungswarnungen (≤ 2 Einheiten / ≤ 14 Tage) mit Dashboard-Karte, Listenfilter und datensparsamer Notification; Dokumente mit Filter und endgültigem Löschen; internes Kurzprofil; markierte Patienten; Warteliste; Terminangebots-Workflow (atomare, konfliktgeprüfte Annahme); RLS-Testsuite `pnpm test:rls` (36 Proben). Neueste Migration: `20260712180000_appointment_offers.sql`. Geprüft je Etappe: db:reset, Seed, Typecheck, Lint, 61 Unit-Tests, 28 E2E, Build, UI-Durchläufe mit Negativ-Proben. Remote `origin` ist `TomGroeber/physio-check` (**privat**). **Etappe 9 (Obsidian) wartet auf Toms Vault-Pfad.** Details: `docs/AI_HANDOFF.md`.
+**Aktueller Stand:** Phasen A/B des Auftrags vom 13.07.2026 sind auf `main`; Phase C (privater Übungsmedien-Upload) ist implementiert und in der Cloud durch Typecheck, Lint, 69 Unit-Tests und Build geprüft. Lokale DB-/RLS-/Browserprüfung der Migration `20260713120000` steht aus. Remote `origin` ist `TomGroeber/physio-check` (aktuell öffentlich, keine Secrets oder echten Patientendaten). Etappe 9 synchronisiert Projektdoku auf Toms Mac per `pnpm docs:sync`. Details: `docs/AI_HANDOFF.md`.
 
 ## Kommunikation
 

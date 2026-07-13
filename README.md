@@ -2,7 +2,7 @@
 
 App für Physiotherapiepraxen und ihre Patientinnen und Patienten: Heimübungspläne mit Videos, Termine, verordnete Sitzungen und selbst dokumentierte Durchführung (Adhärenz).
 
-> **Stand 11.07.2026:** Phase E/F konsolidiert und verifiziert; Etappe 2 (Telefonnummer + Kalenderfarben) umgesetzt und im Browser durchgetestet (50 Unit-Tests, 28 E2E-Tests, Build, UI-Durchlauf mit Sicherheits-Proben). Produktumfang: `docs/PRODUCT_SPEC.md` · Übergabe: `docs/AI_HANDOFF.md`.
+> **Stand 13.07.2026:** Einladungseinstieg und Übungsbibliothek sind verifiziert; der sichere Medien-Upload (Video, Vorschaubild, Alternativbild, WebVTT-Untertitel) ist implementiert und durch Typecheck, Lint, 69 Unit-Tests und Build geprüft. Datenbank-/RLS-/Browserprüfung der neuen Migration steht noch aus. Produktumfang: `docs/PRODUCT_SPEC.md` · Übergabe: `docs/AI_HANDOFF.md`.
 
 ## Funktionsübersicht
 
@@ -16,7 +16,8 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Patientenverwaltung | Liste, Suche, Patient anlegen, Detailseite | ✅ | E2E + UI-Durchlauf (11.07.2026) | Detailseite mit Terminen, Sitzungen, Dokumenten, Plan |
 | Telefonnummer | Patient pflegt eigene Nummer; Praxis sieht und korrigiert sie | ✅ | UI-Durchlauf + API-Proben (11.07.2026) | Optional, nur Ziffern/übliche Zeichen; Anzeige in Liste und Detail |
 | Heimübungen | Übungsanzeige „Heute“ + Detailseite mit Vorgaben | ✅ | E2E-Tests (11.07.2026) | Übungen stammen aus Demo-Seed |
-| Heimübungen | Übungs-/Videoverwaltung durch die Praxis (Upload) | ❌ | – | Privater Bucket `exercise-media` existiert bereits |
+| Heimübungen | Übungsbibliothek durch die Praxis | ✅ | 65 Unit-Tests + UI-Durchlauf (13.07.2026) | Anlegen, bearbeiten, duplizieren, deaktivieren, archivieren; nie Hard-Delete |
+| Heimübungen | Privater Medien-Upload durch die Praxis | 🧪 | Typecheck, Lint, 69 Unit-Tests, Build (13.07.2026) | MP4/WebM, JPEG/PNG und WebVTT; Fortschritt, Vorschau, Ersetzen/Entfernen, Signaturprüfung; DB/RLS/UI noch lokal prüfen |
 | Übungsdokumentation | Selbstauskunft (erledigt/teilweise/zu schwierig/nicht möglich), Schmerz, Notiz | ✅ | E2E-Tests (11.07.2026) | Snapshot der Vorgaben; keine Doppeldokumentation pro Tag |
 | Kalender | Monats-, Wochen-, Tages- und Listenansicht mit Filtern | ✅ | Unit-Tests + UI-Durchlauf (11.07.2026) | Ohne zusätzliche Kalenderbibliothek |
 | Termine | Termin anlegen und bearbeiten | 🧪 | Unit-Tests der Validierung | UI vorhanden; kein automatischer End-zu-End-Test |
@@ -36,13 +37,14 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Freie Termine | Frei gewordene Zeitfenster + Terminangebote (annehmen/ablehnen/zurückziehen) | ✅ | UI-Durchlauf inkl. Konfliktfall (12.07.2026) | Annahme bucht atomar; Doppelbuchung durch DB-Überlappungsschutz ausgeschlossen |
 | PWA | Installierbares Manifest | 🟡 | manuell (frühere Phase) | Kein Offline-Modus, keine Push-Benachrichtigungen |
 | Sicherheit | RLS auf allen Patiententabellen, serverseitige Autorisierung, private Buckets | ✅ | 36 RLS-Proben `pnpm test:rls` (12.07.2026) | Patient/Fremdpraxis/Selbst-Eskalation/Storage negativ getestet; Virenscan vor Pilot weiterhin offen |
-| Tests | Typecheck, Lint, 61 Unit-Tests, 28 E2E, 36 RLS-Proben, Build | ✅ | lokal ausgeführt (12.07.2026) | Dedizierte Sitzungs-/Dokument-E2E-Specs weiterhin sinnvoll (bisher Playwright-Treiberskripte) |
+| Tests | Typecheck, Lint, 69 Unit-Tests, 28 E2E, erweiterte RLS-Suite, Build | 🧪 | Cloud-Prüfungen 13.07.; letzte vollständige DB-/E2E-Prüfung 12.07. | Neue Medienmigration und zusätzliche Medien-RLS-Proben benötigen lokalen Supabase-Lauf |
 | Deployment | Produktivbetrieb/Hosting | ❌ | – | Nur mit ausdrücklicher Zustimmung von Tom |
 
 ## Was funktioniert aktuell?
 
 - **Kompletter Patienteneinstieg:** Konto erstellen → E-Mail bestätigen → Praxiscode einlösen → mit der Praxis verbunden.
 - **Übungen:** Patienten sehen ihre Tagesübungen, dokumentieren die Durchführung als Selbstauskunft; die Praxis sieht die Rückmeldungen der letzten 7/30 Tage.
+- **Übungsbibliothek und Medien:** Die Praxis legt Übungen vollständig über die Oberfläche an. Videos, Vorschaubilder, Alternativbilder und WebVTT-Untertitel werden über eng begrenzte Upload-Tickets direkt in den privaten Bucket geladen, danach serverseitig auf Größe und Dateisignatur geprüft und nur berechtigten Patienten über kurzlebige URLs angezeigt.
 - **Kalender:** Die Praxis arbeitet mit Monats-/Wochen-/Tages-/Listenansicht; Termine können angelegt, geändert, storniert und abgeschlossen werden.
 - **Behandlungseinheiten:** Die Praxis hinterlegt Verordnungen mit ganzzahligen Einheiten und korrigiert mit Pflichtgrund. Ein abgeschlossener Termin rechnet genau eine Einheit an, eine Rücknahme des Abschlusses bucht genau eine zurück – jede Bewegung bleibt als Historie sichtbar, der Stand wird nie negativ. Beim Abschluss mit 0 verfügbaren Einheiten erscheint eine deutliche Warnung (der Termin bleibt abschließbar, angerechnet wird nichts). Patienten sehen ihren Stand mit neutralem Kostenhinweis.
 - **Patientenakten:** Die Praxis lädt PDF/JPEG/PNG in einen privaten Bucket und öffnet sie über kurzlebige signierte URLs; Patienten haben keinerlei Zugriff.
@@ -55,11 +57,15 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 
 - **Absageanfragen:** Die Praxis wird benachrichtigt, kann aber noch nicht per Klick annehmen/ablehnen.
 - **Termin anlegen/bearbeiten/stornieren:** implementiert und validiert, aber ohne automatischen End-zu-End-Test.
-- **Übungsverwaltung:** Übungen und Videos können noch nicht über die Oberfläche angelegt werden (nur Demo-Seed).
-- **Dokumente:** kein Filter, kein endgültiges Löschen, kein Virenscan (Blocker vor Pilotbetrieb).
+- **Übungsmedien:** Implementiert; die neue Migration, Storage-RLS und der tatsächliche MP4/WebM-Upload müssen noch mit der lokalen Supabase-Instanz und im Browser geprüft werden.
+- **Uploads:** Ein Malware-/Virenscan mit Quarantäne bleibt vor einem echten Pilotbetrieb erforderlich.
 - **Benachrichtigungszentrum:** Notifications existieren, aber ohne gelesen/ungelesen-Übersicht und Badge.
 
 ## Letzte Änderungen
+
+- **13.07.2026 – Phase C (sicherer Übungsmedien-Upload).** Praxisoberfläche pro Übung für MP4/WebM-Videos, JPEG/PNG-Vorschau- und Alternativbilder sowie WebVTT-Untertitel; Dateivorschau vor dem Upload, echter Fortschrittsbalken, Ersetzen und bestätigtes Entfernen. Ein serverseitig autorisiertes Ticket bestimmt einen zufälligen Praxis-/Übungspfad; erst nach serverseitiger Größen- und Magic-Byte-Prüfung wird das Medium per Upsert registriert und auditiert. Patienten erhalten Video, Poster, Untertitel oder Alternativbild ausschließlich nach Prüfung ihres aktuellen Plans über kurzlebige signierte URLs. Migration `20260713120000_unique_exercise_media_kind.sql`; 69 Unit-Tests, Typecheck, Lint und Build grün. Lokaler DB-/RLS-/UI-Lauf offen, da in der Cloud weder `.env.local` noch Docker/Supabase CLI verfügbar sind.
+
+- **13.07.2026 – Phase A/B.** Code-Einstieg auf der Startseite priorisiert, Ablaufdatum und lokal erzeugter QR-Code ergänzt; Übungsbibliothek mit Suche, Filtern, Anlegen, Bearbeiten, Duplizieren, Deaktivieren und Archivieren umgesetzt. Commits `375c70c` und `e9cb4ee`.
 
 - **12.07.2026 – Etappen 4–8 und 10 (Warnungen, Dokumente, Markierungen, Warteliste, Angebote, RLS-Suite).** Verordnungswarnungen mit zentralen Schwellen (≤ 2 Einheiten / ≤ 14 Tage) auf Detailseite, Dashboard und Liste samt datensparsamer Benachrichtigung; Dokumente mit Kategorie-Filter, Archiv-Umschalter und endgültigem Löschen (nur archivierte, zweistufig, mit Audit); internes Patienten-Kurzprofil und Patient-Markierungen in eigenen Tabellen ohne Patienten-Policy; Warteliste `/practice/waitlist` mit Priorität und maximal einem offenen Eintrag pro Patient; Terminangebots-Workflow (frei gewordene Zeitfenster → Angebot → Patient nimmt atomar konfliktgeprüft an oder lehnt ab, Praxis kann zurückziehen); dedizierte RLS-Testsuite `pnpm test:rls` mit 36 Proben (Patient, Fremdpraxis, Selbst-Eskalation, Storage). Migrationen `20260712100000` bis `20260712180000`. Jede Etappe einzeln verifiziert (Typecheck, Lint, 61 Unit-Tests, 28 E2E, Build, UI-Durchläufe mit Negativ-Proben). Ergänzt um Etappe 9: `pnpm docs:sync` synchronisiert die Projektdoku (README, TASKS, DECISIONS, docs/) mit Hinweis-Banner in den Obsidian-Vault (`OBSIDIAN_VAULT_PATH` in `.env.local`) – Einbahnstraße Repo → Vault, nur der eigene Zielordner wird angefasst.
 

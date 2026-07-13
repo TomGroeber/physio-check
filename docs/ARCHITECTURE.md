@@ -1,5 +1,11 @@
 # PhysioCheck – Architektur
 
+## Phase-C-Erweiterung 2026-07-13: Übungsmedien
+
+Große Übungsmedien werden ticket-basiert hochgeladen: Server Action prüft aktive Praxis-Mitgliedschaft und die Übung, der Service erzeugt einen zufälligen Pfad `<practice_id>/<exercise_id>/<uuid>.<ext>` und eine eng begrenzte signierte Upload-URL. Der Browser lädt direkt mit echtem Fortschritt in den privaten Bucket. Eine zweite Server Action finalisiert erst nach Prüfung von Pfad, Bucket-Information, Größenlimit und Magic Bytes. Pro Übung existiert durch einen eindeutigen Index höchstens ein Medium je Art; Austausch und Entfernen löschen auch das vorherige Storage-Objekt und schreiben ein datensparsames Audit-Ereignis.
+
+Patienten greifen niemals direkt auf Storage zu. `getExerciseDetailForPatient` weist zuerst nach, dass das Plan-Item zum eigenen aktuellen Plan gehört, und erzeugt danach kurzlebige URLs für Video, Poster, Alternativbild und WebVTT-Untertitel. Direkte Storage-Lesezugriffe bleiben per Policy Praxismitgliedern vorbehalten.
+
 ## Phase-C-Erweiterung: freie Registrierung und Übungsdokumentation
 
 Die Registrierung erzeugt nur noch ein unverbundenes Patientenkonto; `homeRouteFor` leitet Konten ohne Rolle und ohne Praxis-Link in den geschützten Verbindungsbereich `/connect` (Codeeingabe, Basiskonto, Abmeldung). Die Praxisverbindung läuft unverändert über die geprüfte Einladung und `redeem_patient_invite`.

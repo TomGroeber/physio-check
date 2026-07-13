@@ -1,10 +1,12 @@
 # PhysioCheck – AI Handoff
 
-> Stand: 2026-07-13 · Arbeitszweig: `main` · GitHub-Remote: `TomGroeber/physio-check` (**privat**)
+> Stand: 2026-07-13 · Arbeitszweig: `main` · GitHub-Remote: `TomGroeber/physio-check` (aktuell öffentlich; keine Secrets/echten Daten)
 
 ## Laufender Auftrag (13.07.2026): Phasen A–J
 
 Übungs-/Videoverwaltung, individuelle Pläne, flexible Häufigkeiten, geführter Patientenmodus, optimierter Einladungseinstieg. Fortschritt in `TASKS.md` (Abschnitt „Auftrag vom 13.07.2026") und `NEXT_TASK.md`.
+
+- **Phase C implementiert (2026-07-13, lokaler Zwischenstand aus Claude übernommen):** `src/config/media.ts` und `src/server/services/exercise-media.ts` wurden fertig angeschlossen und gehärtet. Neue Server-Actions autorisieren jede Übung über die aktuelle Praxis-Mitgliedschaft. `ExerciseMediaManager` bietet Video, Poster, Alternativbild und WebVTT-Untertitel mit Vorschau, echtem XHR-Uploadfortschritt, Ersetzen und Entfernen. Finalisierung liest nur den ersten Stream-Chunk, prüft Größe und Magic Bytes, registriert per eindeutigem `(exercise_id, kind)`-Upsert und auditiert ohne Dateinamen. Patienten erhalten die vier Medienarten erst nach Prüfung ihres aktuellen Plans über 10 Minuten gültige URLs. Migration `20260713120000_unique_exercise_media_kind.sql`; RLS-Suite um nicht zugewiesene/fremde Übungsmedien und direkte Storage-Zugriffe ergänzt. Cloud-geprüft: Typecheck, Lint, 69 Unit-Tests, Build. Nicht ausgeführt: DB-Reset, RLS, E2E und UI-Upload (keine `.env.local`, Docker/Supabase CLI in der Cloud). Malware-Scan bleibt Pilot-Blocker.
 
 - **Phase B fertig (2026-07-13):** Übungsbibliothek komplett verwaltbar: `/practice/exercises` mit Suche + Filtern (Kategorie, Hilfsmittel, Archiv), Anlegen/Bearbeiten (`/new`, `/[exerciseId]`), Duplizieren (ohne Medien), Deaktivieren (nicht in neuen Plänen) und Archivieren (aus Bibliothek ausgeblendet; Übungen werden nie hart gelöscht – es existiert keine Delete-Policy, alte Pläne/Logs bleiben lesbar). Migration `20260713100000_exercise_library_fields.sql` (category, default_total_duration_seconds, archived_at). practice_id stammt immer aus der verifizierten Mitgliedschaft. Neue Dateien: `src/server/services/exercises.ts`, `src/server/actions/exercises.ts`, `src/lib/validation/exercises.ts` (+ 4 Unit-Tests), `src/components/practice/exercise-form.tsx`, `exercise-admin-actions.tsx`. Geprüft: Typecheck, Lint, 65 Unit-Tests, Build, 8-Schritte-UI-Durchlauf (anlegen, bearbeiten, suchen/filtern, duplizieren, deaktivieren, archivieren, Roundtrip, aufräumen).
 - **Phase A fertig (2026-07-13):** Startseite führt primär zum Code-Einstieg; `/invite/continue` zeigt Ablaufdatum + Hinweis (Konto selbst erstellen, Code bleibt bis zur endgültigen Verbindung gültig); QR-Code zum Einladungslink lokal erzeugt (`src/components/practice/invite-qr-code.tsx`, neues Paket `qrcode`, keine externen Aufrufe). Einladungssicherheit unverändert. Geprüft: Typecheck, Lint, 61 Unit-Tests, Build, 7-Schritte-UI-Durchlauf (frischer Code, QR sichtbar, Deep-Link, neutrale Fehlermeldung, Aufräumen).
@@ -48,7 +50,7 @@ Die Phase-E/F-Implementierung lag zuvor als kompletter Parallelordner `physio-ch
 
 1. Praxisentscheidung für Absageanfragen (annehmen/ablehnen) fehlt; `decideCancellationSchema` existiert bereits ungenutzt in `src/lib/validation/appointments.ts`.
 3. Virenscan/Quarantäne für Uploads vor Pilotbetrieb; aktuell nur Dateityp, Signatur und Größe.
-4. Übungs-/Videoverwaltung und Plan-Zuweisung per UI.
+4. Phase C lokal mit `db:reset`, `test:rls` und echtem Browser-Upload prüfen; danach individuellen Plan-Builder und Plan-Zuweisung per UI (Phase D/E) abschließen.
 5. UX-Beobachtung: Erfolgs-/Fehlermeldungen von Server-Actions gehen verloren, wenn `revalidatePath` die Formular-Komponente neu aufbaut (Abschließen/Zurücknehmen, Angebot annehmen). Der Zustandswechsel selbst ist die Rückmeldung; ein Toast-System wäre die saubere Lösung.
 6. E2E: seltener Hänger eines einzelnen Server-Action-Roundtrips nur unter voller Parallellast (untersucht 2026-07-12: keine blockierten DB-Queries, isoliert nie reproduzierbar). Handling: `expect`-Timeout 10 s, 1 Retry mit `trace: on-first-retry` – bei erneutem Auftreten liegt ein Trace in `test-results/`.
 
@@ -81,4 +83,4 @@ Remote `origin` ist `https://github.com/TomGroeber/physio-check.git` (privat). V
 
 ## Nächster konkreter Auftrag
 
-Alle Etappen des Plans vom 11.07.2026 sind abgeschlossen (Etappe 9: `pnpm docs:sync` → `02_Projekte/PhysioCheck/` in Toms Vault `~/Desktop/UNI-Wissensbasis`, `OBSIDIAN_VAULT_PATH` in `.env.local`). Sinnvolle nächste Arbeiten: Absageanfragen annehmen/ablehnen (Punkt 1 oben, `decideCancellationSchema` liegt bereit) oder Übungs-/Videoverwaltung per UI (Phase G).
+Nächster Auftrag: Phase D/E – individueller Plan-Builder mit typisiertem Schedule und atomarer Versionierung. Danach Phase F – mehrere dokumentierbare Durchgänge pro Tag. Vor dem nächsten lokalen Meilenstein Phase C mit Supabase/RLS/Browser prüfen. Obsidian-Sync: `pnpm docs:sync` auf Toms Mac (`OBSIDIAN_VAULT_PATH=~/Desktop/UNI-Wissensbasis`); aus der Cloud nicht direkt erreichbar.

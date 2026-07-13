@@ -107,6 +107,8 @@ erDiagram
         text mime_type
         bigint size_bytes
     }
+
+    %% Unique: (exercise_id, kind) – pro Übung höchstens ein Medium je Art.
     exercise_plans {
         uuid id PK
         uuid practice_id FK
