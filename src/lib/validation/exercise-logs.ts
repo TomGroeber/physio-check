@@ -24,6 +24,7 @@ export const completionStatusValues = [
 
 export const completionLogSchema = z.object({
   planItemId: z.uuid(),
+  mode: z.enum(["detail", "guided"]).default("detail"),
   status: z.enum(completionStatusValues),
   setsCompleted: optionalInt(0, 20),
   painBefore: optionalInt(0, 10),

@@ -2,6 +2,10 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-07-13 – Geführter Patientenmodus (Phase G)
+
+**D-042 · Serverberechnete Warteschlange statt Client-Sessionzustand.** `/session` zeigt immer den ersten aktuell offenen Durchgang aus `getPatientTodayData`. Nach jeder Selbstauskunft erfolgt ein Redirect und eine frische Datenbankberechnung. Dadurch kann ein alter Browserzustand weder einen inzwischen dokumentierten Durchgang wiederholen noch einen neuen Plan übersehen. Der optionale Timer bleibt eine reine Bedienhilfe und dokumentiert niemals automatisch.
+
 ## 2026-07-13 – Mehrere Durchgänge (Phase F)
 
 **D-041 · Dokumentiert ist nicht automatisch erledigt.** Jeder Status verbraucht den betreffenden geplanten Durchgang als dokumentierte Selbstauskunft. Nur `completed` zählt zusätzlich als vollständig erledigt. So bleibt eine Rückmeldung „teilweise“, „zu schwierig“ oder „nicht möglich“ sichtbar, ohne fälschlich Erfolg zu behaupten.

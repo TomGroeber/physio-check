@@ -2,7 +2,7 @@
 
 App für Physiotherapiepraxen und ihre Patientinnen und Patienten: Heimübungspläne mit Videos, Termine, verordnete Sitzungen und selbst dokumentierte Durchführung (Adhärenz).
 
-> **Stand 13.07.2026:** Einladungseinstieg und Übungsbibliothek sind verifiziert. Sicherer Medien-Upload, individuelle Planversionen und mehrere echte Tagesdurchgänge sind implementiert und durch Typecheck, Lint, 79 Unit-Tests und Build geprüft. Datenbank-/RLS-/Browserprüfung der neuen Migrationen steht noch aus. Produktumfang: `docs/PRODUCT_SPEC.md` · Übergabe: `docs/AI_HANDOFF.md`.
+> **Stand 13.07.2026:** Einladungseinstieg und Übungsbibliothek sind verifiziert. Sicherer Medien-Upload, individuelle Planversionen, mehrere Tagesdurchgänge und der geführte Patientenmodus sind implementiert und durch Typecheck, Lint, 83 Tests und Build geprüft. Datenbank-/RLS-/Browserprüfung der neuen Phasen steht noch aus. Produktumfang: `docs/PRODUCT_SPEC.md` · Übergabe: `docs/AI_HANDOFF.md`.
 
 ## Funktionsübersicht
 
@@ -21,6 +21,7 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Heimübungen | Individuelle Pläne und Versionierung | 🧪 | Typecheck, Lint, 74 Unit-Tests, Build (13.07.2026) | Dosierung, feste Wochentage, 1–6× täglich oder 1–7× wöchentlich, Uhrzeiten, Sortierung, Historie und Archivierung; atomare DB-Funktion, lokaler DB-/UI-Lauf offen |
 | Übungsdokumentation | Selbstauskunft (erledigt/teilweise/zu schwierig/nicht möglich), Schmerz, Notiz | ✅ | E2E-Tests (11.07.2026) | Snapshot der Vorgaben; keine Doppeldokumentation pro Tag |
 | Übungsdokumentation | Mehrere Durchgänge und flexible Wochenziele | 🧪 | Typecheck, Lint, 79 Unit-Tests, Build (13.07.2026) | Jeder Durchgang eigener Zeitstempel/Index; Doppeltipp atomar verhindert; geplant/dokumentiert/erledigt getrennt; DB/RLS/UI lokal offen |
+| Patientenmodus | Geführter Tagesablauf mit optionalem Timer | 🧪 | Typecheck, Lint, 83 Tests, Build (13.07.2026) | Eine Übung/ein Durchgang pro Ansicht, automatische nächste Aufgabe, Tageszusammenfassung; Browser-/WCAG-Prüfung offen |
 | Kalender | Monats-, Wochen-, Tages- und Listenansicht mit Filtern | ✅ | Unit-Tests + UI-Durchlauf (11.07.2026) | Ohne zusätzliche Kalenderbibliothek |
 | Termine | Termin anlegen und bearbeiten | 🧪 | Unit-Tests der Validierung | UI vorhanden; kein automatischer End-zu-End-Test |
 | Termine | Termin abschließen (rechnet genau 1 Einheit an) | ✅ | UI-Durchlauf (12.07.2026) | Anrechnung atomar; pro Termin höchstens eine aktive Anrechnung (partieller `unique`-Index) |
@@ -39,7 +40,7 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Freie Termine | Frei gewordene Zeitfenster + Terminangebote (annehmen/ablehnen/zurückziehen) | ✅ | UI-Durchlauf inkl. Konfliktfall (12.07.2026) | Annahme bucht atomar; Doppelbuchung durch DB-Überlappungsschutz ausgeschlossen |
 | PWA | Installierbares Manifest | 🟡 | manuell (frühere Phase) | Kein Offline-Modus, keine Push-Benachrichtigungen |
 | Sicherheit | RLS auf allen Patiententabellen, serverseitige Autorisierung, private Buckets | ✅ | 36 RLS-Proben `pnpm test:rls` (12.07.2026) | Patient/Fremdpraxis/Selbst-Eskalation/Storage negativ getestet; Virenscan vor Pilot weiterhin offen |
-| Tests | Typecheck, Lint, 79 Unit-Tests, 28 E2E, erweiterte RLS-Suite, Build | 🧪 | Cloud-Prüfungen 13.07.; letzte vollständige DB-/E2E-Prüfung 12.07. | Neue Medien-/Plan-/Occurrence-Migrationen und zusätzliche RLS-Proben benötigen lokalen Supabase-Lauf |
+| Tests | Typecheck, Lint, 83 Unit-/Komponententests, 28 E2E, erweiterte RLS-Suite, Build | 🧪 | Cloud-Prüfungen 13.07.; letzte vollständige DB-/E2E-Prüfung 12.07. | Neue Medien-/Plan-/Occurrence-Migrationen und zusätzliche RLS-/Browserproben benötigen lokalen Lauf |
 | Deployment | Produktivbetrieb/Hosting | ❌ | – | Nur mit ausdrücklicher Zustimmung von Tom |
 
 ## Was funktioniert aktuell?
@@ -49,6 +50,7 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 - **Übungsbibliothek und Medien:** Die Praxis legt Übungen vollständig über die Oberfläche an. Videos, Vorschaubilder, Alternativbilder und WebVTT-Untertitel werden über eng begrenzte Upload-Tickets direkt in den privaten Bucket geladen, danach serverseitig auf Größe und Dateisignatur geprüft und nur berechtigten Patienten über kurzlebige URLs angezeigt.
 - **Individuelle Übungspläne:** Im Patientendetail stellt die Praxis Übungen zusammen, sortiert sie und überschreibt Dosierung, Zeitraum und Häufigkeit. Jede Veröffentlichung erzeugt atomar eine vollständige neue Version; alte Versionen und damalige Selbstauskünfte bleiben unverändert. Pläne können archiviert, aber nicht rückwirkend gelöscht werden.
 - **Mehrere Durchgänge:** Bei z. B. drei täglichen Durchgängen bleibt die Übung nach dem ersten offen. Jeder Durchgang wird einzeln mit Zeitstempel dokumentiert. Die Oberfläche trennt Rückmeldungen von tatsächlich als „Erledigt“ angegebenen Durchgängen; ein Status „teilweise“ oder „zu schwierig“ wird niemals als vollständig erledigt dargestellt.
+- **Geführter Modus:** Der Patient startet auf „Heute“ und sieht jeweils nur den nächsten offenen Durchgang. Video, Vorgaben und optionale Timersteuerung sind groß dargestellt. Nach der Selbstauskunft berechnet der Server die Warteschlange neu; am Ende folgt eine Tageszusammenfassung ohne Wertung oder beschämende Gamification.
 - **Kalender:** Die Praxis arbeitet mit Monats-/Wochen-/Tages-/Listenansicht; Termine können angelegt, geändert, storniert und abgeschlossen werden.
 - **Behandlungseinheiten:** Die Praxis hinterlegt Verordnungen mit ganzzahligen Einheiten und korrigiert mit Pflichtgrund. Ein abgeschlossener Termin rechnet genau eine Einheit an, eine Rücknahme des Abschlusses bucht genau eine zurück – jede Bewegung bleibt als Historie sichtbar, der Stand wird nie negativ. Beim Abschluss mit 0 verfügbaren Einheiten erscheint eine deutliche Warnung (der Termin bleibt abschließbar, angerechnet wird nichts). Patienten sehen ihren Stand mit neutralem Kostenhinweis.
 - **Patientenakten:** Die Praxis lädt PDF/JPEG/PNG in einen privaten Bucket und öffnet sie über kurzlebige signierte URLs; Patienten haben keinerlei Zugriff.
@@ -66,6 +68,8 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 - **Benachrichtigungszentrum:** Notifications existieren, aber ohne gelesen/ungelesen-Übersicht und Badge.
 
 ## Letzte Änderungen
+
+- **13.07.2026 – Phase G (geführter Patientenmodus).** Neue Route `/session`: ein offener Durchgang pro Seite mit Video/Untertiteln/Alternativbild, individuellen Vorgaben, Schedule/Uhrzeiten, klaren Schritten, optionalem Countdown und großem Dokumentationsformular. Nach „Speichern und weiter“ wird der nächste zulässige Durchgang aus der Datenbank neu ermittelt; Abschlussansicht trennt dokumentiert und als erledigt angegeben. Timer ist rein optional und erzeugt niemals selbst einen Log. Typecheck, Lint, 83 Tests und Build grün; Browser- und WCAG-Durchlauf offen.
 
 - **13.07.2026 – Phase F (mehrere Durchgänge).** `completion_logs.occurrence_index` nummeriert historische und neue Tagesdurchgänge verlustfrei. `record_exercise_occurrence` leitet Praxisdatum, Fälligkeit, Wochenziel und nächsten freien Durchgang in einer serialisierten DB-Transaktion ab und erstellt den Vorgaben-Snapshot serverseitig; direkte Log-Inserts wurden entzogen. „Heute“, Übungsdetail und Praxisprotokoll unterscheiden geplante, dokumentierte und vollständig erledigte Durchgänge. Migration `20260713160000_completion_occurrences.sql`; Typecheck, Lint, 79 Unit-Tests und Build grün, lokaler DB-/RLS-/Browserlauf offen.
 

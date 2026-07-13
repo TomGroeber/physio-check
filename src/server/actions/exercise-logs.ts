@@ -21,6 +21,7 @@ export async function logCompletionAction(
 ): Promise<LogFormState> {
   const parsed = completionLogSchema.safeParse({
     planItemId: formData.get("planItemId"),
+    mode: formData.get("mode") ?? "detail",
     status: formData.get("status"),
     setsCompleted: formData.get("setsCompleted"),
     painBefore: formData.get("painBefore"),
@@ -55,5 +56,6 @@ export async function logCompletionAction(
     painBefore: parsed.data.painBefore,
     painAfter: parsed.data.painAfter,
   });
-  redirect(painHint ? "/today?logged=1&painhint=1" : "/today?logged=1");
+  const target = parsed.data.mode === "guided" ? "/session" : "/today";
+  redirect(painHint ? `${target}?logged=1&painhint=1` : `${target}?logged=1`);
 }

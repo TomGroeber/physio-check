@@ -8,6 +8,10 @@ Der Client hält nur den Entwurf. Die Server Action validiert den vollständigen
 
 Die UI sendet keine Durchgangsnummer. `record_exercise_occurrence` verwendet die authentifizierte Patienten-ID, das Praxisdatum und den aktuellen Plan, serialisiert parallele Aufrufe pro Item/Tag und vergibt den nächsten zulässigen Index. Erst danach entsteht der Log samt Snapshot. Reine Logik in `src/lib/occurrences.ts` berechnet aus Schedule und Logs die getrennten Zähler für geplant, dokumentiert und vollständig erledigt.
 
+## Ergänzung Phase G: geführte Queue
+
+Der Guided Flow speichert keine eigene Warteschlange im Browser. `/session` lädt die aktuellen Tagesdaten, wählt den ersten offenen Durchgang und lädt dessen autorisierte Medien. Nach der Action führt ein Redirect zurück zu `/session`; der Server berechnet die Queue erneut. Timerzustand ist rein lokal, kurzlebig und ohne Persistenz oder medizinische Auswertung.
+
 ## Phase-C-Erweiterung 2026-07-13: Übungsmedien
 
 Große Übungsmedien werden ticket-basiert hochgeladen: Server Action prüft aktive Praxis-Mitgliedschaft und die Übung, der Service erzeugt einen zufälligen Pfad `<practice_id>/<exercise_id>/<uuid>.<ext>` und eine eng begrenzte signierte Upload-URL. Der Browser lädt direkt mit echtem Fortschritt in den privaten Bucket. Eine zweite Server Action finalisiert erst nach Prüfung von Pfad, Bucket-Information, Größenlimit und Magic Bytes. Pro Übung existiert durch einen eindeutigen Index höchstens ein Medium je Art; Austausch und Entfernen löschen auch das vorherige Storage-Objekt und schreiben ein datensparsames Audit-Ereignis.

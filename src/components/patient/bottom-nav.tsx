@@ -32,7 +32,10 @@ export function BottomNav() {
       <ul className="mx-auto flex max-w-lg">
         {items.map((item) => {
           const active =
-            pathname === item.href || pathname.startsWith(item.href + "/");
+            pathname === item.href ||
+            pathname.startsWith(item.href + "/") ||
+            (item.href === "/today" &&
+              (pathname === "/session" || pathname.startsWith("/exercises/")));
           return (
             <li key={item.href} className="flex-1">
               <Link

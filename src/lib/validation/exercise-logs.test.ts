@@ -57,6 +57,23 @@ describe("completionLogSchema", () => {
     expect(parsed.success).toBe(false);
   });
 
+  it("accepts only known return modes for the guided flow", () => {
+    expect(
+      completionLogSchema.safeParse({
+        planItemId: validId,
+        status: "completed",
+        mode: "guided",
+      }).success
+    ).toBe(true);
+    expect(
+      completionLogSchema.safeParse({
+        planItemId: validId,
+        status: "completed",
+        mode: "external-url",
+      }).success
+    ).toBe(false);
+  });
+
   it("weist zu lange Notizen ab", () => {
     const parsed = completionLogSchema.safeParse({
       planItemId: validId,

@@ -188,6 +188,11 @@ export const de = {
       commonMistakes: "Darauf sollten Sie achten",
       equipment: "Hilfsmittel",
       prescriptionHeading: "Ihre Vorgaben",
+      scheduleFixed: (days: string, times: number) =>
+        `${days} · ${times} ${times === 1 ? "Durchgang" : "Durchgänge"} pro Tag`,
+      scheduleFlexible: (times: number) =>
+        `${times} ${times === 1 ? "Durchgang" : "Durchgänge"} pro Woche, Tage frei wählbar`,
+      preferredTimes: (times: string) => `Empfohlene Uhrzeiten: ${times}`,
       planNote: "Hinweis Ihrer Praxis",
       documentHeading: "Durchführung dokumentieren",
       occurrenceHeading: (current: number, total: number) =>
@@ -223,6 +228,37 @@ export const de = {
         "Diese Übung gehört nicht (mehr) zu Ihrem aktuellen Übungsplan.",
       errorAlreadyLogged: "Alle aktuell geplanten Durchgänge sind bereits dokumentiert.",
       errorNotDueToday: "Diese Übung ist für heute nicht geplant.",
+    },
+    session: {
+      title: "Heutige Übungen",
+      backToToday: "Training beenden und zu Heute zurück",
+      start: "Heutige Übungen starten",
+      resume: "Heutige Übungen fortsetzen",
+      viewSummary: "Tageszusammenfassung ansehen",
+      nextHeading: "Nächster geplanter Durchgang",
+      weekdaysShort: ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
+      progress: (documented: number, total: number) =>
+        `${documented} von ${total} Durchgängen dokumentiert`,
+      completedProgress: (completed: number, total: number) =>
+        `${completed} von ${total} Durchgängen als erledigt angegeben`,
+      autoContinueHint:
+        "Nach dem Speichern wird automatisch der nächste offene Durchgang angezeigt.",
+      saveAndContinue: "Speichern und weiter",
+      summaryTitle: "Tageszusammenfassung",
+      summaryDone: "Für heute sind alle geplanten Durchgänge dokumentiert.",
+      summaryOpen: (remaining: number) =>
+        `${remaining} ${remaining === 1 ? "Durchgang ist" : "Durchgänge sind"} noch offen.`,
+      summaryFeedback: (count: number) =>
+        `${count} ${count === 1 ? "Rückmeldung wurde" : "Rückmeldungen wurden"} nicht als vollständig erledigt angegeben.`,
+      noSessionToday: "Heute ist kein Durchgang geplant.",
+      timer: {
+        heading: "Optionaler Timer",
+        start: "Starten",
+        pause: "Pause",
+        reset: "Zurücksetzen",
+        finished: "Zeit abgelaufen.",
+        hint: "Der Timer ist nur eine Hilfe. Er dokumentiert die Übung nicht automatisch.",
+      },
     },
     appointments: {
       title: "Termine",

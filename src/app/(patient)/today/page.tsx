@@ -113,6 +113,16 @@ export default async function TodayPage({
           </Card>
         ) : (
           <>
+            <Link
+              href="/session"
+              className="flex min-h-14 items-center justify-center rounded-lg bg-primary px-5 text-lg font-bold text-primary-foreground hover:bg-primary/80 focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              {documentedCount < plannedCount
+                ? documentedCount > 0
+                  ? de.patient.session.resume
+                  : de.patient.session.start
+                : de.patient.session.viewSummary}
+            </Link>
             <p className="text-lg text-muted-foreground" role="status">
               {t.progress(documentedCount, plannedCount)}
             </p>

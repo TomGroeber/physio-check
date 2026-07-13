@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/server/db/server-client";
 import { createSupabaseServiceClient } from "@/server/db/service-client";
 import { isoWeekdayInTimeZone, todayInTimeZone } from "@/lib/datetime";
 import { calculateOccurrenceProgress, isoWeekRange } from "@/lib/occurrences";
+import { normalizePlanSchedule, type PlanSchedule } from "@/lib/plan-schedule";
 import type { CompletionLogInput } from "@/lib/validation/exercise-logs";
 import { branding } from "@/config/branding";
 
@@ -23,6 +24,7 @@ export type ExerciseDetail = {
   totalDurationSeconds: number | null;
   restSeconds: number | null;
   planNote: string;
+  schedule: PlanSchedule;
   videoUrl: string | null;
   posterUrl: string | null;
   fallbackImageUrl: string | null;
@@ -202,6 +204,7 @@ export async function getExerciseDetailForPatient(
     totalDurationSeconds: item.total_duration_seconds,
     restSeconds: item.rest_seconds,
     planNote: item.note,
+    schedule: normalizePlanSchedule(item.schedule),
     videoUrl,
     posterUrl,
     fallbackImageUrl,

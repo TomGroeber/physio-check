@@ -10,7 +10,7 @@ import {
 } from "@/server/services/exercise-log";
 import { Card, CardContent } from "@/components/ui/card";
 import { de } from "@/messages/de";
-import { LogForm } from "./log-form";
+import { ExerciseLogForm } from "@/components/patient/exercise-log-form";
 
 const t = de.patient.exercise;
 const u = de.units;
@@ -28,6 +28,16 @@ function prescriptionParts(detail: ExerciseDetail): string[] {
     parts.push(u.minutes(Math.round(detail.totalDurationSeconds / 60)));
   if (detail.restSeconds) parts.push(u.restSeconds(detail.restSeconds));
   return parts;
+}
+
+function scheduleText(detail: ExerciseDetail): string {
+  if (detail.schedule.mode === "times_per_week") {
+    return t.scheduleFlexible(detail.schedule.times_per_week);
+  }
+  const days = detail.schedule.weekdays
+    .map((weekday) => de.patient.session.weekdaysShort[weekday - 1])
+    .join(", ");
+  return t.scheduleFixed(days, detail.schedule.times_per_day);
 }
 
 export default async function ExerciseDetailPage({
@@ -99,6 +109,16 @@ export default async function ExerciseDetailPage({
         </h2>
         {prescriptionParts(detail).length > 0 ? (
           <p className="text-lg">{prescriptionParts(detail).join(" · ")}</p>
+        ) : null}
+        <p className="text-lg">{scheduleText(detail)}</p>
+        {detail.schedule.preferred_times.length > 0 ? (
+          <p className="text-base text-muted-foreground">
+            {t.preferredTimes(
+              detail.schedule.preferred_times
+                .map((time) => `${time} ${de.units.timeSuffix}`)
+                .join(", ")
+            )}
+          </p>
         ) : null}
         {detail.planNote ? (
           <div className="rounded-lg bg-muted p-4">
@@ -192,7 +212,7 @@ export default async function ExerciseDetailPage({
             </CardContent>
           </Card>
         ) : detail.canDocument && detail.nextOccurrenceIndex ? (
-          <LogForm
+          <ExerciseLogForm
             planItemId={detail.planItemId}
             maxSets={detail.sets}
             occurrenceIndex={detail.nextOccurrenceIndex}
