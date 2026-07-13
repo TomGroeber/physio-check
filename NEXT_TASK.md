@@ -9,10 +9,11 @@
 - **Phase G (Cloud-Prüfstand, 2026-07-13):** Geführter Patientenmodus `/session` mit einer Übung/einem Durchgang, Video, großen Vorgaben, optionalem Timer, automatischem Weitergehen und Tageszusammenfassung implementiert. Typecheck, Lint, 83 Tests und Build grün; Browser-/WCAG-Prüfung offen.
 - **Phase H (Cloud-Prüfstand, 2026-07-13):** Praxis-Auswertung für 7/30 Tage, Soll/Dokumentiert/Erledigt, problematische und ungelesene Rückmeldungen, Schmerzmarkierungen, letzte Aktivität und inaktive Patienten implementiert. Migration `20260713180000`; Typecheck, Lint, 88 Tests und Build grün. Lokaler DB-/RLS-/Browserlauf offen.
 - **Phase I (Cloud-Prüfstand, 2026-07-13):** Freiwillige Übungs-/Planhinweise, Ruhezeiten und gelesene Planänderungen implementiert. Migration `20260713200000`; Typecheck, Lint, 97 Tests und Build grün. Push/E-Mail bleiben späterer Ausbau; lokaler DB-/RLS-/Browserlauf offen.
+- **Phase J (Cloud-Prüfstand, 2026-07-13):** Geforderte Testgruppen sind als Unit-, RLS- und Playwright-Spezifikationen abgedeckt; Matrix in `docs/TEST_MATRIX.md`. Typecheck, Lint, 101 Tests, 42 gelistete Browserfälle und Build grün.
 
 ## Jetzt dran
 
-**Phase J – Gesamtprüfung:** fehlende automatisierte Abdeckung gegen den Phasen-A–J-Katalog prüfen und sinnvoll ergänzen. Danach `db:reset`, Seed, RLS, E2E und Browser-/WCAG-Durchlauf auf Toms lokaler Supabase-Umgebung ausführen; Cloud kann bis dahin Typecheck, Lint, Unit-Tests und Build prüfen. Offene produktweite Punkte (Absageentscheidung, Malware-Scan, vollständiges Notification-Zentrum) ehrlich getrennt lassen.
+**Lokaler Abschluss von Phase C–J:** Auf Toms Mac mit Docker/Supabase nacheinander `pnpm db:reset`, `pnpm seed`, `pnpm test:rls`, `pnpm e2e` und `pnpm build` ausführen und eventuelle echte Laufzeitfehler beheben. Danach manueller MP4/WebM-/WCAG-Kernlauf. Offene produktweite Punkte (Absageentscheidung, Malware-Scan, vollständiges Notification-Zentrum) bleiben getrennte Folgearbeiten.
 
 ## Regeln (Kurzfassung)
 

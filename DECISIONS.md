@@ -2,6 +2,10 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-07-13 – Testabschluss (Phase J)
+
+**D-047 · Getrennte Testebenen mit ehrlichem Status.** Reine Schedule-, Grenzwert- und Fortschrittslogik bleibt schnell in Vitest. Rollen-, Mandanten-, Versionierungs- und Einladungszustände laufen gegen echte lokale Supabase-Sitzungen in `test:rls`. Browserinteraktion, Upload-Ticket, Mailpit und neues Gerät laufen in Playwright. Eine nur gelistete, aber infrastrukturell nicht ausgeführte RLS-/Browser-Spezifikation gilt ausdrücklich nicht als bestanden; `docs/TEST_MATRIX.md` hält Abdeckung und tatsächlichen Laufstatus getrennt fest.
+
 ## 2026-07-13 – Freiwillige Erinnerungen (Phase I)
 
 **D-046 · Notification-Inhalte sind für Empfänger unveränderlich.** Das bisher breite Tabellen-Update-Recht wurde entzogen. `mark_notification_read` darf unter RLS ausschließlich `read_at` für eine eigene Notification setzen; Titel, Text, Typ, Referenz und Empfänger bleiben servererzeugt. Reminder-Präferenzen liegen in einer eigenen Tabelle und sind ausschließlich für das eigene Profil les-/schreibbar.

@@ -6,6 +6,8 @@
 
 Übungs-/Videoverwaltung, individuelle Pläne, flexible Häufigkeiten, geführter Patientenmodus, optimierter Einladungseinstieg. Fortschritt in `TASKS.md` (Abschnitt „Auftrag vom 13.07.2026") und `NEXT_TASK.md`.
 
+- **Phase J Testabdeckung implementiert (Cloud-Prüfstand, 2026-07-13, Commit `3216cef`):** `e2e/phase-j-exercise-management.spec.ts` prüft Bibliotheks-CRUD, falsche/valide MP4-Signatur, private Patientenauslieferung und Entfernen eines ersetzten Videos. `e2e/phase-j-invitations.spec.ts` prüft Code vor Konto, Registrierung/Mailpit/Annahme, bestehendes Konto und frischen Browser-Context. `scripts/rls-tests.ts` erzeugt temporäre Bibliotheksobjekte, einen Patienten, zwei Planversionen und alle Einladungszustände; es prüft Fremdpraxis, alte Logs, atomare Versionen, Praxiswechsel und räumt auf. Unit-Grenzen ergänzt; `docs/TEST_MATRIX.md` ordnet jede Masterprompt-Anforderung zu. Tatsächlich grün: Typecheck, Lint, 101 Tests, Playwright `--list` (42 Fälle), Build. Nicht ausgeführt: `db:reset` (`supabase: not found`), Seed/RLS (`.env.local: not found`), E2E (Next-dev-Start scheitert zusätzlich an `uv_interface_addresses ... Unknown system error 1`).
+
 - **Phase I implementiert (Cloud-Prüfstand, 2026-07-13, Commit `af38d13`):** Migration `20260713200000_patient_reminder_preferences.sql` ergänzt eigene RLS-Präferenzen für Übungs-/Planhinweise und Ruhezeiten. `src/lib/reminders.ts` behandelt Ruheintervalle über Mitternacht; `src/server/services/reminders.ts` verbindet sie mit der offenen Occurrence-Zahl und ungelesenen, datensparsamen Plan-Notifications. Profil und „Heute“ bieten große patientengerechte Steuerung; `mark_notification_read` ersetzt das breite Tabellen-Update-Recht und setzt ausschließlich den eigenen Lesestatus. RLS-Suite um Eigen-/Fremdzugriffe und Inhaltsmanipulation ergänzt. Cloud-geprüft: Typecheck, Lint, 97 Tests, Build. DB/RLS/E2E/UI lokal offen. Kein Push/E-Mail; bewusst späterer Ausbau. Push und Obsidian-Sync bleiben wegen fehlender Cloud-Anmeldung beziehungsweise fehlendem lokalen Vault blockiert.
 
 - **Phase H implementiert (Cloud-Prüfstand, 2026-07-13, Commit `71d4a93`):** `src/lib/adherence-analytics.ts` berechnet Soll je Schedule/Zeitraum sowie dokumentiert, completed, Status-, Schmerz- und ungelesene Zähler. `src/server/services/adherence.ts` liefert Patientendetail und Bulk-Dashboard ohne Patient-N+1. Beide Ansichten filtern 7/30 Tage, zeigen letzte Aktivität/inaktive Patienten und verlinken Patient, Plan und Übung. Migration `20260713180000_completion_feedback_review.sql` ergänzt getrennte Review-Metadaten und eine autorisierte/auditierte RPC; Action/Button markieren ungelesene Logs. RLS-Suite prüft Patient/Fremdpraxis/eigene Praxis. Cloud-geprüft: Typecheck, Lint, 88 Tests, Build. DB/RLS/E2E/UI lokal offen. Push und Obsidian-Sync bleiben wegen fehlender Cloud-Anmeldung beziehungsweise fehlendem lokalen Vault blockiert.
@@ -65,7 +67,7 @@ Die Phase-E/F-Implementierung lag zuvor als kompletter Parallelordner `physio-ch
 
 1. Praxisentscheidung für Absageanfragen (annehmen/ablehnen) fehlt; `decideCancellationSchema` existiert bereits ungenutzt in `src/lib/validation/appointments.ts`.
 3. Virenscan/Quarantäne für Uploads vor Pilotbetrieb; aktuell nur Dateityp, Signatur und Größe.
-4. Phase C–I lokal mit `db:reset`, `test:rls` und echtem Browser/WCAG-Check prüfen.
+4. Phase C–J lokal mit `db:reset`, Seed, `test:rls`, E2E und echtem Browser/WCAG-Check prüfen. Testzuordnung: `docs/TEST_MATRIX.md`.
 5. UX-Beobachtung: Erfolgs-/Fehlermeldungen von Server-Actions gehen verloren, wenn `revalidatePath` die Formular-Komponente neu aufbaut (Abschließen/Zurücknehmen, Angebot annehmen). Der Zustandswechsel selbst ist die Rückmeldung; ein Toast-System wäre die saubere Lösung.
 6. E2E: seltener Hänger eines einzelnen Server-Action-Roundtrips nur unter voller Parallellast (untersucht 2026-07-12: keine blockierten DB-Queries, isoliert nie reproduzierbar). Handling: `expect`-Timeout 10 s, 1 Retry mit `trace: on-first-retry` – bei erneutem Auftreten liegt ein Trace in `test-results/`.
 
@@ -77,6 +79,8 @@ Die Phase-E/F-Implementierung lag zuvor als kompletter Parallelordner `physio-ch
 - Dokumente/Kurzprofil: `src/server/{actions,services}/documents.ts`, `src/server/services/internal-profile.ts`, `src/components/practice/{document-panel,internal-profile-form}.tsx`
 - Markierungen/Warteliste/Angebote: `src/server/{actions,services}/{pinned-patients,waitlist,offers}.ts`, `src/components/practice/{pin-patient-form,waitlist-panel,offer-panel}.tsx`, `src/components/patient/offer-response.tsx`, Seite `src/app/(practice)/practice/waitlist/page.tsx`
 - RLS-Tests: `scripts/rls-tests.ts` (`pnpm test:rls`)
+- Phase-J-Browsertests: `e2e/phase-j-{exercise-management,invitations}.spec.ts`
+- Testmatrix: `docs/TEST_MATRIX.md`
 - Plan-Builder: `src/components/practice/exercise-plan-builder.tsx`, `src/server/{actions,services}/plans.ts`, `src/lib/{plan-schedule,validation/plans}.ts`
 - Durchgänge: `src/lib/occurrences.ts`, `src/server/services/exercise-log.ts`, `src/server/services/patient.ts`
 - Geführter Modus: `src/app/(patient)/session/page.tsx`, `src/components/patient/{exercise-log-form,exercise-timer}.tsx`
@@ -103,4 +107,4 @@ Remote `origin` ist `https://github.com/TomGroeber/physio-check.git` (privat). V
 
 ## Nächster konkreter Auftrag
 
-Nächster Auftrag: Phase J – Testkatalog gegen die Phasen A–I abgleichen, fehlende automatisierbare Qualitätsprüfungen ergänzen und den Gesamtabschluss dokumentieren. Vor dem nächsten lokalen Meilenstein Phase C–I mit Supabase/RLS/Browser prüfen. Obsidian-Sync: `pnpm docs:sync` auf Toms Mac (`OBSIDIAN_VAULT_PATH=~/Desktop/UNI-Wissensbasis`); aus der Cloud nicht direkt erreichbar.
+Nächster Auftrag: lokaler Abschluss der Phasen C–J auf Toms Mac: `pnpm db:reset && pnpm seed && pnpm test:rls && pnpm e2e && pnpm build`, danach Laufzeitfehler beheben und MP4/WebM-/WCAG-Kernweg manuell prüfen. Die Cloud-Blocker und erwartete Abdeckung stehen in `docs/TEST_MATRIX.md`. Obsidian-Sync: `pnpm docs:sync` auf Toms Mac (`OBSIDIAN_VAULT_PATH=~/Desktop/UNI-Wissensbasis`); aus der Cloud nicht direkt erreichbar.

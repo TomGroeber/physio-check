@@ -2,7 +2,7 @@
 
 App für Physiotherapiepraxen und ihre Patientinnen und Patienten: Heimübungspläne mit Videos, Termine, verordnete Sitzungen und selbst dokumentierte Durchführung (Adhärenz).
 
-> **Stand 13.07.2026:** Einladungseinstieg und Übungsbibliothek sind verifiziert. Sicherer Medien-Upload, Planversionen, mehrere Tagesdurchgänge, geführter Modus, Praxis-Auswertung und freiwillige In-App-Erinnerungen sind implementiert und durch Typecheck, Lint, 97 Tests und Build geprüft. Datenbank-/RLS-/Browserprüfung der neuen Phasen steht noch aus. Produktumfang: `docs/PRODUCT_SPEC.md` · Übergabe: `docs/AI_HANDOFF.md`.
+> **Stand 13.07.2026:** Phasen A–I sind implementiert; Phase J ergänzt den vollständigen Testkatalog. Typecheck, Lint, 101 Tests und Build sind grün, 42 Browserfälle werden erkannt. Datenbank-/RLS-/Browserausführung der neuen Phasen steht mangels lokaler Supabase-Umgebung noch aus. Produktumfang: `docs/PRODUCT_SPEC.md` · Testmatrix: `docs/TEST_MATRIX.md` · Übergabe: `docs/AI_HANDOFF.md`.
 
 ## Funktionsübersicht
 
@@ -42,7 +42,7 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Freie Termine | Frei gewordene Zeitfenster + Terminangebote (annehmen/ablehnen/zurückziehen) | ✅ | UI-Durchlauf inkl. Konfliktfall (12.07.2026) | Annahme bucht atomar; Doppelbuchung durch DB-Überlappungsschutz ausgeschlossen |
 | PWA | Installierbares Manifest | 🟡 | manuell (frühere Phase) | Kein Offline-Modus, keine Push-Benachrichtigungen |
 | Sicherheit | RLS auf allen Patiententabellen, serverseitige Autorisierung, private Buckets | ✅ | 36 RLS-Proben `pnpm test:rls` (12.07.2026) | Patient/Fremdpraxis/Selbst-Eskalation/Storage negativ getestet; Virenscan vor Pilot weiterhin offen |
-| Tests | Typecheck, Lint, 97 Unit-/Komponententests, 28 E2E, erweiterte RLS-Suite, Build | 🧪 | Cloud-Prüfungen 13.07.; letzte vollständige DB-/E2E-Prüfung 12.07. | Neue Medien-/Plan-/Occurrence-/Review-/Reminder-Migrationen und zusätzliche RLS-/Browserproben benötigen lokalen Lauf |
+| Tests | Typecheck, Lint, 101 Unit-/Komponententests, 42 gelistete Browserfälle, erweiterte RLS-Suite, Build | 🧪 | Cloud-Prüfungen 13.07.; letzte vollständige DB-/E2E-Ausführung 12.07. | Phase-J-Spezifikationen decken Bibliothek, Videos, Pläne, Durchgänge und Einladungen ab; lokale Ausführung offen |
 | Deployment | Produktivbetrieb/Hosting | ❌ | – | Nur mit ausdrücklicher Zustimmung von Tom |
 
 ## Was funktioniert aktuell?
@@ -72,6 +72,8 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 - **Benachrichtigungszentrum:** Planänderungen sind patientenseitig gelesen/ungelesen sichtbar; eine gemeinsame Übersicht für alle Notification-Arten und ein Badge fehlen noch.
 
 ## Letzte Änderungen
+
+- **13.07.2026 – Phase J (Testabdeckung).** Zwei neue serielle Playwright-Strecken prüfen Bibliotheks-CRUD, Magic-Byte-Upload, private Patientenauslieferung, Videoersatz, Code-vor-Konto, bestehendes Konto und neues Gerät. Die echte RLS-Suite erzeugt zusätzlich temporäre Pläne/Versionen, Bibliotheksobjekte, Einladungszustände und einen Praxiswechsel und räumt sie auf. Zentrale Größenvalidierung wird von UI, Action und Service gemeinsam verwendet. Typecheck, Lint, 101 Tests, Playwright-Testliste (42) und Build grün; DB-Reset/Seed/RLS/E2E hier infrastrukturell blockiert, Details in `docs/TEST_MATRIX.md`.
 
 - **13.07.2026 – Phase I (freiwillige Erinnerungen).** Neue RLS-geschützte Patienteneinstellungen steuern Übungshinweise, Planänderungen und praxiszeitzonensichere Ruhezeiten. „Heute“ zeigt nur außerhalb der Ruhezeit einen neutralen Hinweis mit der Zahl offener Durchgänge und höchstens fünf ungelesene Planänderungen. `mark_notification_read` erlaubt ausschließlich den Lesestatus, nicht das Umschreiben servererzeugter Inhalte. Migration `20260713200000_patient_reminder_preferences.sql`; Typecheck, Lint, 97 Tests und Build grün, lokaler DB-/RLS-/Browserlauf offen. Push/E-Mail bleiben bewusst eine spätere Erweiterung.
 
@@ -206,6 +208,7 @@ Alternativ funktioniert weiterhin der Einladungslink: Startseite → „Ich habe
 - `docs/PRIVACY_SECURITY.md` – Datenschutz und Sicherheit
 - `docs/ROADMAP.md` – spätere Erweiterungen
 - `docs/AI_HANDOFF.md` – aktueller Übergabestand für Claude/ChatGPT
+- `docs/TEST_MATRIX.md` – Anforderung-zu-Test-Zuordnung und letzter tatsächlicher Prüfstatus
 - `TASKS.md` / `DECISIONS.md` – Aufgaben und Entscheidungen
 
 ## Sicherheit (Kurzfassung)
