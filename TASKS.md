@@ -154,7 +154,7 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [x] Profil und Konto-Actions gehärtet: Doppelbestätigung, pending E-Mail, Recovery-Mail nur an Session-Adresse, interner Callback und Patientenscope.
 - [x] Typecheck, Lint, 105 Tests und Production Build grün; Playwright erkennt 48 Fälle.
 - [x] Auf Toms Mac ausführen: `pnpm db:reset && pnpm seed && pnpm test:rls && pnpm e2e`; Mailpit-Links und Mobil-/Desktopdarstellung prüfen. (2026-07-19, siehe Auftrag unten)
-- [ ] Merge nach `main` erst nach Toms Freigabe; Branch `claude-patient-ui-20260718` ist gepusht und geprüft.
+- [x] Merge nach `main` mit Toms Freigabe (2026-07-19): Fast-Forward `960c212..c0579ca`, gepusht.
 
 ## Auftrag vom 19.07.2026 – Lokale Prüfungen und Fehlerbehebung (Branch `claude-patient-ui-20260718`)
 
