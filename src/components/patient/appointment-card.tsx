@@ -42,7 +42,7 @@ export function AppointmentCard({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-lg font-bold">{formatDateLong(start, tz)}</p>
           {appointment.status !== "scheduled" && (
-            <Badge variant="secondary" className="text-sm">
+            <Badge variant="secondary" className="text-base">
               {statusLabel}
             </Badge>
           )}
@@ -72,7 +72,7 @@ export function AppointmentCard({
           </p>
         )}
         {showMapLink && appointment.address && (
-          <Button asChild variant="outline" className="h-12 text-base">
+          <Button asChild variant="outline" className="min-h-14 text-lg">
             <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
               {de.patient.today.openInMaps}
             </a>

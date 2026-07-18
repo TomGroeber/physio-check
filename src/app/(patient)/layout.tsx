@@ -20,13 +20,13 @@ export default async function PatientLayout({
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="border-b bg-card">
+      <header className="sticky top-0 z-30 border-b bg-card/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-lg items-center gap-3 px-4">
           <Image src={branding.logoPath} alt="" width={32} height={32} />
           <span className="text-xl font-bold">{branding.appName}</span>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-lg flex-1 px-4 py-6 text-lg">
+      <main className="mx-auto w-full max-w-lg flex-1 px-4 py-6 pb-28 text-lg">
         {children}
       </main>
       <BottomNav />

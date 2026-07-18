@@ -19,6 +19,12 @@ export type AuthFormState = {
   success?: string;
 };
 
+const appUrl = () => process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+function confirmationRedirect(next: string): string {
+  return `${appUrl()}/auth/confirm?next=${encodeURIComponent(next)}`;
+}
+
 /** Supabase-Fehlercodes in verständliche deutsche Texte übersetzen. */
 function loginErrorMessage(code: string | undefined): string {
   switch (code) {
@@ -111,7 +117,7 @@ export async function forgotPasswordAction(
 
   const supabase = await createSupabaseServerClient();
   await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/reset-password`,
+    redirectTo: confirmationRedirect("/reset-password"),
   });
 
   // Bewusst immer dieselbe Antwort – verrät nicht, ob ein Konto existiert.
@@ -152,6 +158,11 @@ export async function changeEmailAction(
   _prevState: AuthFormState,
   formData: FormData
 ): Promise<AuthFormState> {
+  const session = await getSessionContext();
+  if (!session) redirect("/login");
+  if (!session.patientLink || session.memberships.length > 0) {
+    return { error: de.common.error };
+  }
   const parsed = changeEmailSchema.safeParse({ email: formData.get("email") });
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message };
@@ -162,14 +173,14 @@ export async function changeEmailAction(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-  if (user.email && parsed.data.email === user.email.toLowerCase()) {
+  if (parsed.data.email === session.email?.toLowerCase()) {
     return { error: de.patient.profile.security.emailSame };
   }
 
   const { error } = await supabase.auth.updateUser(
     { email: parsed.data.email },
     {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/auth/confirm?next=${encodeURIComponent("/profile?email_confirmed=1")}`,
+      emailRedirectTo: confirmationRedirect("/profile?email_confirmed=1"),
     }
   );
   if (error) {
@@ -195,21 +206,25 @@ export async function changeEmailAction(
  */
 // Bewusst ohne Parameter: useActionState übergibt (state, formData),
 // aber diese Aktion braucht keinerlei Client-Eingaben.
-export async function requestPasswordChangeAction(): Promise<AuthFormState> {
+export async function requestPasswordChangeAction(
+  _prevState: AuthFormState,
+  _formData: FormData
+): Promise<AuthFormState> {
+  void _prevState;
+  void _formData;
+  const session = await getSessionContext();
+  if (!session) redirect("/login");
+  if (!session.patientLink || session.memberships.length > 0 || !session.email) {
+    return { error: de.common.error };
+  }
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user?.email) redirect("/login");
-
-  const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/reset-password`,
+  const { error } = await supabase.auth.resetPasswordForEmail(session.email, {
+    redirectTo: confirmationRedirect("/reset-password"),
   });
   if (error?.code === "over_email_send_rate_limit") {
     return { error: de.patient.profile.security.rateLimited };
   }
-  // Neutrale Bestätigung – gleiche Antwort auch bei anderen Fehlern,
-  // damit keine Kontodetails preisgegeben werden.
+  if (error) return { error: de.patient.profile.security.requestError };
   return { success: de.patient.profile.security.passwordMailSent };
 }
 

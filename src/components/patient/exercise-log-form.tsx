@@ -68,17 +68,22 @@ export function ExerciseLogForm({
           </label>
         ))}
       </fieldset>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor={`setsCompleted-${mode}`} className="text-base">{t.setsCompletedLabel}</Label>
-        <Input id={`setsCompleted-${mode}`} name="setsCompleted" type="number" inputMode="numeric" min={0} max={maxSets ?? 20} className="h-12 text-lg" />
-      </div>
-      <PainSelect id={`painBefore-${mode}`} name="painBefore" label={t.painBeforeLabel} />
-      <PainSelect id={`painAfter-${mode}`} name="painAfter" label={t.painAfterLabel} />
-      <p id="pain-scale-hint" className="text-base text-muted-foreground">{t.painScaleHint}</p>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor={`note-${mode}`} className="text-base">{t.noteLabel}</Label>
-        <Textarea id={`note-${mode}`} name="note" maxLength={1000} rows={3} className="text-lg" />
-      </div>
+      <details className="rounded-xl border">
+        <summary className="flex min-h-14 cursor-pointer items-center px-4 text-lg font-bold text-primary">Weitere Angaben (optional)</summary>
+        <div className="flex flex-col gap-4 border-t p-4">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor={`setsCompleted-${mode}`} className="text-base">{t.setsCompletedLabel}</Label>
+            <Input id={`setsCompleted-${mode}`} name="setsCompleted" type="number" inputMode="numeric" min={0} max={maxSets ?? 20} className="h-12 text-lg" />
+          </div>
+          <PainSelect id={`painBefore-${mode}`} name="painBefore" label={t.painBeforeLabel} />
+          <PainSelect id={`painAfter-${mode}`} name="painAfter" label={t.painAfterLabel} />
+          <p id="pain-scale-hint" className="text-base text-muted-foreground">{t.painScaleHint}</p>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor={`note-${mode}`} className="text-base">{t.noteLabel}</Label>
+            <Textarea id={`note-${mode}`} name="note" maxLength={1000} rows={3} className="text-lg" />
+          </div>
+        </div>
+      </details>
       <p className="text-base text-muted-foreground">{t.selfReportHint}</p>
       <Button type="submit" disabled={isPending} className="h-14 w-full text-lg">
         {isPending ? de.common.loading : mode === "guided" ? de.patient.session.saveAndContinue : t.submit}

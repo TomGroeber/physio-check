@@ -32,6 +32,17 @@ test("Patientin landet auf 'Heute' und sieht Übungen und Termin", async ({
   ).toHaveCount(3);
 });
 
+test("Patientenprofil trennt persönliche Daten, Sicherheit und Einstellungen", async ({ page }) => {
+  await login(page, "patientin@demo.physiocheck.test");
+  await page.goto("/profile");
+  await expect(page.getByRole("heading", { name: "Persönliche Daten" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Sicherheit" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Erinnerungen" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Ihre Praxis" })).toBeVisible();
+  await expect(page.getByText("E-Mail-Adresse ändern", { exact: true })).toBeVisible();
+  await expect(page.getByText("Passwort ändern", { exact: true })).toBeVisible();
+});
+
 test("Patientin sieht nur eigene Bereiche – Praxisbereich wird umgeleitet", async ({
   page,
 }) => {

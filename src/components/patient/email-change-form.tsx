@@ -51,13 +51,13 @@ export function EmailChangeForm({
               autoComplete="email"
               required
               aria-describedby="new-email-hint"
-              className="h-12 text-lg"
+              className="h-14 text-lg"
             />
           </div>
           <p id="new-email-hint" className="text-base text-muted-foreground">
             {t.changeEmailHint}
           </p>
-          <Button type="submit" disabled={isPending} className="h-12 w-full text-lg">
+          <Button type="submit" disabled={isPending} className="min-h-14 w-full text-lg">
             {isPending ? de.common.loading : t.changeEmailSubmit}
           </Button>
         </>

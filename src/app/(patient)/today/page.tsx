@@ -99,8 +99,13 @@ export default async function TodayPage({
     (sum, exercise) => sum + exercise.documentedToday,
     0
   );
+  const completedCount = exercises.reduce(
+    (sum, exercise) => sum + exercise.completedToday,
+    0
+  );
   const remainingOccurrences = Math.max(0, plannedCount - documentedCount);
   const allDone = plannedCount > 0 && remainingOccurrences === 0;
+  const allCompleted = plannedCount > 0 && completedCount >= plannedCount;
   const percent = plannedCount > 0 ? Math.round((documentedCount / plannedCount) * 100) : 0;
   const reminders = await getPatientReminderData({
     userId: session.userId,
@@ -122,7 +127,11 @@ export default async function TodayPage({
         {firstName ? `, ${firstName}` : ""}!
       </h1>
 
-      {logged ? <SuccessCelebration /> : null}
+      <SuccessCelebration
+        loggedStatus={logged}
+        allDocumented={allDone}
+        allCompleted={allCompleted}
+      />
       {painhint ? (
         <Alert className="border-warning bg-warning/15">
           <AlertDescription className="text-base text-foreground">
@@ -143,8 +152,8 @@ export default async function TodayPage({
                   <HugeiconsIcon icon={Tick02Icon} strokeWidth={2.5} className="size-7" />
                 </span>
                 <div>
-                  <p className="text-xl font-bold">{t.allDoneTitle}</p>
-                  <p className="text-base text-muted-foreground">{t.allDoneBody}</p>
+                  <p className="text-xl font-bold">{allCompleted ? t.allDoneTitle : t.allReportedTitle}</p>
+                  <p className="text-base text-muted-foreground">{allCompleted ? t.allDoneBody : t.allReportedBody}</p>
                 </div>
               </div>
             ) : (
@@ -300,7 +309,10 @@ export default async function TodayPage({
                   {de.patient.authorization.remaining(authorization.remaining, authorization.adjustedTotal)}
                 </p>
                 <p className="text-base font-semibold">{authorization.title}</p>
-                <p className="text-sm text-muted-foreground">{de.patient.authorization.coverageHint}</p>
+                <details className="mt-2 rounded-lg border">
+                  <summary className="flex min-h-12 cursor-pointer items-center px-3 text-base font-bold text-primary">Hinweis zur Kostenübernahme</summary>
+                  <p className="border-t p-3 text-base text-muted-foreground">{de.patient.authorization.coverageHint}</p>
+                </details>
               </>
             ) : (
               <p className="text-base text-muted-foreground">{de.patient.authorization.empty}</p>

@@ -124,7 +124,7 @@ test("Code verbindet das Konto genau einmal; falscher Code wird abgewiesen", asy
 test("Patientin dokumentiert eine Übung; Fortschritt aktualisiert sich", async ({ page }) => {
   await login(page, "patientin@demo.physiocheck.test");
   await expect(page).toHaveURL(/\/today$/);
-  await expect(page.getByText(/0 von 3 Übungen erledigt/)).toBeVisible();
+  await expect(page.getByText("0 von 3 geschafft")).toBeVisible();
 
   await page.getByRole("link", { name: /Übung „Schulterkreisen“ öffnen/ }).click();
   await expect(page.getByRole("heading", { name: "Schulterkreisen" })).toBeVisible();
@@ -133,6 +133,7 @@ test("Patientin dokumentiert eine Übung; Fortschritt aktualisiert sich", async 
   ).toBeVisible();
 
   await page.getByRole("radio", { name: "Erledigt", exact: true }).check();
+  await page.getByText("Weitere Angaben (optional)").click();
   await page.getByLabel("Absolvierte Sätze (optional)").fill("2");
   await page.getByLabel("Schmerz vor der Übung (optional)").selectOption("3");
   await page.getByLabel("Schmerz nach der Übung (optional)").selectOption("2");
@@ -141,9 +142,9 @@ test("Patientin dokumentiert eine Übung; Fortschritt aktualisiert sich", async 
     .fill("Heute gut machbar gewesen.");
   await page.getByRole("button", { name: "Dokumentation speichern" }).click();
 
-  await expect(page).toHaveURL(/\/today\?logged=1/);
-  await expect(page.getByText("Danke! Ihre Dokumentation wurde gespeichert.")).toBeVisible();
-  await expect(page.getByText(/1 von 3 Übungen erledigt/)).toBeVisible();
+  await expect(page).toHaveURL(/\/today\?logged=completed/);
+  await expect(page.getByRole("status").filter({ hasText: "Geschafft!" })).toBeVisible();
+  await expect(page.getByText("1 von 3 geschafft")).toBeVisible();
 
   // Doppelte Tagesdokumentation ist nicht möglich
   await page.getByRole("link", { name: /Übung „Schulterkreisen“ öffnen/ }).click();

@@ -21,7 +21,7 @@ export default async function AppointmentsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold">{t.title}</h1>
+      <h1 className="text-3xl font-bold tracking-tight">{t.title}</h1>
 
       <OfferResponse
         offers={offers.map((offer) => ({
@@ -54,18 +54,16 @@ export default async function AppointmentsPage() {
       </section>
 
       {past.length > 0 && (
-        <section aria-labelledby="past-heading" className="flex flex-col gap-3">
-          <h2 id="past-heading" className="text-xl font-bold">
-            {t.past}
-          </h2>
-          <ul className="flex flex-col gap-3">
+        <details className="rounded-xl border bg-card">
+          <summary className="flex min-h-16 cursor-pointer items-center px-5 text-lg font-bold text-primary">{past.length} vergangene Termine</summary>
+          <ul className="flex flex-col gap-3 border-t p-4">
             {past.map((a) => (
               <li key={a.id}>
                 <AppointmentCard appointment={a} showMapLink={false} />
               </li>
             ))}
           </ul>
-        </section>
+        </details>
       )}
     </div>
   );

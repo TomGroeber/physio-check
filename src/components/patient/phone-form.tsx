@@ -34,7 +34,7 @@ export function PhoneForm({ initialPhone }: { initialPhone: string }) {
           maxLength={30}
           className="h-12 text-lg"
         />
-        <p className="text-sm text-muted-foreground">{t.phoneHint}</p>
+        <p className="text-base text-muted-foreground">{t.phoneHint}</p>
       </div>
       <FormMessage error={state.error} success={state.success} />
       <Button type="submit" disabled={pending} className="h-12 text-lg">

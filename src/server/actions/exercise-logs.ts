@@ -57,5 +57,10 @@ export async function logCompletionAction(
     painAfter: parsed.data.painAfter,
   });
   const target = parsed.data.mode === "guided" ? "/session" : "/today";
-  redirect(painHint ? `${target}?logged=1&painhint=1` : `${target}?logged=1`);
+  const loggedStatus = encodeURIComponent(parsed.data.status);
+  redirect(
+    painHint
+      ? `${target}?logged=${loggedStatus}&painhint=1`
+      : `${target}?logged=${loggedStatus}`
+  );
 }

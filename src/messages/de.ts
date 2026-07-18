@@ -163,9 +163,13 @@ export const de = {
       doneBadge: "Erledigt",
       documentedBadge: "Rückmeldung gespeichert",
       successTitle: "Geschafft!",
+      feedbackSavedTitle: "Rückmeldung gespeichert",
+      feedbackSavedBody: "Danke. Ihre Praxis kann die Rückmeldung jetzt sehen.",
       allDoneTitle: "Für heute alles geschafft",
       allDoneBody:
         "Alle Durchgänge für heute sind dokumentiert. Gönnen Sie sich eine Pause!",
+      allReportedTitle: "Für heute alles eingetragen",
+      allReportedBody: "Danke. Ihre Praxis kann alle Rückmeldungen jetzt sehen.",
       noExercisesToday:
         "Für heute sind keine Übungen geplant. Gönnen Sie sich die Pause!",
       noPlanYet:
@@ -320,6 +324,8 @@ export const de = {
           "Diese E-Mail-Adresse kann nicht verwendet werden. Bitte wählen Sie eine andere.",
         rateLimited:
           "Zu viele Anfragen. Bitte warten Sie einen Moment und versuchen Sie es dann erneut.",
+        requestError:
+          "Die E-Mail konnte nicht versendet werden. Bitte versuchen Sie es später erneut.",
         changePasswordTitle: "Passwort ändern",
         changePasswordHint:
           "Wir schicken Ihnen eine E-Mail an Ihre hinterlegte Adresse. Über den Link darin legen Sie Ihr neues Passwort fest.",

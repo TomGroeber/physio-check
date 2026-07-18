@@ -59,6 +59,8 @@ export default async function GuidedSessionPage({
     (sum, exercise) => sum + exercise.completedToday,
     0
   );
+  const allDocumented = planned > 0 && documented >= planned;
+  const allCompleted = planned > 0 && completed >= planned;
   const current = today.exercises.find((exercise) => exercise.canDocument) ?? null;
   const detail = current
     ? await getExerciseDetailForPatient(session.userId, current.planItemId)
@@ -77,7 +79,11 @@ export default async function GuidedSessionPage({
         </p>
       </div>
 
-      {query.logged ? <SuccessCelebration /> : null}
+      <SuccessCelebration
+        loggedStatus={query.logged}
+        allDocumented={allDocumented}
+        allCompleted={allCompleted}
+      />
       {query.painhint ? (
         <Alert className="border-warning bg-warning/15">
           <AlertDescription className="text-base text-foreground">

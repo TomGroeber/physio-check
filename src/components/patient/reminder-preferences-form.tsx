@@ -38,7 +38,7 @@ function PreferenceCheckbox({
       />
       <span>
         <span className="block text-base font-bold">{title}</span>
-        <span className="block text-sm text-muted-foreground">{hint}</span>
+        <span className="block text-base text-muted-foreground">{hint}</span>
       </span>
     </label>
   );
@@ -57,7 +57,7 @@ export function ReminderPreferencesForm({
   return (
     <form action={action} className="flex flex-col gap-4">
       {/* Die Bereichsüberschrift „Erinnerungen“ stellt die Profilseite. */}
-      <p className="text-sm text-muted-foreground">{t.intro}</p>
+      <p className="text-base text-muted-foreground">{t.intro}</p>
       <PreferenceCheckbox
         id="exerciseRemindersEnabled"
         name="exerciseRemindersEnabled"
@@ -74,7 +74,7 @@ export function ReminderPreferencesForm({
       />
       <fieldset className="rounded-lg border p-3">
         <legend className="px-1 text-base font-bold">{t.quietHours}</legend>
-        <p className="mb-3 text-sm text-muted-foreground">{t.quietHoursHint}</p>
+        <p className="mb-3 text-base text-muted-foreground">{t.quietHoursHint}</p>
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-2">
             <Label htmlFor="quietStart" className="text-base">{t.quietStart}</Label>
@@ -107,4 +107,3 @@ export function ReminderPreferencesForm({
     </form>
   );
 }
-

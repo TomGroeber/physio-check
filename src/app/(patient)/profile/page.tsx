@@ -33,14 +33,14 @@ export default async function ProfilePage({
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold">{t.title}</h1>
+      <h1 className="text-3xl font-bold tracking-tight">{t.title}</h1>
 
       {query.email_confirmed ? (
         <FormMessage success={t.security.emailConfirmed} />
       ) : null}
 
       <section aria-labelledby="personal-heading" className="flex flex-col gap-3">
-        <h2 id="personal-heading" className="text-xl font-bold">
+        <h2 id="personal-heading" className="text-2xl font-bold">
           {t.personalHeading}
         </h2>
         <Card>
@@ -59,7 +59,7 @@ export default async function ProfilePage({
       </section>
 
       <section aria-labelledby="security-heading" className="flex flex-col gap-3">
-        <h2 id="security-heading" className="text-xl font-bold">
+        <h2 id="security-heading" className="text-2xl font-bold">
           {t.securityHeading}
         </h2>
         <Card>
@@ -78,7 +78,7 @@ export default async function ProfilePage({
       </section>
 
       <section aria-labelledby="reminders-heading" className="flex flex-col gap-3">
-        <h2 id="reminders-heading" className="text-xl font-bold">
+        <h2 id="reminders-heading" className="text-2xl font-bold">
           {t.remindersHeading}
         </h2>
         <Card>
@@ -89,7 +89,7 @@ export default async function ProfilePage({
       </section>
 
       <section aria-labelledby="practice-heading" className="flex flex-col gap-3">
-        <h2 id="practice-heading" className="text-xl font-bold">
+        <h2 id="practice-heading" className="text-2xl font-bold">
           {t.practiceHeading}
         </h2>
         <Card>
@@ -97,7 +97,7 @@ export default async function ProfilePage({
             <p className="text-lg font-bold">
               {session.patientLink?.practiceName ?? t.noPractice}
             </p>
-            <Button asChild variant="outline" className="h-12 w-full text-lg">
+            <Button asChild variant="outline" className="min-h-14 w-full text-lg">
               <Link href="/connect">{t.changePractice}</Link>
             </Button>
           </CardContent>
@@ -106,7 +106,7 @@ export default async function ProfilePage({
 
       <section aria-label={t.signOutHeading}>
         <form action={signOutAction}>
-          <Button type="submit" variant="outline" className="h-12 w-full text-lg">
+          <Button type="submit" variant="outline" className="min-h-14 w-full text-lg">
             {de.common.signOut}
           </Button>
         </form>

@@ -42,7 +42,7 @@ export function BottomNav() {
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex min-h-16 flex-col items-center justify-center gap-1 px-2 py-2 text-base",
+                  "flex min-h-18 flex-col items-center justify-center gap-1 px-2 py-2 text-lg",
                   "focus-visible:outline-2 focus-visible:-outline-offset-2",
                   active
                     ? "font-bold text-accent-foreground"
@@ -55,7 +55,7 @@ export function BottomNav() {
                     active && "bg-accent"
                   )}
                 >
-                  <HugeiconsIcon icon={item.icon} strokeWidth={2} className="size-6" />
+                  <HugeiconsIcon icon={item.icon} strokeWidth={2} className="size-7" />
                 </span>
                 {item.label}
               </Link>
