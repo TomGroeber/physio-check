@@ -56,10 +56,8 @@ export function ReminderPreferencesForm({
 
   return (
     <form action={action} className="flex flex-col gap-4">
-      <div>
-        <h2 className="text-xl font-bold">{t.title}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{t.intro}</p>
-      </div>
+      {/* Die Bereichsüberschrift „Erinnerungen“ stellt die Profilseite. */}
+      <p className="text-sm text-muted-foreground">{t.intro}</p>
       <PreferenceCheckbox
         id="exerciseRemindersEnabled"
         name="exerciseRemindersEnabled"

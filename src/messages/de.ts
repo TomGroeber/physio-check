@@ -148,20 +148,24 @@ export const de = {
     today: {
       title: "Heute",
       exercisesHeading: "Ihre Übungen heute",
-      alreadyLogged: "Heute vollständig dokumentiert",
       greeting: "Guten Tag",
-      startExercises: "Heutige Übungen starten",
-      progress: (documented: number, total: number) =>
-        `${documented} von ${total} geplanten Durchgängen dokumentiert`,
-      completionProgress: (completed: number, total: number) =>
-        `${completed} von ${total} Durchgängen als erledigt angegeben`,
-      occurrenceProgress: (documented: number, total: number) =>
-        `${documented} von ${total} Durchgängen dokumentiert`,
-      weeklyProgress: (documented: number, total: number) =>
-        `${documented} von ${total} Durchgängen in dieser Woche dokumentiert`,
-      continueOccurrences: "Weiteren Durchgang dokumentieren",
-      documentedNotCompleted:
-        "Alle geplanten Durchgänge haben eine Rückmeldung. Mindestens einer wurde nicht als vollständig erledigt angegeben.",
+      // Tagesfortschritt: bewusst kurz. „geschafft“ meint die Aufgabenliste
+      // des Tages (dokumentierte Durchgänge) – die genaue Aufschlüsselung
+      // steht in der Tageszusammenfassung und auf der Übungsdetailseite.
+      progressShort: (documented: number, total: number) =>
+        `${documented} von ${total} geschafft`,
+      progressBarLabel: (documented: number, total: number) =>
+        `Tagesfortschritt: ${documented} von ${total} Durchgängen dokumentiert`,
+      progressToday: (documented: number, total: number) =>
+        `${documented} von ${total} heute`,
+      progressWeek: (documented: number, total: number) =>
+        `${documented} von ${total} diese Woche`,
+      doneBadge: "Erledigt",
+      documentedBadge: "Rückmeldung gespeichert",
+      successTitle: "Geschafft!",
+      allDoneTitle: "Für heute alles geschafft",
+      allDoneBody:
+        "Alle Durchgänge für heute sind dokumentiert. Gönnen Sie sich eine Pause!",
       noExercisesToday:
         "Für heute sind keine Übungen geplant. Gönnen Sie sich die Pause!",
       noPlanYet:
@@ -197,12 +201,6 @@ export const de = {
       documentHeading: "Durchführung dokumentieren",
       occurrenceHeading: (current: number, total: number) =>
         `Durchgang ${current} von ${total}`,
-      occurrenceProgress: (documented: number, total: number) =>
-        `${documented} von ${total} Durchgängen heute dokumentiert`,
-      completedProgress: (completed: number, total: number) =>
-        `${completed} von ${total} Durchgängen als erledigt angegeben`,
-      weeklyProgress: (documented: number, total: number) =>
-        `${documented} von ${total} Durchgängen in dieser Woche dokumentiert`,
       selfReportHint:
         "Ihre Angaben sind eine Selbstauskunft. Sie helfen Ihrer Praxis, den Plan an Sie anzupassen.",
       statusLabel: "Wie ist es gelaufen?",
@@ -232,9 +230,9 @@ export const de = {
     session: {
       title: "Heutige Übungen",
       backToToday: "Training beenden und zu Heute zurück",
-      start: "Heutige Übungen starten",
-      resume: "Heutige Übungen fortsetzen",
-      viewSummary: "Tageszusammenfassung ansehen",
+      start: "Übungen starten",
+      resume: "Weitermachen",
+      viewSummary: "Zusammenfassung ansehen",
       nextHeading: "Nächster geplanter Durchgang",
       weekdaysShort: ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
       progress: (documented: number, total: number) =>
@@ -289,6 +287,11 @@ export const de = {
     },
     profile: {
       title: "Profil",
+      personalHeading: "Persönliche Daten",
+      securityHeading: "Sicherheit",
+      remindersHeading: "Erinnerungen",
+      practiceHeading: "Ihre Praxis",
+      signOutHeading: "Abmelden",
       name: "Name",
       email: "E-Mail-Adresse",
       practice: "Ihre Praxis",
@@ -300,6 +303,30 @@ export const de = {
       phonePlaceholder: "z. B. +352 621 123 456",
       phoneSave: "Telefonnummer speichern",
       phoneEmpty: "Keine Telefonnummer hinterlegt.",
+      security: {
+        changeEmailTitle: "E-Mail-Adresse ändern",
+        currentEmail: "Aktuelle E-Mail-Adresse",
+        newEmailLabel: "Neue E-Mail-Adresse",
+        changeEmailHint:
+          "Zur Sicherheit schicken wir eine Bestätigung an Ihre bisherige und an die neue Adresse. Die Änderung gilt erst, wenn Sie beide E-Mails bestätigt haben. Bis dahin bleibt Ihre bisherige Adresse gültig.",
+        changeEmailSubmit: "Änderung anfordern",
+        changeEmailRequested:
+          "Fast geschafft! Wir haben Ihnen zwei E-Mails geschickt – an Ihre bisherige und an Ihre neue Adresse. Bitte klicken Sie in beiden auf den Bestätigungslink.",
+        pendingChange: (email: string) =>
+          `Eine Änderung zu ${email} wartet noch auf Bestätigung. Bis dahin gilt Ihre bisherige Adresse.`,
+        emailConfirmed: "Danke! Ihre Bestätigung wurde gespeichert.",
+        emailSame: "Das ist bereits Ihre aktuelle E-Mail-Adresse.",
+        emailUnavailable:
+          "Diese E-Mail-Adresse kann nicht verwendet werden. Bitte wählen Sie eine andere.",
+        rateLimited:
+          "Zu viele Anfragen. Bitte warten Sie einen Moment und versuchen Sie es dann erneut.",
+        changePasswordTitle: "Passwort ändern",
+        changePasswordHint:
+          "Wir schicken Ihnen eine E-Mail an Ihre hinterlegte Adresse. Über den Link darin legen Sie Ihr neues Passwort fest.",
+        changePasswordSubmit: "Passwort ändern",
+        passwordMailSent:
+          "Wir haben Ihnen eine E-Mail geschickt. Bitte öffnen Sie den Link darin, um Ihr neues Passwort festzulegen.",
+      },
     },
     reminders: {
       title: "Erinnerungen",

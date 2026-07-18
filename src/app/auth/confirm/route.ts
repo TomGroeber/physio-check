@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
   const tokenHash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
   const code = searchParams.get("code");
+  const message = searchParams.get("message");
   const requestedNext = searchParams.get("next");
   // Nur interne relative Pfade erlauben; verhindert offene Redirects
   // über manipulierte Bestätigungslinks wie ?next=//fremde-domain.test.
@@ -34,6 +35,12 @@ export async function GET(request: NextRequest) {
     if (!error) {
       return NextResponse.redirect(new URL(next, request.url));
     }
+  } else if (message) {
+    // E-Mail-Änderung mit doppelter Bestätigung: Nach dem ersten der beiden
+    // Links leitet Supabase ohne Code, nur mit einem Hinweis („bitte auch den
+    // zweiten Link bestätigen“) hierher. Das ist kein Fehler – zurück zum
+    // Ziel; das Profil zeigt den ausstehenden Stand an.
+    return NextResponse.redirect(new URL(next, request.url));
   }
 
   return NextResponse.redirect(new URL("/auth/error", request.url));

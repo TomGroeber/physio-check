@@ -39,6 +39,14 @@ export const forgotPasswordSchema = z.object({
   email: emailSchema,
 });
 
+/**
+ * Neue E-Mail-Adresse für die Kontoänderung: getrimmt und normalisiert
+ * (Kleinschreibung), damit Vergleiche und Supabase-Aufrufe eindeutig sind.
+ */
+export const changeEmailSchema = z.object({
+  email: emailSchema.transform((value) => value.toLowerCase()),
+});
+
 export const resetPasswordSchema = z.object({
   password: passwordSchema,
 });

@@ -286,7 +286,9 @@ async function main() {
   }
 
   console.log("Dokumentiere Beispiel-Durchführungen (Selbstauskunft) …");
-  await db.from("completion_logs").insert([
+  // `note` immer mitschicken: bei Mehrzeilen-Inserts überträgt PostgREST
+  // sonst explizit NULL und verletzt die NOT-NULL-Vorgabe der Spalte.
+  const { error: logsError } = await db.from("completion_logs").insert([
     {
       patient_profile_id: patientId,
       plan_item_id: items[0].id,
@@ -296,6 +298,7 @@ async function main() {
       sets_completed: items[0].sets,
       pain_before: 3,
       pain_after: 2,
+      note: "",
       prescription_snapshot: {
         sets: items[0].sets,
         repetitions: items[0].repetitions,
@@ -317,6 +320,7 @@ async function main() {
       },
     },
   ]);
+  if (logsError) throw new Error(`completion_logs: ${logsError.message}`);
 
   console.log("");
   console.log("Demo-Daten angelegt. Zugangsdaten (nur lokal):");

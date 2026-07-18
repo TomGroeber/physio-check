@@ -172,23 +172,20 @@ export default async function ExerciseDetailPage({
         <h2 id="log-heading" className="text-xl font-bold">
           {t.documentHeading}
         </h2>
-        {detail.dueToday ? (
+        {detail.dueToday && (detail.plannedToday > 1 || detail.weeklyProgress) ? (
           <Card>
-            <CardContent className="flex flex-col gap-1 p-5" role="status">
+            <CardContent className="p-5" role="status">
               <p className="text-lg font-bold">
-                {t.occurrenceProgress(detail.documentedToday, detail.plannedToday)}
+                {detail.weeklyProgress
+                  ? de.patient.today.progressWeek(
+                      detail.weeklyProgress.documented,
+                      detail.weeklyProgress.target
+                    )
+                  : de.patient.today.progressToday(
+                      detail.documentedToday,
+                      detail.plannedToday
+                    )}
               </p>
-              <p className="text-base text-muted-foreground">
-                {t.completedProgress(detail.completedToday, detail.plannedToday)}
-              </p>
-              {detail.weeklyProgress ? (
-                <p className="text-base text-muted-foreground">
-                  {t.weeklyProgress(
-                    detail.weeklyProgress.documented,
-                    detail.weeklyProgress.target
-                  )}
-                </p>
-              ) : null}
             </CardContent>
           </Card>
         ) : null}

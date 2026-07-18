@@ -14,6 +14,22 @@ export async function getOwnProfile(userId: string) {
   return data;
 }
 
+/**
+ * Auth-Kontostand für die Profilseite: aktuelle Adresse und eine eventuell
+ * angeforderte, noch unbestätigte neue Adresse (Supabase `new_email`).
+ * Solange die doppelte Bestätigung aussteht, bleibt `email` unverändert.
+ */
+export async function getOwnAccountEmails() {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return {
+    email: user?.email ?? null,
+    pendingEmail: user?.new_email ?? null,
+  };
+}
+
 /** Eigene Telefonnummer ändern (RLS: „profiles: update own“). */
 export async function updateOwnPhone(userId: string, phone: string) {
   const supabase = await createSupabaseServerClient();

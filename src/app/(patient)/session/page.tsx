@@ -8,6 +8,7 @@ import { getExerciseDetailForPatient, type ExerciseDetail } from "@/server/servi
 import { exerciseTimerDuration } from "@/lib/exercise-timer";
 import { ExerciseTimer } from "@/components/patient/exercise-timer";
 import { ExerciseLogForm } from "@/components/patient/exercise-log-form";
+import { SuccessCelebration } from "@/components/patient/success-celebration";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { de } from "@/messages/de";
@@ -71,17 +72,12 @@ export default async function GuidedSessionPage({
       </Link>
       <div>
         <h1 className="text-3xl font-bold">{t.title}</h1>
-        <p className="mt-2 text-lg" role="status">{t.progress(documented, planned)}</p>
-        <p className="text-base text-muted-foreground">{t.completedProgress(completed, planned)}</p>
+        <p className="mt-2 text-lg" role="status">
+          {de.patient.today.progressShort(documented, planned)}
+        </p>
       </div>
 
-      {query.logged ? (
-        <Alert className="border-success bg-success/10">
-          <AlertDescription className="text-base text-foreground" role="status">
-            {de.patient.today.loggedSuccess}
-          </AlertDescription>
-        </Alert>
-      ) : null}
+      {query.logged ? <SuccessCelebration /> : null}
       {query.painhint ? (
         <Alert className="border-warning bg-warning/15">
           <AlertDescription className="text-base text-foreground">

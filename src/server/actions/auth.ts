@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/server/db/server-client";
 import { getSessionContext, homeRouteFor } from "@/server/services/session";
 import {
+  changeEmailSchema,
   forgotPasswordSchema,
   loginSchema,
   registerSchema,
@@ -137,6 +138,79 @@ export async function resetPasswordAction(
   }
 
   return { success: de.auth.resetPassword.success };
+}
+
+/**
+ * E-Mail-Adresse des AKTUELL angemeldeten Kontos ändern.
+ * Identität kommt ausschließlich aus der Server-Session – keine Benutzer-ID
+ * oder alte Adresse aus dem Client. Supabase verschickt wegen
+ * `double_confirm_changes = true` Bestätigungslinks an die bisherige UND die
+ * neue Adresse; erst nach beiden Bestätigungen gilt die neue Adresse.
+ * Kein Service-Role-Key, keine eigene Token-Logik.
+ */
+export async function changeEmailAction(
+  _prevState: AuthFormState,
+  formData: FormData
+): Promise<AuthFormState> {
+  const parsed = changeEmailSchema.safeParse({ email: formData.get("email") });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  if (user.email && parsed.data.email === user.email.toLowerCase()) {
+    return { error: de.patient.profile.security.emailSame };
+  }
+
+  const { error } = await supabase.auth.updateUser(
+    { email: parsed.data.email },
+    {
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/auth/confirm?next=${encodeURIComponent("/profile?email_confirmed=1")}`,
+    }
+  );
+  if (error) {
+    if (error.code === "over_email_send_rate_limit") {
+      return { error: de.patient.profile.security.rateLimited };
+    }
+    if (error.code === "email_exists") {
+      // Neutrale Meldung – verrät nicht, ob ein fremdes Konto existiert.
+      return { error: de.patient.profile.security.emailUnavailable };
+    }
+    return { error: de.common.error };
+  }
+
+  revalidatePath("/profile");
+  return { success: de.patient.profile.security.changeEmailRequested };
+}
+
+/**
+ * Passwortänderung für das angemeldete Konto anstoßen: Die E-Mail-Adresse
+ * wird IMMER serverseitig aus der Session gelesen (kein editierbares Feld).
+ * Wiederverwendet den bestehenden sicheren Reset-Ablauf
+ * (resetPasswordForEmail → /reset-password); Supabase begrenzt die Frequenz.
+ */
+// Bewusst ohne Parameter: useActionState übergibt (state, formData),
+// aber diese Aktion braucht keinerlei Client-Eingaben.
+export async function requestPasswordChangeAction(): Promise<AuthFormState> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user?.email) redirect("/login");
+
+  const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/reset-password`,
+  });
+  if (error?.code === "over_email_send_rate_limit") {
+    return { error: de.patient.profile.security.rateLimited };
+  }
+  // Neutrale Bestätigung – gleiche Antwort auch bei anderen Fehlern,
+  // damit keine Kontodetails preisgegeben werden.
+  return { success: de.patient.profile.security.passwordMailSent };
 }
 
 export async function signOutAction(): Promise<void> {
