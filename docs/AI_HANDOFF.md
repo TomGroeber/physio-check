@@ -1,6 +1,19 @@
 # PhysioCheck – AI Handoff
 
-> Stand: 2026-07-13 · Arbeitszweig: `main` · GitHub-Remote: `TomGroeber/physio-check` (aktuell öffentlich; keine Secrets/echten Daten)
+> Stand: 2026-07-18 · Arbeitszweig: `patient-ui-consolidated` · letzter Feature-Commit: `7ef8fae` · GitHub-Remote: `TomGroeber/physio-check` (öffentlich; keine Secrets/echten Daten)
+
+## Letzter Auftrag: Claudes Patienten-UI fertigstellen
+
+Ausgangspunkt war der auf GitHub gesicherte Claude-WIP `e9868fa`. Er enthält den Seed-Fix, die Notification-RPC-Migration, pending E-Mail-Anzeige, Doppelbestätigung und erste kosmetische Vereinfachungen. Commit `7ef8fae` vervollständigt diesen Stand ohne Funktionsverlust:
+
+- statusgerechte Erfolgsrückmeldung; schwierige/nicht mögliche Selbstauskünfte werden nie als „Geschafft“ dargestellt;
+- einklappbare optionale Übungsangaben, vergangene Termine und Absage;
+- größere Patientennavigation, Aktionen und Texte;
+- Konto-Actions nur für die eigene Patientensession, Passwort-Recovery über `/auth/confirm`, Validierungs-/Komponenten-/Mailpit-Spezifikationen.
+
+Verifiziert: Typecheck, Lint, 105/105 Tests, Production Build und Playwright-Testliste mit 48 Fällen. Nicht ausgeführt: `db:reset`, Seed, RLS und echte Browserläufe, weil in der Cloud Supabase CLI und `.env.local` fehlen.
+
+Nächster Schritt auf Toms Mac: den Konsolidierungs-Bundle-Commit auf Branch `claude-patient-ui-20260718` fast-forwarden, dann `pnpm db:reset && pnpm seed && pnpm test:rls && pnpm e2e`, Mailpit-/Mobil-/Desktopdurchlauf, Dokumentation nach Ergebnissen aktualisieren, `git push origin main` und `pnpm docs:sync`.
 
 ## Laufender Auftrag (13.07.2026): Phasen A–J
 

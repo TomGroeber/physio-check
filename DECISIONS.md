@@ -2,6 +2,14 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-07-18 – Konsolidierte Patientenoberfläche und Kontosicherheit
+
+**D-050 · Claude-Stand erhalten und gezielt vervollständigt.** Seed-Fix, Notification-RPC, pending E-Mail und getrennte Sicherheitsformulare bleiben erhalten. Fehlende Bedienvereinfachungen, Tests und Statussemantik wurden als Folgecommit ergänzt; es wurde kein Stand blind überschrieben.
+
+**D-049 · Positive Rückmeldung respektiert den dokumentierten Status.** Nur `completed` erhält „Geschafft“. `partial`, `too_difficult` und `not_possible` erhalten eine wertungsfreie Speicherbestätigung. Die serverseitige Occurrence-Logik bleibt unverändert.
+
+**D-048 · Kontoänderungen bleiben an die authentifizierte Patientensession gebunden.** Zieladresse und Identität stammen nie frei aus dem Client. E-Mail-Änderung nutzt Supabase-Doppelbestätigung, Passwortänderung den internen Confirm-/Recovery-Ablauf. Keine Service-Role-Nutzung.
+
 ## 2026-07-13 – Testabschluss (Phase J)
 
 **D-047 · Getrennte Testebenen mit ehrlichem Status.** Reine Schedule-, Grenzwert- und Fortschrittslogik bleibt schnell in Vitest. Rollen-, Mandanten-, Versionierungs- und Einladungszustände laufen gegen echte lokale Supabase-Sitzungen in `test:rls`. Browserinteraktion, Upload-Ticket, Mailpit und neues Gerät laufen in Playwright. Eine nur gelistete, aber infrastrukturell nicht ausgeführte RLS-/Browser-Spezifikation gilt ausdrücklich nicht als bestanden; `docs/TEST_MATRIX.md` hält Abdeckung und tatsächlichen Laufstatus getrennt fest.

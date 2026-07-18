@@ -1,6 +1,15 @@
-# PhysioCheck – Testmatrix Phasen A–J
+# PhysioCheck – Testmatrix
 
-> Stand 13.07.2026. „Grün“ bedeutet in dieser Umgebung tatsächlich ausgeführt. RLS- und Browser-Spezifikationen sind implementiert und syntaktisch gelistet, benötigen für die Ausführung aber Toms lokale Supabase-/Docker-Umgebung mit `.env.local`.
+> Stand 18.07.2026. „Grün“ bedeutet in dieser Umgebung tatsächlich ausgeführt. RLS- und Browser-Spezifikationen benötigen für die Ausführung Toms lokale Supabase-/Docker-Umgebung mit `.env.local`.
+
+## Vereinfachte Patientenoberfläche und Kontosicherheit
+
+| Anforderung | Automatisierte Abdeckung | Status |
+|---|---|---|
+| Statusgerechte Erfolgsrückmeldung | `success-celebration.test.tsx`, `e2e/core-flow.spec.ts` | Komponente grün, Browserlauf offen |
+| Profil gegliedert | `e2e/demo-accounts.spec.ts` | Spezifikation bereit |
+| E-Mail normalisieren/gleiche Adresse ablehnen | `auth.test.ts`, `patient-account-security.spec.ts` | Unit grün, Browserlauf offen |
+| Passwort-Link nur an Session-Adresse | `patient-account-security.spec.ts` mit Mailpit | Spezifikation bereit |
 
 ## Übungsbibliothek
 
@@ -59,8 +68,8 @@
 |---|---|
 | `pnpm typecheck` | Grün |
 | `pnpm lint` | Grün, 0 Warnungen |
-| `pnpm test` | Grün: 19 Dateien, 101 Tests |
-| `pnpm exec playwright test --list` | Grün: 42 Fälle in 5 Dateien erkannt |
+| `pnpm test` | Grün: 21 Dateien, 105 Tests |
+| `pnpm exec playwright test --list` | Grün: 48 Fälle in 6 Dateien erkannt |
 | `pnpm build` | Grün: 28 Seiten erzeugt |
 | `pnpm db:reset` | Blockiert: `sh: 1: supabase: not found` |
 | `pnpm seed` | Blockiert: `node: .env.local: not found` |

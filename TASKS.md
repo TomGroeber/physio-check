@@ -143,3 +143,15 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [ ] `docs/CUSTOMIZATION_GUIDE.md` (Deutsch, für Nicht-Programmierer)
 - [ ] Pilot-Checkliste in `docs/PRIVACY_SECURITY.md` finalisieren
 - [ ] Production Build + kritische E2E-Tests grün
+
+## Auftrag vom 18.07.2026 – Patientenoberfläche konsolidieren
+
+- [x] Claudes uncommitteten Stand als `e9868fa` gesichert und vollständig geprüft.
+- [x] Seed-Reparatur und Migration `20260718100000_fix_mark_notification_read.sql` erhalten.
+- [x] „Heute“ als kompakte Checkliste mit einem primären Einstieg und großen Statusflächen fertiggestellt.
+- [x] Nur `completed` wird als „Geschafft“ bestätigt; schwierige/nicht mögliche Rückmeldungen bleiben wertungsfrei.
+- [x] Übungsformular, vergangene Termine, Absage sowie seltene Hinweise schrittweise einklappbar gemacht.
+- [x] Profil und Konto-Actions gehärtet: Doppelbestätigung, pending E-Mail, Recovery-Mail nur an Session-Adresse, interner Callback und Patientenscope.
+- [x] Typecheck, Lint, 105 Tests und Production Build grün; Playwright erkennt 48 Fälle.
+- [ ] Auf Toms Mac ausführen: `pnpm db:reset && pnpm seed && pnpm test:rls && pnpm e2e`; Mailpit-Links und Mobil-/Desktopdarstellung prüfen.
+- [ ] Danach `git push origin main` und `pnpm docs:sync` ausführen.

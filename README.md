@@ -2,7 +2,7 @@
 
 App für Physiotherapiepraxen und ihre Patientinnen und Patienten: Heimübungspläne mit Videos, Termine, verordnete Sitzungen und selbst dokumentierte Durchführung (Adhärenz).
 
-> **Stand 13.07.2026:** Phasen A–I sind implementiert; Phase J ergänzt den vollständigen Testkatalog. Typecheck, Lint, 101 Tests und Build sind grün, 42 Browserfälle werden erkannt. Datenbank-/RLS-/Browserausführung der neuen Phasen steht mangels lokaler Supabase-Umgebung noch aus. Produktumfang: `docs/PRODUCT_SPEC.md` · Testmatrix: `docs/TEST_MATRIX.md` · Übergabe: `docs/AI_HANDOFF.md`.
+> **Stand 18.07.2026:** Claudes angefangene Patientenoberfläche wurde gesichert und fertiggestellt. „Heute“ ist eine einfache Checkliste mit statusgerechter Rückmeldung; Profil und Kontosicherheit sind neu gegliedert. Typecheck, Lint, 105 Tests und Build sind grün, 48 Browserfälle werden erkannt. Datenbank-/RLS-/Browserausführung steht mangels lokaler Supabase-Umgebung noch aus. Produktumfang: `docs/PRODUCT_SPEC.md` · Testmatrix: `docs/TEST_MATRIX.md` · Übergabe: `docs/AI_HANDOFF.md`.
 
 ## Funktionsübersicht
 
@@ -42,7 +42,7 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Freie Termine | Frei gewordene Zeitfenster + Terminangebote (annehmen/ablehnen/zurückziehen) | ✅ | UI-Durchlauf inkl. Konfliktfall (12.07.2026) | Annahme bucht atomar; Doppelbuchung durch DB-Überlappungsschutz ausgeschlossen |
 | PWA | Installierbares Manifest | 🟡 | manuell (frühere Phase) | Kein Offline-Modus, keine Push-Benachrichtigungen |
 | Sicherheit | RLS auf allen Patiententabellen, serverseitige Autorisierung, private Buckets | ✅ | 36 RLS-Proben `pnpm test:rls` (12.07.2026) | Patient/Fremdpraxis/Selbst-Eskalation/Storage negativ getestet; Virenscan vor Pilot weiterhin offen |
-| Tests | Typecheck, Lint, 101 Unit-/Komponententests, 42 gelistete Browserfälle, erweiterte RLS-Suite, Build | 🧪 | Cloud-Prüfungen 13.07.; letzte vollständige DB-/E2E-Ausführung 12.07. | Phase-J-Spezifikationen decken Bibliothek, Videos, Pläne, Durchgänge und Einladungen ab; lokale Ausführung offen |
+| Tests | Typecheck, Lint, 105 Unit-/Komponententests, 48 gelistete Browserfälle, erweiterte RLS-Suite, Build | 🧪 | Cloud-Prüfungen 18.07.; letzte vollständige DB-/E2E-Ausführung 12.07. | Neue Patientenspezifikationen decken Checkliste, Profil und Konto-E-Mails ab; lokale Ausführung offen |
 | Deployment | Produktivbetrieb/Hosting | ❌ | – | Nur mit ausdrücklicher Zustimmung von Tom |
 
 ## Was funktioniert aktuell?
@@ -72,6 +72,8 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 - **Benachrichtigungszentrum:** Planänderungen sind patientenseitig gelesen/ungelesen sichtbar; eine gemeinsame Übersicht für alle Notification-Arten und ein Badge fehlen noch.
 
 ## Letzte Änderungen
+
+- **18.07.2026 – Konsolidierte Patientenoberfläche (`e9868fa` + `7ef8fae`).** Claudes angefangener Stand wurde vollständig erhalten: Seed-Reparatur, ausstehende E-Mail-Anzeige, Doppelbestätigung und die sichere `mark_notification_read`-Migration. Ergänzt wurden eine ehrliche Erfolgsrückmeldung (nur `completed` wird gefeiert), optionale einklappbare Angaben, vereinfachte Termine/Absage, größere Navigation sowie abgesicherte Konto-Actions und Recovery-Callbacks. Typecheck, Lint, 105 Tests und Build grün; 48 Browserfälle gelistet. Vollständiger DB-/Mailpit-/Browserlauf lokal offen.
 
 - **13.07.2026 – Phase J (Testabdeckung).** Zwei neue serielle Playwright-Strecken prüfen Bibliotheks-CRUD, Magic-Byte-Upload, private Patientenauslieferung, Videoersatz, Code-vor-Konto, bestehendes Konto und neues Gerät. Die echte RLS-Suite erzeugt zusätzlich temporäre Pläne/Versionen, Bibliotheksobjekte, Einladungszustände und einen Praxiswechsel und räumt sie auf. Zentrale Größenvalidierung wird von UI, Action und Service gemeinsam verwendet. Typecheck, Lint, 101 Tests, Playwright-Testliste (42) und Build grün; DB-Reset/Seed/RLS/E2E hier infrastrukturell blockiert, Details in `docs/TEST_MATRIX.md`.
 
