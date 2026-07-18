@@ -310,7 +310,7 @@ export default async function TodayPage({
                 </p>
                 <p className="text-base font-semibold">{authorization.title}</p>
                 <details className="mt-2 rounded-lg border">
-                  <summary className="flex min-h-12 cursor-pointer items-center px-3 text-base font-bold text-primary">Hinweis zur Kostenübernahme</summary>
+                  <summary className="flex min-h-12 cursor-pointer items-center px-3 text-base font-bold text-primary">{de.patient.authorization.coverageHintTitle}</summary>
                   <p className="border-t p-3 text-base text-muted-foreground">{de.patient.authorization.coverageHint}</p>
                 </details>
               </>

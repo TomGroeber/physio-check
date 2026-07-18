@@ -153,5 +153,15 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [x] Übungsformular, vergangene Termine, Absage sowie seltene Hinweise schrittweise einklappbar gemacht.
 - [x] Profil und Konto-Actions gehärtet: Doppelbestätigung, pending E-Mail, Recovery-Mail nur an Session-Adresse, interner Callback und Patientenscope.
 - [x] Typecheck, Lint, 105 Tests und Production Build grün; Playwright erkennt 48 Fälle.
-- [ ] Auf Toms Mac ausführen: `pnpm db:reset && pnpm seed && pnpm test:rls && pnpm e2e`; Mailpit-Links und Mobil-/Desktopdarstellung prüfen.
-- [ ] Danach `git push origin main` und `pnpm docs:sync` ausführen.
+- [x] Auf Toms Mac ausführen: `pnpm db:reset && pnpm seed && pnpm test:rls && pnpm e2e`; Mailpit-Links und Mobil-/Desktopdarstellung prüfen. (2026-07-19, siehe Auftrag unten)
+- [ ] Merge nach `main` erst nach Toms Freigabe; Branch `claude-patient-ui-20260718` ist gepusht und geprüft.
+
+## Auftrag vom 19.07.2026 – Lokale Prüfungen und Fehlerbehebung (Branch `claude-patient-ui-20260718`)
+
+- [x] `supabase start`, `pnpm db:reset` (20 Migrationen), `pnpm seed`, Typecheck, Lint, 105 Unit-Tests grün.
+- [x] `pnpm test:rls`: 78 Proben grün.
+- [x] `pnpm e2e`: erst gegen veralteten Dauerserver gelaufen (5 Scheinfehler), nach sauberem Build/Neustart und Testfixes Exit 0 (35 bestanden, 12 planmäßig übersprungen, 1 bekannter Parallellast-Flake vom Retry aufgefangen).
+- [x] Fehler behoben: hängende Medien-Finalisierung (Body-Reader-Cancel), nicht-deterministischer Seed (stille FK-Blocker aus E2E-Daten), Terminabsage- und E-Mail-Änderungs-Bestätigung per Redirect statt Rückgabezustand, `/auth/confirm` beim zweiten Bestätigungslink, Fortschrittstext „geschafft“→„eingetragen“ (D-049-konform).
+- [x] Vier hartkodierte Patiententexte nach `src/messages/de.ts` verschoben; vier E2E-Spezifikationsfehler repariert (Login-Race, mehrdeutige Selektoren, Ersetzen-Race, Seed-Doppelwert im Selbstauskunfts-Test).
+- [x] Browser-Durchläufe: Heute-Checkliste, „Geschafft!“ nur bei `completed`, neutrale Rückmeldung bei teilweise/zu schwierig/nicht möglich, Terminübersicht + Absage (5×), Profil, Telefonnummer, Erinnerungen, Passwortänderung mit Mailpit-Recovery-Link, E-Mail-Änderung mit Doppelbestätigung, Redirect-Schutz (`next=//…`), Praxisbereich-Aussperrung, iPhone-Viewport (Touch-Ziele ≥ 48 px, kein horizontales Scrollen).
+- [x] Dokumentation aktualisiert und `pnpm docs:sync` ausgeführt; Commit auf `claude-patient-ui-20260718` gepusht.

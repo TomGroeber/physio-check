@@ -20,7 +20,7 @@ const t = de.patient.profile;
 export default async function ProfilePage({
   searchParams,
 }: {
-  searchParams: Promise<{ email_confirmed?: string }>;
+  searchParams: Promise<{ email_confirmed?: string; email_change_requested?: string }>;
 }) {
   const session = (await getSessionContext())!;
   const [profile, reminderPreferences, accountEmails, query] = await Promise.all([
@@ -64,6 +64,11 @@ export default async function ProfilePage({
         </h2>
         <Card>
           <CardContent className="p-5">
+            {query.email_change_requested ? (
+              <div className="pb-3">
+                <FormMessage success={t.security.changeEmailRequested} />
+              </div>
+            ) : null}
             <EmailChangeForm
               currentEmail={currentEmail}
               pendingEmail={accountEmails.pendingEmail}

@@ -35,13 +35,75 @@ const db = createClient<Database>(url, serviceKey, {
 });
 
 async function removeExistingDemoData() {
+  // Einladungen blockieren über `patient_invites.created_by` (NO ACTION auf
+  // practice_members) sowohl das Löschen der Praxis als auch der
+  // Demo-Benutzer – deshalb zuerst ausdrücklich entfernen. Fehler werden
+  // nie verschluckt, sonst scheitert der Seed erst später unverständlich.
+  const { data: demoPractice } = await db
+    .from("practices")
+    .select("id")
+    .eq("name", DEMO_PRACTICE_NAME)
+    .maybeSingle();
+  if (demoPractice) {
+    // Reihenfolge: Verordnungen kaskadieren auf Anpassungen und
+    // Termin-Anrechnungen, deren `created_by`/`recorded_by` sonst die
+    // Mitglieds- und damit die Praxislöschung blockieren.
+    for (const table of [
+      "patient_invites",
+      "treatment_authorizations",
+      "patient_documents",
+    ] as const) {
+      const { error } = await db
+        .from(table)
+        .delete()
+        .eq("practice_id", demoPractice.id);
+      if (error) throw new Error(`cleanup ${table}: ${error.message}`);
+    }
+    // Selbstauskünfte hängen per NO ACTION an Plan-Items, Plan-Items an
+    // Übungen – beides muss vor der kaskadierenden Praxislöschung weg.
+    const { data: planRows } = await db
+      .from("exercise_plans")
+      .select("id")
+      .eq("practice_id", demoPractice.id);
+    const planIds = (planRows ?? []).map((row) => row.id);
+    if (planIds.length > 0) {
+      const { data: versionRows } = await db
+        .from("exercise_plan_versions")
+        .select("id")
+        .in("plan_id", planIds);
+      const versionIds = (versionRows ?? []).map((row) => row.id);
+      if (versionIds.length > 0) {
+        const { data: itemRows } = await db
+          .from("exercise_plan_items")
+          .select("id")
+          .in("plan_version_id", versionIds);
+        const itemIds = (itemRows ?? []).map((row) => row.id);
+        if (itemIds.length > 0) {
+          const { error } = await db
+            .from("completion_logs")
+            .delete()
+            .in("plan_item_id", itemIds);
+          if (error) throw new Error(`cleanup completion_logs: ${error.message}`);
+        }
+      }
+      const { error } = await db.from("exercise_plans").delete().in("id", planIds);
+      if (error) throw new Error(`cleanup exercise_plans: ${error.message}`);
+    }
+    const { error: practiceError } = await db
+      .from("practices")
+      .delete()
+      .eq("id", demoPractice.id);
+    if (practiceError) throw new Error(`cleanup practice: ${practiceError.message}`);
+  }
   const { data } = await db.auth.admin.listUsers({ perPage: 1000 });
   for (const user of data?.users ?? []) {
     if (DEMO_USERS.some((d) => d.email === user.email)) {
-      await db.auth.admin.deleteUser(user.id);
+      const { error } = await db.auth.admin.deleteUser(user.id);
+      if (error) {
+        throw new Error(`deleteUser ${user.email}: ${error.message}`);
+      }
     }
   }
-  await db.from("practices").delete().eq("name", DEMO_PRACTICE_NAME);
 }
 
 async function createUser(email: string, fullName: string): Promise<string> {

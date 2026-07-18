@@ -1,8 +1,28 @@
 # PhysioCheck – AI Handoff
 
-> Stand: 2026-07-18 · Arbeitszweig: `patient-ui-consolidated` · letzter Feature-Commit: `7ef8fae` · GitHub-Remote: `TomGroeber/physio-check` (öffentlich; keine Secrets/echten Daten)
+> Stand: 2026-07-19 · Arbeitszweig: `claude-patient-ui-20260718` · GitHub-Remote: `TomGroeber/physio-check` (öffentlich; keine Secrets/echten Daten)
 
-## Letzter Auftrag: Claudes Patienten-UI fertigstellen
+## Letzter Auftrag (19.07.2026): Lokale Prüfungen und Fehlerbehebung auf Toms Mac
+
+Alle bisher offenen lokalen Prüfungen wurden ausgeführt und sind grün: `pnpm db:reset` (20 Migrationen), `pnpm seed` (jetzt deterministisch, auch direkt nach E2E), Typecheck, Lint, 105 Unit-Tests, `pnpm test:rls` (78 Proben), `pnpm e2e` (Exit 0: 35 bestanden, 12 planmäßig übersprungen, 1 bekannter Parallellast-Flake vom eingebauten Retry aufgefangen), `pnpm build`. Zusätzlich manuelle Playwright-Browser-Durchläufe der Patientenflüsse (Desktop + iPhone-14-Viewport) inklusive Mailpit.
+
+Behobene Fehler (Details in `DECISIONS.md` D-051–D-053 und README „Letzte Änderungen“):
+
+1. **Medien-Finalisierung hing dauerhaft** (`src/server/services/exercise-media.ts`): `reader.cancel()` kehrt im Next-Server nie zurück → Range-Antwort wird jetzt vollständig gelesen. Damit läuft der Phase-J-Video-E2E-Test erstmals wirklich durch (ungültige Signatur abgelehnt, Ersetzen entwertet die alte URL, Patientin erhält nur die kurzlebige signierte URL).
+2. **Terminabsage/E-Mail-Änderung bestätigten unzuverlässig** (`state`+`revalidatePath`-Antwort erreicht den Client intermittierend nicht): beide Actions leiten jetzt nach Erfolg weiter (`?cancellation_requested=1` / `?email_change_requested=1`), die Zielseiten zeigen die Bestätigung (D-053). Terminabsage 5×/5 in ~230 ms verifiziert.
+3. **Zweiter Bestätigungslink der E-Mail-Änderung** landete auf `/auth/error` (PKCE-Code beim zweiten Link nicht mehr tauschbar, Änderung aber längst vollzogen): `/auth/confirm` leitet bei bestehender Session jetzt zum internen Ziel weiter.
+4. **Seed war nicht deterministisch** (`scripts/seed.ts`): stille FK-Blocker (Einladungen, Verordnungen/Anrechnungen, Dokumente, Selbstauskünfte) werden jetzt in fester Reihenfolge gelöscht, Fehler nie mehr verschluckt (D-051). `seed → e2e → seed` läuft ohne Fehlversuch.
+5. **Sprachhygiene:** Tagesfortschritt „X von Y geschafft“ zählte auch nicht erledigte Rückmeldungen → jetzt „eingetragen“ (D-041/D-049-konform). Vier hartkodierte Patiententexte nach `src/messages/de.ts` verschoben (`pastToggle`, `coverageHintTitle`, `optionalToggle`, `cancelToggle`, `cancellationRequestedBanner`).
+6. **E2E-Spezifikationen repariert:** Login-Race in `demo-accounts` (fehlendes `waitForURL`), mehrdeutige Selektoren („Passwort ändern“ Heading vs. Button, „Wandsitz“ auf dem Dashboard, „Schmerz nachher: 2/10“ auch im Seed von gestern), Ersetzen-Race im Video-Test (`expect.poll` auf neue signierte URL).
+
+Browser-verifiziert (Screenshots im Sitzungs-Scratchpad, nicht im Repo): Heute-Checkliste mit „Geschafft!“ nur bei `completed`; neutrale Rückmeldung bei „teilweise“/„zu schwierig“/„nicht möglich“ (nie als Erfolg dargestellt, Abschluss „Für heute alles eingetragen“); Terminübersicht mit eingeklappten vergangenen Terminen und Absage; Profil (4 Bereiche, Telefonnummer, Erinnerungen); Passwortänderung über Mailpit-Recovery-Link inkl. Login mit neuem Passwort; E-Mail-Änderung mit Doppelbestätigung inkl. Login mit neuer Adresse; `next=//…`-Redirect-Schutz; Praxisbereich-Aussperrung; iPhone-Viewport ohne horizontales Scrollen, Touch-Ziele ≥ 48 px.
+
+**Wichtige Betriebshinweise:**
+- Vor `pnpm e2e` immer frisch `pnpm seed` ausführen und sicherstellen, dass kein veralteter Server auf Port 3000 läuft (`reuseExistingServer: true` übernimmt sonst alten Code – genau das erzeugte anfangs 5 Scheinfehler).
+- Browser-Tests der E-Mail-Änderung hinterlassen ein umbenanntes Konto (`petra-neu-*@demo.physiocheck.test`); vor `pnpm test:rls` solche Reste löschen oder neu seeden, sonst findet die Suite Petra doppelt.
+- Die übrigen Formulare mit `state`+`revalidatePath` (u. a. Praxisbereich, Telefonnummer, Erinnerungen) zeigten im Test 5×/5 korrektes Verhalten, bleiben aber grundsätzlich vom intermittierenden Roundtrip-Problem betroffen (bekannter Punkt 5/6 unten); bei Wiederauftreten auf das Redirect-Muster D-053 umstellen.
+
+## Vorheriger Auftrag: Claudes Patienten-UI fertigstellen
 
 Ausgangspunkt war der auf GitHub gesicherte Claude-WIP `e9868fa`. Er enthält den Seed-Fix, die Notification-RPC-Migration, pending E-Mail-Anzeige, Doppelbestätigung und erste kosmetische Vereinfachungen. Commit `7ef8fae` vervollständigt diesen Stand ohne Funktionsverlust:
 
@@ -120,4 +140,4 @@ Remote `origin` ist `https://github.com/TomGroeber/physio-check.git` (privat). V
 
 ## Nächster konkreter Auftrag
 
-Nächster Auftrag: lokaler Abschluss der Phasen C–J auf Toms Mac: `pnpm db:reset && pnpm seed && pnpm test:rls && pnpm e2e && pnpm build`, danach Laufzeitfehler beheben und MP4/WebM-/WCAG-Kernweg manuell prüfen. Die Cloud-Blocker und erwartete Abdeckung stehen in `docs/TEST_MATRIX.md`. Obsidian-Sync: `pnpm docs:sync` auf Toms Mac (`OBSIDIAN_VAULT_PATH=~/Desktop/UNI-Wissensbasis`); aus der Cloud nicht direkt erreichbar.
+Der lokale Abschluss (db:reset, Seed, RLS, E2E, Build, Browser-/Mailpit-/Mobilprüfung) ist am 19.07.2026 erfolgt; Ergebnisse oben und in `docs/TEST_MATRIX.md`. Offen bleiben in Priorität: (1) Toms Entscheidung über den Merge von `claude-patient-ui-20260718` nach `main`; (2) Praxisentscheidung für Absageanfragen (annehmen/ablehnen); (3) Virenscan vor Pilotbetrieb; (4) Benachrichtigungszentrum; (5) bei erneutem Auftreten des Roundtrip-Hängers in Praxisformularen Umstellung auf das Redirect-Muster (D-053).

@@ -1,78 +1,87 @@
 # PhysioCheck – Testmatrix
 
-> Stand 18.07.2026. „Grün“ bedeutet in dieser Umgebung tatsächlich ausgeführt. RLS- und Browser-Spezifikationen benötigen für die Ausführung Toms lokale Supabase-/Docker-Umgebung mit `.env.local`.
+> Stand 19.07.2026. „Grün“ bedeutet tatsächlich lokal ausgeführt (Toms Mac, Supabase/Docker/Mailpit). Letzter vollständiger Lauf: 19.07.2026 auf Branch `claude-patient-ui-20260718`.
 
 ## Vereinfachte Patientenoberfläche und Kontosicherheit
 
 | Anforderung | Automatisierte Abdeckung | Status |
 |---|---|---|
-| Statusgerechte Erfolgsrückmeldung | `success-celebration.test.tsx`, `e2e/core-flow.spec.ts` | Komponente grün, Browserlauf offen |
-| Profil gegliedert | `e2e/demo-accounts.spec.ts` | Spezifikation bereit |
-| E-Mail normalisieren/gleiche Adresse ablehnen | `auth.test.ts`, `patient-account-security.spec.ts` | Unit grün, Browserlauf offen |
-| Passwort-Link nur an Session-Adresse | `patient-account-security.spec.ts` mit Mailpit | Spezifikation bereit |
+| Statusgerechte Erfolgsrückmeldung | `success-celebration.test.tsx`, `e2e/core-flow.spec.ts`; manueller Browserlauf für alle vier Status | Grün (19.07.2026); „Geschafft!“ nur bei `completed`, Fortschrittstext jetzt „eingetragen“ |
+| Profil gegliedert | `e2e/demo-accounts.spec.ts` (chromium + mobile) | Grün (19.07.2026) |
+| E-Mail normalisieren/gleiche Adresse ablehnen | `auth.test.ts`, `patient-account-security.spec.ts` | Grün (19.07.2026) |
+| Passwort-Link nur an Session-Adresse | `patient-account-security.spec.ts` mit Mailpit; manueller Lauf inkl. Login mit neuem Passwort | Grün (19.07.2026) |
+| E-Mail-Änderung mit Doppelbestätigung | Manueller Mailpit-Lauf: Anforderung → beide Links → Profil zeigt neue Adresse → Login mit neuer Adresse | Grün (19.07.2026); zweiter Link führt jetzt zu `/profile?email_confirmed=1` statt `/auth/error` |
+| Terminabsage bestätigt zuverlässig | Manueller Browserlauf 5× (Redirect-Muster D-053) | Grün (19.07.2026) |
+| Mobildarstellung | Manueller iPhone-14-Viewport-Lauf: kein horizontales Scrollen, Touch-Ziele ≥ 48 px | Grün (19.07.2026) |
 
 ## Übungsbibliothek
 
 | Anforderung | Automatisierte Abdeckung | Status |
 |---|---|---|
-| Anlegen, bearbeiten, duplizieren, archivieren | `e2e/phase-j-exercise-management.spec.ts`; zusätzlich echte Tabellenoperationen in `scripts/rls-tests.ts` | Spezifikation bereit, lokaler Lauf offen |
-| Referenzierte Übung nicht destruktiv löschen | RLS-Suite versucht Delete einer verwendeten Übung und prüft anschließend deren Fortbestand | Spezifikation bereit, lokaler Lauf offen |
-| Fremdpraxis sieht/ändert Übung nicht | RLS-Suite prüft Select und Update mit echter Fremdpraxis-Sitzung | Spezifikation bereit, lokaler Lauf offen |
+| Anlegen, bearbeiten, duplizieren, archivieren | `e2e/phase-j-exercise-management.spec.ts`; echte Tabellenoperationen in `scripts/rls-tests.ts` | Grün (19.07.2026) |
+| Referenzierte Übung nicht destruktiv löschen | RLS-Suite | Grün (19.07.2026) |
+| Fremdpraxis sieht/ändert Übung nicht | RLS-Suite | Grün (19.07.2026) |
 | Eingabegrenzen | `src/lib/validation/exercises.test.ts` | Grün |
 
 ## Übungsmedien
 
 | Anforderung | Automatisierte Abdeckung | Status |
 |---|---|---|
-| Gültiger MP4-Upload | Browser lädt Magic-Byte-validen Testinhalt über echtes Upload-Ticket hoch | Spezifikation bereit, lokaler Lauf offen |
-| Ungültiger MIME-Typ / zu groß | `src/config/media.test.ts`; zentrale `isAllowedMediaSize` wird von UI, Action und Service verwendet | Grün |
-| Falsche Dateisignatur | Unit-Test für Magic Bytes + Browser-Finalisierung eines getarnten MP4 | Unit grün, Browserlauf offen |
-| Fremdpraxis / Patient ohne Zuweisung | RLS-Suite prüft Medium-Zeile und direkten privaten Storage-Zugriff negativ | Spezifikation bereit, lokaler Lauf offen |
-| Zugewiesener Patient erhält kurzlebige URL | Browser lädt Video als Praxis hoch und öffnet es als Demo-Patientin über das aktuelle Plan-Item | Spezifikation bereit, lokaler Lauf offen |
-| Ersetztes Video nicht mehr aktiv | Browser speichert alte signierte URL, ersetzt das Video und erwartet für das gelöschte Objekt eine Fehlerantwort | Spezifikation bereit, lokaler Lauf offen |
+| Gültiger MP4-Upload | Browser lädt Magic-Byte-validen Inhalt über echtes Upload-Ticket | Grün (19.07.2026) |
+| Ungültiger MIME-Typ / zu groß | `src/config/media.test.ts`; zentrale `isAllowedMediaSize` | Grün |
+| Falsche Dateisignatur | Unit-Test + Browser-Finalisierung eines getarnten MP4 | Grün (19.07.2026); Finalisierung hing zuvor dauerhaft (D-052) |
+| Fremdpraxis / Patient ohne Zuweisung | RLS-Suite (Medium-Zeile + direkter Storage-Zugriff negativ) | Grün (19.07.2026) |
+| Zugewiesener Patient erhält kurzlebige URL | Browser: Praxis lädt hoch, Demo-Patientin öffnet über Plan-Item | Grün (19.07.2026) |
+| Ersetztes Video nicht mehr aktiv | Browser: alte signierte URL liefert Fehler nach Ersetzen | Grün (19.07.2026) |
 
 ## Pläne
 
 | Anforderung | Automatisierte Abdeckung | Status |
 |---|---|---|
-| Plan anlegen, neue Version, nur eine aktuelle Version | RLS-Suite veröffentlicht für temporären Patienten zwei Versionen über `publish_exercise_plan` und prüft Plan/Zeiger/Versionenzahl | Spezifikation bereit, lokaler Lauf offen |
-| Alte Version bleibt erhalten | RLS-Suite liest Version 1 nach Veröffentlichung von Version 2 erneut | Spezifikation bereit, lokaler Lauf offen |
-| Patientenspezifische Werte, Start-/Enddatum | Validierungs-Unit-Test + RLS-Leseprüfung des veröffentlichten Items | Unit grün, RLS-Lauf offen |
-| Wochentage, N-mal täglich, N-mal wöchentlich | `src/lib/plan-schedule.test.ts`, `src/lib/validation/plans.test.ts` und veröffentlichte DB-Items | Grün auf Unit-Ebene, DB-Lauf offen |
-| Ungültige Veröffentlichung rollt vollständig zurück | RLS-Suite vergleicht Versionszahl vor/nach fehlerhafter RPC | Spezifikation bereit, lokaler Lauf offen |
+| Plan anlegen, neue Version, nur eine aktuelle Version | RLS-Suite über `publish_exercise_plan` | Grün (19.07.2026) |
+| Alte Version bleibt erhalten | RLS-Suite | Grün (19.07.2026) |
+| Patientenspezifische Werte, Start-/Enddatum | Validierungs-Unit-Test + RLS-Leseprüfung | Grün (19.07.2026) |
+| Wochentage, N-mal täglich, N-mal wöchentlich | `plan-schedule.test.ts`, `validation/plans.test.ts` + DB-Items | Grün (19.07.2026) |
+| Ungültige Veröffentlichung rollt vollständig zurück | RLS-Suite | Grün (19.07.2026) |
 
 ## Durchführungen
 
 | Anforderung | Automatisierte Abdeckung | Status |
 |---|---|---|
 | Einmal / dreimal täglich / mehrfach pro Woche | `src/lib/occurrences.test.ts` | Grün |
-| Fortschritt und getrennte Durchgänge | `src/lib/occurrences.test.ts`, `src/lib/adherence-analytics.test.ts` | Grün |
-| Kein unbeabsichtigtes Duplikat | RLS-Suite ruft `record_exercise_occurrence` zweimal auf und erwartet Ablehnung | Spezifikation bereit, lokaler Lauf offen |
-| Alter Log bleibt nach Planänderung lesbar | RLS-Suite liest bestehenden Log samt Snapshot nach Veröffentlichung einer neuen Version | Spezifikation bereit, lokaler Lauf offen |
-| Patient nur eigene Daten / Fremdpraxis keine Logs | RLS-Suite mit echten Patient-/Fremdpraxis-Sitzungen | Spezifikation bereit, lokaler Lauf offen |
+| Fortschritt und getrennte Durchgänge | `occurrences.test.ts`, `adherence-analytics.test.ts` | Grün |
+| Kein unbeabsichtigtes Duplikat | RLS-Suite (`record_exercise_occurrence` zweimal) | Grün (19.07.2026) |
+| Alter Log bleibt nach Planänderung lesbar | RLS-Suite | Grün (19.07.2026) |
+| Patient nur eigene Daten / Fremdpraxis keine Logs | RLS-Suite | Grün (19.07.2026) |
 
 ## Einladungen
 
 | Anforderung | Automatisierte Abdeckung | Status |
 |---|---|---|
-| Code vor Kontoerstellung prüfen, Konto erstellen, bestätigen und verbinden | `e2e/phase-j-invitations.spec.ts` über UI + Mailpit | Spezifikation bereit, lokaler Lauf offen |
-| Bestehendes Konto anmelden und Einladung annehmen | `e2e/phase-j-invitations.spec.ts` | Spezifikation bereit, lokaler Lauf offen |
-| Code erst nach erfolgreicher Verbindung verbrauchen | Browser prüft Wiederverwendung; RLS-Suite prüft falschen Hash, unverändertes `used_at` und anschließende erfolgreiche Einlösung | Spezifikation bereit, lokaler Lauf offen |
-| Abgelaufen / widerrufen / verwendet | RLS-Suite erzeugt alle drei Zustände und erwartet identische Ablehnung | Spezifikation bereit, lokaler Lauf offen |
-| Praxiswechsel | RLS-Suite prüft beendeten alten und genau einen aktiven neuen Link; UI zeigt die bestehende Bestätigung | Spezifikation bereit, lokaler Lauf offen |
-| Neues Gerät braucht keinen neuen Code | Browser meldet dasselbe verbundene Konto in einem frischen Context an und erwartet direkt „Heute“ | Spezifikation bereit, lokaler Lauf offen |
+| Code vor Kontoerstellung prüfen, Konto erstellen, bestätigen und verbinden | `e2e/phase-j-invitations.spec.ts` über UI + Mailpit | Grün (19.07.2026) |
+| Bestehendes Konto anmelden und Einladung annehmen | `e2e/phase-j-invitations.spec.ts` | Grün (19.07.2026) |
+| Code erst nach erfolgreicher Verbindung verbrauchen | Browser + RLS-Suite | Grün (19.07.2026) |
+| Abgelaufen / widerrufen / verwendet | RLS-Suite | Grün (19.07.2026) |
+| Praxiswechsel | RLS-Suite + UI-Bestätigung | Grün (19.07.2026) |
+| Neues Gerät braucht keinen neuen Code | Browser mit frischem Context | Grün (19.07.2026) |
 
-## Ausgeführte Gesamtprüfungen in dieser Umgebung
+## Ausgeführte Gesamtprüfungen (19.07.2026, Toms Mac)
 
 | Befehl | Ergebnis |
 |---|---|
+| `pnpm db:reset` | Grün: 20 Migrationen |
+| `pnpm seed` | Grün; jetzt deterministisch, auch direkt nach E2E-Läufen (D-051) |
 | `pnpm typecheck` | Grün |
 | `pnpm lint` | Grün, 0 Warnungen |
 | `pnpm test` | Grün: 21 Dateien, 105 Tests |
-| `pnpm exec playwright test --list` | Grün: 48 Fälle in 6 Dateien erkannt |
-| `pnpm build` | Grün: 28 Seiten erzeugt |
-| `pnpm db:reset` | Blockiert: `sh: 1: supabase: not found` |
-| `pnpm seed` | Blockiert: `node: .env.local: not found` |
-| `pnpm test:rls` | Blockiert: `node: .env.local: not found` |
-| `pnpm e2e` | Blockiert beim Start von Next dev: `uv_interface_addresses returned Unknown system error 1`; lokale Supabase/Seed fehlen ebenfalls |
-| `pnpm docs:sync` | Blockiert: `node: .env.local: not found`; der lokale Obsidian-Vault ist in dieser Umgebung nicht erreichbar |
+| `pnpm test:rls` | Grün: 78 Proben |
+| `pnpm e2e` | Grün (Exit 0): 35 bestanden, 12 planmäßig übersprungen (Mobile-Skips mutierender Abläufe), 1 bekannter Parallellast-Flake vom Retry aufgefangen |
+| `pnpm build` | Grün |
+| `pnpm docs:sync` | Grün (Obsidian-Vault auf Toms Mac) |
+
+## Bekannte Einschränkungen
+
+- Ein einzelner Server-Action-Roundtrip kann unter voller E2E-Parallellast selten >10 s dauern (Einladungscode-Erzeugung); der konfigurierte Retry mit Trace fängt das auf.
+- Formulare mit `state`+`revalidatePath` (Praxisbereich, Telefonnummer, Erinnerungen) sind vom intermittierenden Roundtrip-Problem grundsätzlich weiter betroffen (im Test 5×/5 stabil); patientenkritische Bestätigungen nutzen deshalb das Redirect-Muster (D-053).
+- Browser-Tests der E-Mail-Änderung hinterlassen ein umbenanntes Demo-Konto; vor `pnpm test:rls` neu seeden bzw. Reste löschen.
+- Virenscan/Quarantäne für Uploads bleibt vor Pilotbetrieb offen.

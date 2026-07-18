@@ -2,7 +2,7 @@
 
 App für Physiotherapiepraxen und ihre Patientinnen und Patienten: Heimübungspläne mit Videos, Termine, verordnete Sitzungen und selbst dokumentierte Durchführung (Adhärenz).
 
-> **Stand 18.07.2026:** Claudes angefangene Patientenoberfläche wurde gesichert und fertiggestellt. „Heute“ ist eine einfache Checkliste mit statusgerechter Rückmeldung; Profil und Kontosicherheit sind neu gegliedert. Typecheck, Lint, 105 Tests und Build sind grün, 48 Browserfälle werden erkannt. Datenbank-/RLS-/Browserausführung steht mangels lokaler Supabase-Umgebung noch aus. Produktumfang: `docs/PRODUCT_SPEC.md` · Testmatrix: `docs/TEST_MATRIX.md` · Übergabe: `docs/AI_HANDOFF.md`.
+> **Stand 19.07.2026:** Die konsolidierte Patientenoberfläche wurde erstmals vollständig lokal geprüft: db:reset (20 Migrationen), Seed, Typecheck, Lint, 105 Tests, 78 RLS-Proben, Playwright-E2E (35 bestanden, 12 planmäßig übersprungen) und Build sind grün. Zusätzlich wurden Heute-Checkliste, Statusrückmeldungen, Terminabsage, Profil, Passwort- und E-Mail-Änderung (inkl. Mailpit-Doppelbestätigung) und die Mobildarstellung im echten Browser durchgespielt. Dabei gefundene Fehler (hängende Medien-Finalisierung, unzuverlässige Absage-/E-Mail-Rückmeldung, `/auth/error` beim zweiten Bestätigungslink, nicht-deterministischer Seed, „geschafft“-Wortlaut für nicht erledigte Durchgänge) sind behoben. Produktumfang: `docs/PRODUCT_SPEC.md` · Testmatrix: `docs/TEST_MATRIX.md` · Übergabe: `docs/AI_HANDOFF.md`.
 
 ## Funktionsübersicht
 
@@ -17,7 +17,7 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Telefonnummer | Patient pflegt eigene Nummer; Praxis sieht und korrigiert sie | ✅ | UI-Durchlauf + API-Proben (11.07.2026) | Optional, nur Ziffern/übliche Zeichen; Anzeige in Liste und Detail |
 | Heimübungen | Übungsanzeige „Heute“ + Detailseite mit Vorgaben | ✅ | E2E-Tests (11.07.2026) | Übungen stammen aus Demo-Seed |
 | Heimübungen | Übungsbibliothek durch die Praxis | ✅ | 65 Unit-Tests + UI-Durchlauf (13.07.2026) | Anlegen, bearbeiten, duplizieren, deaktivieren, archivieren; nie Hard-Delete |
-| Heimübungen | Privater Medien-Upload durch die Praxis | 🧪 | Typecheck, Lint, 69 Unit-Tests, Build (13.07.2026) | MP4/WebM, JPEG/PNG und WebVTT; Fortschritt, Vorschau, Ersetzen/Entfernen, Signaturprüfung; DB/RLS/UI noch lokal prüfen |
+| Heimübungen | Privater Medien-Upload durch die Praxis | ✅ | E2E-Browserlauf (19.07.2026) | MP4/WebM, JPEG/PNG und WebVTT; falsche Signatur abgelehnt, Ersetzen entwertet alte URL, Patient nur über kurzlebige URL; Virenscan vor Pilot weiterhin offen |
 | Heimübungen | Individuelle Pläne und Versionierung | 🧪 | Typecheck, Lint, 74 Unit-Tests, Build (13.07.2026) | Dosierung, feste Wochentage, 1–6× täglich oder 1–7× wöchentlich, Uhrzeiten, Sortierung, Historie und Archivierung; atomare DB-Funktion, lokaler DB-/UI-Lauf offen |
 | Übungsdokumentation | Selbstauskunft (erledigt/teilweise/zu schwierig/nicht möglich), Schmerz, Notiz | ✅ | E2E-Tests (11.07.2026) | Snapshot der Vorgaben; keine Doppeldokumentation pro Tag |
 | Übungsdokumentation | Mehrere Durchgänge und flexible Wochenziele | 🧪 | Typecheck, Lint, 79 Unit-Tests, Build (13.07.2026) | Jeder Durchgang eigener Zeitstempel/Index; Doppeltipp atomar verhindert; geplant/dokumentiert/erledigt getrennt; DB/RLS/UI lokal offen |
@@ -29,7 +29,7 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Termine | Termin abschließen (rechnet genau 1 Einheit an) | ✅ | UI-Durchlauf (12.07.2026) | Anrechnung atomar; pro Termin höchstens eine aktive Anrechnung (partieller `unique`-Index) |
 | Termine | Abschluss zurücknehmen (bucht genau 1 Einheit zurück) | ✅ | UI-Durchlauf (12.07.2026) | Historie bleibt erhalten (Anrechnung wird als zurückgebucht markiert, nie gelöscht) |
 | Termine | Termin stornieren (Historie bleibt erhalten) | 🧪 | Unit-Tests der Validierung | Konfliktschutz gegen Überlappung in PostgreSQL |
-| Absagen | Patient stellt Absageanfrage, Praxis wird benachrichtigt | 🧪 | Unit-Tests | Annehmen/Ablehnen durch die Praxis fehlt noch |
+| Absagen | Patient stellt Absageanfrage, Praxis wird benachrichtigt | ✅ | Browser-Durchlauf 5× (19.07.2026) | Bestätigung jetzt zuverlässig über Weiterleitung; Annehmen/Ablehnen durch die Praxis fehlt noch |
 | Benachrichtigungen | In-App-Notifications bei Planänderungen, Stornierung und Absageanfrage | 🟡 | Unit-Tests | Planhinweise patientenseitig gelesen/ungelesen; vollständiges Zentrum und Badge fehlen |
 | Behandlungseinheiten | Verordnung anlegen, ganzzahlige Anpassung mit Pflichtgrund, vollständige Ledger-Historie, Warnung bei 0, Patientenanzeige | ✅ | UI-Durchlauf + API-Proben (12.07.2026) | Nur ganze Einheiten; Stand nie negativ; Anzeige und Anrechnung nutzen dieselbe Auswahlregel (`primary_authorization_for_patient`) |
 | Verordnungswarnungen | Warnbanner (Patientendetail), Dashboard-Karte, Listenfilter, Notification | ✅ | UI-Durchlauf + API-Probe (12.07.2026) | Schwellen: ≤2 Einheiten bzw. ≤14 Tage bis Gültigkeitsende; Notification ohne Gesundheitsdaten |
@@ -42,7 +42,7 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Freie Termine | Frei gewordene Zeitfenster + Terminangebote (annehmen/ablehnen/zurückziehen) | ✅ | UI-Durchlauf inkl. Konfliktfall (12.07.2026) | Annahme bucht atomar; Doppelbuchung durch DB-Überlappungsschutz ausgeschlossen |
 | PWA | Installierbares Manifest | 🟡 | manuell (frühere Phase) | Kein Offline-Modus, keine Push-Benachrichtigungen |
 | Sicherheit | RLS auf allen Patiententabellen, serverseitige Autorisierung, private Buckets | ✅ | 36 RLS-Proben `pnpm test:rls` (12.07.2026) | Patient/Fremdpraxis/Selbst-Eskalation/Storage negativ getestet; Virenscan vor Pilot weiterhin offen |
-| Tests | Typecheck, Lint, 105 Unit-/Komponententests, 48 gelistete Browserfälle, erweiterte RLS-Suite, Build | 🧪 | Cloud-Prüfungen 18.07.; letzte vollständige DB-/E2E-Ausführung 12.07. | Neue Patientenspezifikationen decken Checkliste, Profil und Konto-E-Mails ab; lokale Ausführung offen |
+| Tests | Typecheck, Lint, 105 Unit-/Komponententests, Playwright-E2E (35 bestanden/12 planmäßig übersprungen), 78 RLS-Proben, Build | ✅ | Vollständig lokal ausgeführt (19.07.2026) | Seed ist jetzt auch nach E2E-Läufen deterministisch; ein bekannter Parallellast-Flake wird vom eingebauten Retry aufgefangen |
 | Deployment | Produktivbetrieb/Hosting | ❌ | – | Nur mit ausdrücklicher Zustimmung von Tom |
 
 ## Was funktioniert aktuell?
@@ -72,6 +72,8 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 - **Benachrichtigungszentrum:** Planänderungen sind patientenseitig gelesen/ungelesen sichtbar; eine gemeinsame Übersicht für alle Notification-Arten und ein Badge fehlen noch.
 
 ## Letzte Änderungen
+
+- **19.07.2026 – Lokale Gesamtprüfung und Fehlerbehebungen der Patientenoberfläche.** Erstmals vollständige lokale Ausführung aller Prüfungen (db:reset, Seed, Typecheck, Lint, 105 Tests, 78 RLS-Proben, E2E, Build) plus manuelle Browser-Durchläufe der Patientenflüsse auf Desktop und iPhone-Viewport. Behoben: (1) Die Medien-Finalisierung hing dauerhaft, weil ein abgebrochener Body-Reader im Next-Server nie zurückkehrt – die Signaturprüfung liest die per Range begrenzte Antwort jetzt vollständig. (2) Terminabsage und E-Mail-Änderung bestätigen jetzt zuverlässig über eine Weiterleitung mit Query-Parameter statt über den unzuverlässig gestreamten Rückgabezustand. (3) Der zweite Bestätigungslink einer E-Mail-Änderung landete auf der Fehlerseite, obwohl die Änderung vollzogen war – mit gültiger Session geht es jetzt zum Profil. (4) Der Seed schlug nach E2E-Läufen und beim wiederholten Aufruf fehl (stille Fremdschlüssel-Blocker); die Aufräumreihenfolge ist jetzt deterministisch und Fehler werden nie mehr verschluckt. (5) Der Tagesfortschritt hieß „X von Y geschafft“, zählte aber auch nicht erledigte Rückmeldungen – jetzt wertungsfrei „eingetragen“. Zusätzlich vier hartkodierte Patiententexte nach `src/messages/de.ts` verschoben und vier E2E-Spezifikationsfehler (Login-Race, mehrdeutige Selektoren, Ersetzen-Race) repariert.
 
 - **18.07.2026 – Konsolidierte Patientenoberfläche (`e9868fa` + `7ef8fae`).** Claudes angefangener Stand wurde vollständig erhalten: Seed-Reparatur, ausstehende E-Mail-Anzeige, Doppelbestätigung und die sichere `mark_notification_read`-Migration. Ergänzt wurden eine ehrliche Erfolgsrückmeldung (nur `completed` wird gefeiert), optionale einklappbare Angaben, vereinfachte Termine/Absage, größere Navigation sowie abgesicherte Konto-Actions und Recovery-Callbacks. Typecheck, Lint, 105 Tests und Build grün; 48 Browserfälle gelistet. Vollständiger DB-/Mailpit-/Browserlauf lokal offen.
 

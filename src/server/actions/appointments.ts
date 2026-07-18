@@ -344,5 +344,9 @@ export async function requestAppointmentCancellationAction(
   if (error) return { error: "Die Absageanfrage konnte nicht gesendet werden." };
   revalidatePath("/appointments");
   revalidatePath("/practice/calendar");
-  return { success: "Ihre Absageanfrage wurde an die Praxis gesendet." };
+  // Redirect statt Rückgabezustand: Die gestreamte Aktualisierung nach
+  // revalidatePath erreicht den Client nicht zuverlässig (bekannter
+  // Roundtrip-Hänger); die Bestätigung zeigt die Terminseite per Query-
+  // Parameter – dasselbe Muster wie die Übungsdokumentation (/today?logged=…).
+  redirect("/appointments?cancellation_requested=1");
 }

@@ -35,6 +35,16 @@ export async function GET(request: NextRequest) {
     if (!error) {
       return NextResponse.redirect(new URL(next, request.url));
     }
+    // E-Mail-Änderung mit doppelter Bestätigung: Beim zweiten Link ist der
+    // PKCE-Verifier bereits verbraucht und der Code-Tausch scheitert, obwohl
+    // die Änderung serverseitig längst vollzogen ist. Mit gültiger Session
+    // ist das kein Fehlerfall – weiter zum internen Ziel.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      return NextResponse.redirect(new URL(next, request.url));
+    }
   } else if (message) {
     // E-Mail-Änderung mit doppelter Bestätigung: Nach dem ersten der beiden
     // Links leitet Supabase ohne Code, nur mit einem Hinweis („bitte auch den

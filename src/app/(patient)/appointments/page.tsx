@@ -12,16 +12,31 @@ export const metadata: Metadata = { title: de.patient.appointments.title };
 
 const t = de.patient.appointments;
 
-export default async function AppointmentsPage() {
+export default async function AppointmentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ cancellation_requested?: string }>;
+}) {
   const session = (await getSessionContext())!;
-  const [{ upcoming, past }, offers] = await Promise.all([
+  const [{ upcoming, past }, offers, query] = await Promise.all([
     getPatientAppointments(session.userId),
     listPatientOffers(session.userId),
+    searchParams,
   ]);
 
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-3xl font-bold tracking-tight">{t.title}</h1>
+
+      {query.cancellation_requested ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className="rounded-xl border border-success/40 bg-success/10 p-5 text-lg"
+        >
+          {t.cancellationRequestedBanner}
+        </div>
+      ) : null}
 
       <OfferResponse
         offers={offers.map((offer) => ({
@@ -55,7 +70,7 @@ export default async function AppointmentsPage() {
 
       {past.length > 0 && (
         <details className="rounded-xl border bg-card">
-          <summary className="flex min-h-16 cursor-pointer items-center px-5 text-lg font-bold text-primary">{past.length} vergangene Termine</summary>
+          <summary className="flex min-h-16 cursor-pointer items-center px-5 text-lg font-bold text-primary">{t.pastToggle(past.length)}</summary>
           <ul className="flex flex-col gap-3 border-t p-4">
             {past.map((a) => (
               <li key={a.id}>

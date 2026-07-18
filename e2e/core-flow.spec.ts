@@ -124,7 +124,7 @@ test("Code verbindet das Konto genau einmal; falscher Code wird abgewiesen", asy
 test("Patientin dokumentiert eine Übung; Fortschritt aktualisiert sich", async ({ page }) => {
   await login(page, "patientin@demo.physiocheck.test");
   await expect(page).toHaveURL(/\/today$/);
-  await expect(page.getByText("0 von 3 geschafft")).toBeVisible();
+  await expect(page.getByText("0 von 3 eingetragen")).toBeVisible();
 
   await page.getByRole("link", { name: /Übung „Schulterkreisen“ öffnen/ }).click();
   await expect(page.getByRole("heading", { name: "Schulterkreisen" })).toBeVisible();
@@ -144,7 +144,7 @@ test("Patientin dokumentiert eine Übung; Fortschritt aktualisiert sich", async 
 
   await expect(page).toHaveURL(/\/today\?logged=completed/);
   await expect(page.getByRole("status").filter({ hasText: "Geschafft!" })).toBeVisible();
-  await expect(page.getByText("1 von 3 geschafft")).toBeVisible();
+  await expect(page.getByText("1 von 3 eingetragen")).toBeVisible();
 
   // Doppelte Tagesdokumentation ist nicht möglich
   await page.getByRole("link", { name: /Übung „Schulterkreisen“ öffnen/ }).click();
@@ -163,6 +163,9 @@ test("Therapeutin sieht die Selbstauskunft auf der Patientendetailseite", async 
   ).toBeVisible();
   await expect(page.getByText(/Alle Angaben sind Selbstauskünfte/)).toBeVisible();
   await expect(page.getByText("Schulterkreisen").first()).toBeVisible();
-  await expect(page.getByText("Heute gut machbar gewesen.")).toBeVisible();
-  await expect(page.getByText("Schmerz nachher: 2/10")).toBeVisible();
+  // Auf den heutigen Eintrag eingrenzen: der Seed enthält bereits eine
+  // gestrige Selbstauskunft mit demselben Schmerzwert.
+  const todayLog = page.locator("li").filter({ hasText: "Heute gut machbar gewesen." });
+  await expect(todayLog).toBeVisible();
+  await expect(todayLog.getByText("Schmerz nachher: 2/10")).toBeVisible();
 });

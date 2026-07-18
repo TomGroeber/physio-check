@@ -2,6 +2,14 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-07-19 – Lokale Verifikation der Patientenoberfläche
+
+**D-053 · Patientenbestätigungen per Redirect, nicht per Rückgabezustand.** Server-Actions, die nach Erfolg `revalidatePath` aufrufen und einen Zustand zurückgeben, erreichen den Client unter Next 16 nachweislich unzuverlässig (Formular bleibt „Wird geladen …“ oder die Aktualisierung wird verworfen; lokal reproduziert bei Terminabsage und E-Mail-Änderung). Patientenkritische Bestätigungen folgen deshalb dem bestehenden Muster der Übungsdokumentation: Redirect mit Query-Parameter (`/appointments?cancellation_requested=1`, `/profile?email_change_requested=1`), die Zielseite zeigt die Bestätigung. Fehlerfälle geben weiterhin direkt einen Zustand zurück (kein `revalidatePath` → zuverlässig). Praxisformulare bleiben vorerst unverändert; die Beobachtung ist in `docs/AI_HANDOFF.md` festgehalten.
+
+**D-052 · Signaturprüfung liest die Range-Antwort vollständig.** `reader.cancel()` auf einem angelesenen Fetch-Body kehrt im Next-Server-Kontext nie zurück; die Medien-Finalisierung hing dadurch dauerhaft. Da `Range: bytes=0-15` die Antwort ohnehin auf 16 Bytes begrenzt, wird sie jetzt vollständig gelesen – kein manueller Reader, kein Cancel.
+
+**D-051 · Seed-Aufräumen ist deterministisch und laut.** Mehrere Tabellen blockieren per `NO ACTION`-Fremdschlüssel das kaskadierende Löschen von Praxis und Demo-Benutzern (Einladungen, Verordnungen samt Anrechnungen, Dokumente, Selbstauskünfte an Plan-Items). Der Seed löscht diese Bestände jetzt in fester Reihenfolge vor der Praxis und wirft bei jedem Fehler sofort – vorher wurden Löschfehler verschluckt und der Seed scheiterte erst später unverständlich („already registered“) bzw. nur bei jedem zweiten Lauf.
+
 ## 2026-07-18 – Konsolidierte Patientenoberfläche und Kontosicherheit
 
 **D-050 · Claude-Stand erhalten und gezielt vervollständigt.** Seed-Fix, Notification-RPC, pending E-Mail und getrennte Sicherheitsformulare bleiben erhalten. Fehlende Bedienvereinfachungen, Tests und Statussemantik wurden als Folgecommit ergänzt; es wurde kein Stand blind überschrieben.

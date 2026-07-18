@@ -12,6 +12,9 @@ async function login(page: import("@playwright/test").Page, email: string) {
   await page.getByLabel("E-Mail-Adresse").fill(email);
   await page.getByLabel("Passwort").fill(PASSWORD);
   await page.getByRole("button", { name: "Anmelden" }).click();
+  // Warten, bis die Anmeldung durch ist (Weiterleitung weg von /login),
+  // sonst überholt der nächste goto() das Setzen der Session-Cookies.
+  await page.waitForURL((url) => !url.pathname.startsWith("/login"));
 }
 
 test("Patientin landet auf 'Heute' und sieht Übungen und Termin", async ({
@@ -39,8 +42,8 @@ test("Patientenprofil trennt persönliche Daten, Sicherheit und Einstellungen", 
   await expect(page.getByRole("heading", { name: "Sicherheit" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Erinnerungen" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Ihre Praxis" })).toBeVisible();
-  await expect(page.getByText("E-Mail-Adresse ändern", { exact: true })).toBeVisible();
-  await expect(page.getByText("Passwort ändern", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "E-Mail-Adresse ändern" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Passwort ändern" })).toBeVisible();
 });
 
 test("Patientin sieht nur eigene Bereiche – Praxisbereich wird umgeleitet", async ({
@@ -64,7 +67,10 @@ test("Therapeutin landet im Praxis-Dashboard", async ({ page }) => {
 test("Therapeutin sieht die Übungsbibliothek der Praxis", async ({ page }) => {
   await login(page, "therapeutin@demo.physiocheck.test");
   await page.getByRole("link", { name: "Übungsbibliothek" }).click();
-  await expect(page.getByText("Wandsitz")).toBeVisible();
+  // Erst die Zielseite abwarten: das Dashboard enthält „Wandsitz“ ebenfalls
+  // (Rückmeldungslisten), was sonst zu einem mehrdeutigen Treffer führt.
+  await page.waitForURL(/\/practice\/exercises$/);
+  await expect(page.getByText("Wandsitz").first()).toBeVisible();
 });
 
 test("Unverbundenes Konto sieht nur den Verbindungsbereich", async ({

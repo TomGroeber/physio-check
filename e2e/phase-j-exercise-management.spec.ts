@@ -92,9 +92,13 @@ test("Video wird geprüft, privat ausgeliefert und beim Ersetzen entfernt", asyn
   });
   await videoCard.getByRole("button", { name: "Datei ersetzen" }).click();
   await expect(videoCard.getByText("Das Medium wurde sicher gespeichert.")).toBeVisible();
+  // router.refresh() lädt die Karte asynchron neu – erst auf die neue
+  // signierte URL warten, sonst wird noch die alte Quelle gelesen.
+  await expect
+    .poll(async () => videoCard.locator("video source").getAttribute("src"))
+    .not.toBe(firstUrl);
   const replacementUrl = await videoCard.locator("video source").getAttribute("src");
   expect(replacementUrl).toBeTruthy();
-  expect(replacementUrl).not.toBe(firstUrl);
 
   const oldObjectResponse = await request.get(firstUrl!);
   expect(oldObjectResponse.ok()).toBe(false);

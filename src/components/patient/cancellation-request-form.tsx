@@ -16,7 +16,7 @@ export function CancellationRequestForm({ appointmentId }: { appointmentId: stri
       <FormMessage error={state.error} success={state.success} />
       {!state.success ? (
         <details className="rounded-xl border">
-          <summary className="flex min-h-14 cursor-pointer items-center px-4 text-lg font-bold text-primary">Termin absagen</summary>
+          <summary className="flex min-h-14 cursor-pointer items-center px-4 text-lg font-bold text-primary">{t.cancelToggle}</summary>
           <form action={action} className="flex flex-col gap-3 border-t p-4">
             <input type="hidden" name="appointmentId" value={appointmentId} />
             <Label htmlFor={`reason-${appointmentId}`} className="text-base">{t.cancellationReason}</Label>

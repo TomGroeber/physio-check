@@ -149,11 +149,11 @@ export const de = {
       title: "Heute",
       exercisesHeading: "Ihre Übungen heute",
       greeting: "Guten Tag",
-      // Tagesfortschritt: bewusst kurz. „geschafft“ meint die Aufgabenliste
-      // des Tages (dokumentierte Durchgänge) – die genaue Aufschlüsselung
-      // steht in der Tageszusammenfassung und auf der Übungsdetailseite.
+      // Tagesfortschritt: bewusst kurz und wertungsfrei – gezählt werden
+      // dokumentierte Durchgänge (auch „zu schwierig“/„teilweise“), deshalb
+      // „eingetragen“ statt „geschafft“ (D-041/D-049).
       progressShort: (documented: number, total: number) =>
-        `${documented} von ${total} geschafft`,
+        `${documented} von ${total} eingetragen`,
       progressBarLabel: (documented: number, total: number) =>
         `Tagesfortschritt: ${documented} von ${total} Durchgängen dokumentiert`,
       progressToday: (documented: number, total: number) =>
@@ -214,6 +214,7 @@ export const de = {
         too_difficult: "Zu schwierig",
         not_possible: "Nicht möglich",
       },
+      optionalToggle: "Weitere Angaben (optional)",
       setsCompletedLabel: "Absolvierte Sätze (optional)",
       painBeforeLabel: "Schmerz vor der Übung (optional)",
       painAfterLabel: "Schmerz nach der Übung (optional)",
@@ -266,9 +267,14 @@ export const de = {
       title: "Termine",
       upcoming: "Kommende Termine",
       past: "Vergangene Termine",
+      pastToggle: (count: number) =>
+        count === 1 ? "1 vergangener Termin" : `${count} vergangene Termine`,
       empty: "Es sind keine Termine geplant.",
       cancellationReason: "Grund (optional)",
+      cancelToggle: "Termin absagen",
       requestCancellation: "Terminabsage anfragen",
+      cancellationRequestedBanner:
+        "Ihre Absageanfrage wurde an die Praxis gesendet.",
       status: {
         scheduled: "Geplant",
         cancellation_requested: "Absage angefragt",
@@ -285,6 +291,7 @@ export const de = {
       title: "Ihre verordneten Sitzungen",
       remaining: (remaining: number, total: number) =>
         `${remaining} von ${total} Sitzungen verbleiben`,
+      coverageHintTitle: "Hinweis zur Kostenübernahme",
       coverageHint:
         "Der angezeigte Stand dient Ihrer Übersicht. Ob eine Sitzung von der Krankenkasse übernommen wird, richtet sich nach Ihrer Verordnung und den geltenden Bedingungen.",
       empty: "Ihre Praxis hat noch keine Sitzungsanzahl hinterlegt.",

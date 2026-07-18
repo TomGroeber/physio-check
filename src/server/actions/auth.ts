@@ -195,7 +195,10 @@ export async function changeEmailAction(
   }
 
   revalidatePath("/profile");
-  return { success: de.patient.profile.security.changeEmailRequested };
+  // Redirect statt Rückgabezustand: Die gestreamte Aktualisierung nach
+  // revalidatePath erreicht den Client nicht zuverlässig; das Profil zeigt
+  // die Bestätigung über den Query-Parameter an.
+  redirect("/profile?email_change_requested=1");
 }
 
 /**

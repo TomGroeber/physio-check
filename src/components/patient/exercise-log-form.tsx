@@ -69,7 +69,7 @@ export function ExerciseLogForm({
         ))}
       </fieldset>
       <details className="rounded-xl border">
-        <summary className="flex min-h-14 cursor-pointer items-center px-4 text-lg font-bold text-primary">Weitere Angaben (optional)</summary>
+        <summary className="flex min-h-14 cursor-pointer items-center px-4 text-lg font-bold text-primary">{t.optionalToggle}</summary>
         <div className="flex flex-col gap-4 border-t p-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor={`setsCompleted-${mode}`} className="text-base">{t.setsCompletedLabel}</Label>
