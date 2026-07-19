@@ -103,6 +103,24 @@
 | Praxiswechsel | RLS-Suite + UI-Bestätigung | Grün (19.07.2026) |
 | Neues Gerät braucht keinen neuen Code | Browser mit frischem Context | Grün (19.07.2026) |
 
+## Mobile Patienten-App (Teile H–M, 19.07.2026)
+
+| Anforderung | Automatisierte Abdeckung | Status |
+|---|---|---|
+| Auth-Session sicher gespeichert (AES + SecureStore-Schlüssel) | Implementierung `secure-session-storage.ts`; Roundtrip implizit über Integrationsprobe (Login/Session) | Grün (19.07.2026) |
+| Code vor Konto, gültiger/ungültiger Code | Jest (`invite.test.ts`, lokale Formatprüfung ohne Netz) + Integrationsprobe gegen `/api/mobile/invite/check` (200/404) | Grün (19.07.2026) |
+| Einladung atomar annehmen, Praxiswechsel | bestehende RPC `redeem_patient_invite` (RLS-Suite deckt Zustände ab); App-Fluss implementiert | RPC grün; UI-Fluss auf Gerät offen (kein Simulator) |
+| Praxisrollen-Aussperrung | Integrationsprobe (Mitgliedszeile via RLS erkannt) + `practice-blocked`-Screen | Grün (19.07.2026) |
+| Heute: dokumentiert ≠ erledigt, Erfolg NUR bei completed | Jest `today.test.tsx` (3 Fälle inkl. Leerzustand) | Grün (19.07.2026) |
+| Durchgangs-Dokumentation (alle Status, Mehrfach-Durchgänge) | Integrationsprobe (`record_exercise_occurrence` echt) + bestehende RLS-Proben (Duplikat/Fremdzugriff) | Grün (19.07.2026) |
+| Video/signierte URLs nur für eigenen aktuellen Plan | Integrationsprobe: Medien-Endpunkt 200 mit Feldern, 401 ohne Token; Route prüft current_version + Besitzer | Grün (19.07.2026) |
+| Profilbild Upload/Ersetzen/Entfernen (Ticket, Magic Bytes) | bestehende Avatar-Services + RLS-Sektion E (10 Proben); mobile Endpunkte 401-geprüft | Grün serverseitig; UI-Fluss auf Gerät offen |
+| Kontolöschungsantrag (Audit, Zugangssperre, keine Client-Schreibrechte) | RLS-Proben (0 Zeilen lesbar, Insert abgelehnt) + Endpunkt 401-geprüft | Grün (19.07.2026) |
+| Barrierefreiheit: beschriftete Buttons, Live-Regionen, Label↔Eingabe | Jest `ui.test.tsx` | Grün (19.07.2026) |
+| Sprachhygiene der App-Texte | Jest `de.test.ts` | Grün (19.07.2026) |
+| Offline-/Lade-/Fehlerzustände | `useLoad` + ErrorView implementiert; Gerätetest offen | Implementiert; Gerätetest offen (kein Simulator) |
+| Großschrift/Screenreader/kleine+große Viewports auf echtem Gerät | – | OFFEN: erst mit Xcode/Simulator bzw. Gerät möglich (dokumentierter Blocker) |
+
 ## Kalenderfarben pro Patient (D-057)
 
 | Anforderung | Automatisierte Abdeckung | Status |

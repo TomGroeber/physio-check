@@ -27,7 +27,9 @@ export async function GET(request: Request) {
       `id, exercise_id, plan_version_id,
        exercise_plan_versions!inner (
          id,
-         exercise_plans!inner ( patient_profile_id, status, current_version_id )
+         exercise_plans!exercise_plan_versions_plan_id_fkey!inner (
+           patient_profile_id, status, current_version_id
+         )
        )`
     )
     .eq("id", planItemId)

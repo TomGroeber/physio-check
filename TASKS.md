@@ -168,6 +168,23 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [x] Teststabilität: Playwright auf 4 Worker begrenzt, Expect-Timeout 15 s, Hydrations-Klickverluste in drei Spezifikationen behoben.
 - [x] Merge nach `main` mit Toms Freigabe (2026-07-19): Fast-Forward `4723363..91591df`, gepusht.
 
+## Auftrag vom 19.07.2026 – Mobile Patienten-App (Branch `claude-patient-mobile-20260719`, Basis `28ee792`)
+
+- [x] Architektur dokumentiert (`docs/MOBILE_ARCHITECTURE.md`) und Entscheidungen D-058–D-062 festgehalten, BEVOR implementiert wurde.
+- [x] pnpm-Workspace: `apps/patient-mobile` (Expo SDK 57, Expo Router, TS strict, ESLint, Jest) + `packages/shared` (plan-schedule, occurrences, datetime, exercise-timer, invite-code-format; Website re-exportiert unter den alten Pfaden – alle 115 Web-Tests unverändert grün). Website nicht verschoben.
+- [x] Root-Skripte: `mobile:start/ios/android/typecheck/lint/test`, `shared:typecheck`.
+- [x] Mobile Auth (Teil H): Willkommen mit zwei großen Wegen, Code-Prüfung serverseitig (Praxisname + Ablauf), eigenes Konto (signUp + Deep-Link-Bestätigung), atomare Einlösung per `redeem_patient_invite`, Praxiswechsel mit Warnung, Praxisrollen-Aussperrung mit verständlichem Hinweis, Passwort-Reset per Deep Link; Sessions AES-verschlüsselt, Schlüssel im SecureStore (D-061).
+- [x] Deep Links: `physiocheck://invite/<code>`, `auth/confirm`, `reset-password`, `today`, `appointments`; Redirect-URLs in `supabase/config.toml`; Universal/App Links als offene Domain-Aufgabe dokumentiert.
+- [x] Kernfunktionen (Teil I): Heute-Checkliste (dokumentiert ≠ erledigt, „Geschafft!“ nur bei completed, Pull-to-refresh, Lade-/Fehler-/Leerzustände), Übung (16:9-Video mit signierter URL/Poster/Untertiteln, kompakte Vorgaben-Chips, Praxisnotiz, alle vier Status, Schmerzskalen 0–10 als große Touch-Flächen, Mehrfach-Durchgänge), Termine (kommend/vergangen einklappbar, Absageanfrage, Angebote annehmen/ablehnen inkl. Konfliktfall), Behandlungseinheiten (neutraler Kostenhinweis, Warnung bei ≤2/abgelaufen), Profil (Bild hochladen/ersetzen/entfernen über Ticket-Endpunkte, Initialen-Platzhalter, Telefonnummer, Erinnerungen, E-Mail-Änderung, Abmelden).
+- [x] Kontolöschung (Teil I6, D-062): doppelt bestätigter Antrag → Migration `20260719140000_account_deletion_requests.sql` (keine Client-Policies), Audit-Ereignis, Zugangssperre; offene Luxemburg-Aufbewahrungsfrage ehrlich dokumentiert.
+- [x] `/api/mobile`-Endpunkte (D-059): Bearer-Authentifizierung, Code-Prüfung mit bestehendem Rate-Limit, signierte Übungsmedien nur nach Prüfung „aktueller eigener Plan“, Avatar start/finalize/remove über bestehende Services, Löschantrag; strukturierte Fehler.
+- [x] Sync v1 (Teil J, D-060): Laden beim Öffnen, Refresh nach Mutation und beim Foreground, Pull-to-refresh, ehrlicher Offline-/Fehlerzustand; kein Realtime, keine lokale Gesundheitsdaten-Persistenz; Push nur konzeptionell (Credentials fehlen – echter Blocker).
+- [x] Barrierefreiheit (Teil K): Basisschrift 18, Aktionen ≥ 56 pt, Touch ≥ 48 pt, Textbeschriftungen statt Icon-only, Screenreader-Labels/Live-Regionen, Dark Mode über Systemschema mit eigener Palette, kein horizontales Scrollen (ScrollView-Layout), keine Swipe-Pflichten.
+- [x] Tests (Teil L): 10 Jest-Tests (Statussemantik der Heute-Ansicht, Code-Formatprüfung ohne Netz, UI-A11y, Sprachhygiene); RLS gegen echte lokale Supabase: 96 Proben inkl. Löschantrags-Tabelle; Integrationsprobe mit 15 Schritten gegen lokale Supabase + Next-Server (Login → Heute → RPC-Dokumentation → signierte Medien → 401-Grenzen → Code gültig/ungültig → Rollenerkennung) – keine Mock-Datenbank als RLS-„Beweis“.
+- [x] Store-Vorbereitung (Teil M): `eas.json` (3 Profile), Bundle-ID-Vorschläge, `docs/APP_STORE_CHECKLIST.md` (Privacy/Data-Safety/Testkonto/TestFlight/Screenshots/Domain/Malware-Scan als offene Punkte), `.env.example`; nichts eingereicht oder registriert.
+- [x] Verifiziert (Teil N): mobile Typecheck/Lint (0 Fehler)/10 Tests, `expo-doctor` 20/20, `expo config`, iOS-Produktions-Bundle (`expo export`); Web nach Umbau komplett: Typecheck, Lint, 115 Tests, 96 RLS-Proben, E2E 49/0, Build. Simulator-/Emulatorstart: echter Umgebungs-Blocker (kein Xcode/Android SDK auf dem Mac), dokumentiert.
+- [ ] Offen: Push-Versand (Credentials), Universal-Link-Domain, native Builds/Simulatortest nach Xcode-Installation, Datenschutzerklärungs-URL, rechtliche Klärung Kontolöschung/Aufbewahrung Luxemburg.
+
 ## Auftrag vom 19.07.2026 – Kalenderfarben pro Patient (Branch `claude-patient-calendar-colors-20260719`)
 
 - [x] Unterbrochenen, uncommitteten Stand der Vorsitzung analysiert, als WIP-Commit gesichert und gepusht (kein Stand verworfen).

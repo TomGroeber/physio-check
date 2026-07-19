@@ -1,6 +1,18 @@
 # PhysioCheck – AI Handoff
 
-> Stand: 2026-07-19 (vierter Auftrag) · Arbeitszweig: `claude-patient-calendar-colors-20260719` (Basis: Dark-Mode-Commit `52e6c47`, der auf `main@d0bc716` aufsetzt) · GitHub-Remote: `TomGroeber/physio-check` (öffentlich; keine Secrets/echten Daten)
+> Stand: 2026-07-19 (fünfter Auftrag) · Arbeitszweig: `claude-patient-mobile-20260719` (Basis: `28ee792` auf `claude-patient-calendar-colors-20260719` → `52e6c47` Dark Mode → `main@d0bc716`) · GitHub-Remote: `TomGroeber/physio-check` (öffentlich; keine Secrets/echten Daten)
+
+## Letzter Auftrag (19.07.2026, fünfter): Native Patienten-App (Expo)
+
+**Branch-Kette:** `main (d0bc716)` → Dark Mode (`52e6c47`, ungemergt) → Kalenderfarben (`28ee792`, ungemergt) → **Mobile (`claude-patient-mobile-20260719`)**. Kein Merge nach `main` ohne Toms Freigabe; die drei Feature-Branches bauen aufeinander auf und werden sinnvollerweise in dieser Reihenfolge gemergt.
+
+**Was existiert:** Vollständige Expo-App unter `apps/patient-mobile` (SDK 57, Expo Router, TS strict, deutsch) mit Code-/Konto-Einstieg, Deep Links, Praxisrollen-Aussperrung, Heute/Übung(Video)/Terminen/Angeboten/Einheiten/Profil(Bild)/Erinnerungen/E-Mail-Änderung/Abmelden/Kontolöschungsantrag; `packages/shared` mit plattformneutraler Logik (Website re-exportiert unter alten Pfaden); Bearer-geschützte `/api/mobile`-Endpunkte in der Website; Migration 24 (`account_deletion_requests`). Details: `docs/MOBILE_ARCHITECTURE.md` (Architektur), `docs/MOBILE_DEVELOPMENT.md` (Betrieb/Eigenheiten inkl. Jest-29-Pinning und async `render`), `docs/APP_STORE_CHECKLIST.md` (Store-Readiness).
+
+**Prüfstand mobile:** `pnpm mobile:typecheck` ✓ · `pnpm mobile:lint` 0 Fehler ✓ · `pnpm mobile:test` 10/10 ✓ · `expo-doctor` 20/20 ✓ · `expo export --platform ios` (Hermes-Bundle) ✓ · Integrationsprobe 15/15 gegen lokale Supabase + `pnpm start` (Login, Rollen/Link, Heute-Berechnung, `record_exercise_occurrence`, Medien-Endpunkt mit signierten URLs, 401-Grenzen, Code-Prüfung, Aussperrung). **Web nach Umbau komplett grün:** Typecheck, Lint, 115 Tests, db:reset (24 Migrationen), Seed, 96 RLS-Proben, E2E 49 bestanden/0 fehlgeschlagen, Build.
+
+**Echte Blocker (kein Codefehler):** kein Xcode/Android SDK auf Toms Mac (kein Simulator-/Emulatorlauf, kein nativer Build), keine EAS-/Store-Konten, keine Push-Credentials, keine Universal-Link-Domain, keine Datenschutzerklärungs-URL, offene Aufbewahrungsrechtsfrage Luxemburg (D-062).
+
+**Nächster konkreter Schritt:** (1) Toms Entscheidung über Merges (Dark Mode → Kalenderfarben → Mobile); (2) Xcode installieren und `pnpm mobile:ios` für den ersten Simulatorlauf; (3) danach Teil-M-Punkte gemäß `docs/APP_STORE_CHECKLIST.md` mit Toms Freigaben. Startbefehle: `supabase start && pnpm db:reset && pnpm seed && pnpm build && pnpm start` (Backend) + `pnpm mobile:start` (App, `.env` nach `.env.example`). Testbefehle: `pnpm mobile:test`, `pnpm test:rls`, `pnpm e2e`.
 
 ## Letzter Auftrag (19.07.2026, vierter): Kalenderfarben pro Patient (aus Unterbrechung gerettet)
 

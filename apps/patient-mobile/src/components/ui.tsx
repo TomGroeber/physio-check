@@ -224,6 +224,7 @@ export function Banner({
         : { bg: theme.dangerBg, fg: theme.danger };
   return (
     <View
+      accessible
       accessibilityRole="alert"
       accessibilityLiveRegion="polite"
       style={{
