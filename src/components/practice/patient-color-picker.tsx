@@ -66,7 +66,7 @@ export function PatientColorPicker({
           {t.none}
         </label>
       </fieldset>
-      <FormMessage error={state.error} success={state.success} />
+      <FormMessage error={state.error} />
       <Button type="submit" disabled={pending} variant="secondary" className="h-11 self-start">
         {pending ? de.common.loading : t.save}
       </Button>

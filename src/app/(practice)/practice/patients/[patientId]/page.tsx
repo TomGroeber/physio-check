@@ -52,12 +52,12 @@ export default async function PatientDetailPage({
   searchParams,
 }: {
   params: Promise<{ patientId: string }>;
-  searchParams: Promise<{ range?: string }>;
+  searchParams: Promise<{ range?: string; calendar_color_saved?: string }>;
 }) {
   const session = await getSessionContext();
   if (!session?.memberships[0]) redirect("/login");
   const practiceId = session.memberships[0].practiceId;
-  const [{ patientId }, { range }] = await Promise.all([params, searchParams]);
+  const [{ patientId }, { range, calendar_color_saved: colorSaved }] = await Promise.all([params, searchParams]);
   const days = range === "30" ? 30 : 7;
 
   // Serverseitige Autorisierung: patientId aus der URL genügt nie allein.
@@ -165,6 +165,11 @@ export default async function PatientDetailPage({
         <h2 id="calendar-color-heading" className="text-xl font-bold">
           {t.calendarColor.heading}
         </h2>
+        {colorSaved ? (
+          <div role="status" aria-live="polite" className="rounded-xl border border-success/40 bg-success/10 p-4">
+            {t.calendarColor.saved}
+          </div>
+        ) : null}
         <Card>
           <CardContent className="p-5">
             <PatientColorPicker patientId={patientId} currentColor={calendarColor} />

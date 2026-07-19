@@ -815,7 +815,7 @@ export const de = {
       cancelHint: "Der Termin bleibt in der Historie. Der Patient wird benachrichtigt.",
       cancelReason: "Grund (optional, keine Gesundheitsdetails)",
       cancelAppointment: "Termin endgültig stornieren",
-      legend: "Farben der Behandelnden",
+      legend: "Farben der Patienten",
     },
     settings: {
       title: "Einstellungen",

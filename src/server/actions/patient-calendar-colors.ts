@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getSessionContext } from "@/server/services/session";
 import { getPatientDetail } from "@/server/services/practice";
@@ -17,13 +18,15 @@ const schema = z.object({
   color: z.enum([...CALENDAR_COLORS, "none"]),
 });
 
-export type PatientColorState = { error?: string; success?: string };
+export type PatientColorState = { error?: string };
 
 /**
  * Kalenderfarbe eines Patienten setzen oder entfernen. Die Praxis-ID
  * stammt ausschließlich aus der verifizierten Mitgliedschaft; zusätzlich
  * wird die aktive Verbindung zum Patienten geprüft (RLS als zweite
- * Verteidigungslinie).
+ * Verteidigungslinie). Erfolg bestätigt die Detailseite per Redirect mit
+ * Query-Parameter (D-053: Rückgabezustand + revalidatePath erreicht den
+ * Client nicht zuverlässig; auf dem Produktionsserver reproduzierbar).
  */
 export async function setPatientCalendarColorAction(
   _state: PatientColorState,
@@ -57,5 +60,5 @@ export async function setPatientCalendarColorAction(
   }
   revalidatePath(`/practice/patients/${parsed.data.patientId}`);
   revalidatePath("/practice/calendar");
-  return { success: de.practice.patientDetail.calendarColor.saved };
+  redirect(`/practice/patients/${parsed.data.patientId}?calendar_color_saved=1`);
 }

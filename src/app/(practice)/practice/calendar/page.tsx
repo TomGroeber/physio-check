@@ -6,7 +6,7 @@ import { getAppointmentOptions, listCalendarAppointments } from "@/server/servic
 import { getPatientCalendarColors } from "@/server/services/patient-calendar-colors";
 import { isCalendarView, isIsoDate, monthGridDays, navigateDate, visibleRange, weekDaysIso, type CalendarView } from "@/lib/calendar";
 import { formatDateLong, formatTime, isoDateInTimeZone, todayInTimeZone, zonedTimeToUtc } from "@/lib/datetime";
-import { colorStyle } from "@/lib/calendar-colors";
+import { colorStyle, type CalendarColor } from "@/lib/calendar-colors";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { de } from "@/messages/de";
@@ -127,17 +127,31 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
           })}
         </div>
       ) : view === "list" ? (
-        <AppointmentList appointments={appointments} />
+        <AppointmentList appointments={appointments} patientColors={patientColors} />
       ) : (
         <div className={`grid gap-3 ${view === "week" ? "lg:grid-cols-7" : ""}`}>
-          {days.map((day) => <section key={day} className="min-h-48 rounded-xl border bg-card p-3"><div className="mb-3 flex items-center justify-between"><h2 className="font-bold">{formatDateLong(zonedTimeToUtc(day, "12:00", options.practice!.timezone), options.practice!.timezone)}</h2><Link href={`/practice/calendar/new?date=${day}`} className="text-sm font-semibold text-primary">+</Link></div><AppointmentList appointments={appointmentsForDay(day)} /></section>)}
+          {days.map((day) => <section key={day} className="min-h-48 rounded-xl border bg-card p-3"><div className="mb-3 flex items-center justify-between"><h2 className="font-bold">{formatDateLong(zonedTimeToUtc(day, "12:00", options.practice!.timezone), options.practice!.timezone)}</h2><Link href={`/practice/calendar/new?date=${day}`} className="text-sm font-semibold text-primary">+</Link></div><AppointmentList appointments={appointmentsForDay(day)} patientColors={patientColors} /></section>)}
         </div>
       )}
     </div>
   );
 }
 
-function AppointmentList({ appointments }: { appointments: Awaited<ReturnType<typeof listCalendarAppointments>> }) {
+function AppointmentList({
+  appointments,
+  patientColors,
+}: {
+  appointments: Awaited<ReturnType<typeof listCalendarAppointments>>;
+  patientColors: Record<string, CalendarColor>;
+}) {
   if (!appointments.length) return <p className="text-sm text-muted-foreground">{de.practice.calendar.empty}</p>;
-  return <ul className="flex flex-col gap-2">{appointments.map((appointment) => <li key={appointment.id}><Link href={`/practice/calendar/${appointment.id}`} className={`flex flex-wrap items-center gap-2 rounded-lg border p-3 hover:bg-muted ${patientChip(appointment.patient.id)}`}><span className="font-bold">{formatTime(new Date(appointment.starts_at), appointment.timezone)}</span><span className="flex flex-1 items-center gap-1.5">{patientDot(appointment.patient.id) ? <span aria-hidden className={`size-2.5 shrink-0 rounded-full ${patientDot(appointment.patient.id)}`} /> : null}{appointment.patient.full_name}</span>{appointment.therapist ? <span className="text-sm text-muted-foreground">{appointment.therapist.profiles?.full_name}</span> : null}<Badge variant="secondary">{statusLabel(appointment.status)}</Badge></Link></li>)}</ul>;
+  const chip = (patientId: string) => {
+    const color = patientColors[patientId];
+    return color ? colorStyle(color).chip : "";
+  };
+  const dot = (patientId: string) => {
+    const color = patientColors[patientId];
+    return color ? colorStyle(color).dot : null;
+  };
+  return <ul className="flex flex-col gap-2">{appointments.map((appointment) => <li key={appointment.id}><Link href={`/practice/calendar/${appointment.id}`} className={`flex flex-wrap items-center gap-2 rounded-lg border p-3 hover:bg-muted ${chip(appointment.patient.id)}`}><span className="font-bold">{formatTime(new Date(appointment.starts_at), appointment.timezone)}</span><span className="flex flex-1 items-center gap-1.5">{dot(appointment.patient.id) ? <span aria-hidden className={`size-2.5 shrink-0 rounded-full ${dot(appointment.patient.id)}`} /> : null}{appointment.patient.full_name}</span>{appointment.therapist ? <span className="text-sm text-muted-foreground">{appointment.therapist.profiles?.full_name}</span> : null}<Badge variant="secondary">{statusLabel(appointment.status)}</Badge></Link></li>)}</ul>;
 }

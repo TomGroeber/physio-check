@@ -35,18 +35,28 @@ create policy "patient_calendar_colors: members read"
   on public.patient_calendar_colors for select
   using (public.is_practice_member(practice_id));
 
+-- Like pinned_patients: assigning requires an ACTIVE link to the
+-- patient, so a practice can never tag arbitrary foreign profiles.
 create policy "patient_calendar_colors: members insert"
   on public.patient_calendar_colors for insert
-  with check (public.is_practice_member(practice_id));
+  with check (
+    public.is_practice_member(practice_id)
+    and public.member_can_view_patient(patient_profile_id)
+  );
 
 create policy "patient_calendar_colors: members update"
   on public.patient_calendar_colors for update
   using (public.is_practice_member(practice_id))
-  with check (public.is_practice_member(practice_id));
+  with check (
+    public.is_practice_member(practice_id)
+    and public.member_can_view_patient(patient_profile_id)
+  );
 
 create policy "patient_calendar_colors: members delete"
   on public.patient_calendar_colors for delete
   using (public.is_practice_member(practice_id));
+
+grant select, insert, update, delete on public.patient_calendar_colors to authenticated;
 
 -- ---------- remove the old per-member color feature ----------
 drop policy "practice members: update own calendar color" on public.practice_members;
