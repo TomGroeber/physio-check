@@ -16,6 +16,15 @@
 | Nur „erledigt“ erzeugt „Geschafft!“ | `success-celebration.test.tsx` + `core-flow.spec.ts` | Grün |
 | Mobil kein horizontales Scrollen | `demo-accounts.spec.ts` (auch Mobile-Projekt) + manueller iPhone-Lauf | Grün (19.07.2026) |
 
+## Dunkelmodus (nur Patienten)
+
+| Anforderung | Automatisierte Abdeckung | Status |
+|---|---|---|
+| Umschalten wirkt sofort und wird im Cookie gemerkt | `theme-toggle.test.tsx` | Grün |
+| Nur bekannte Werte, sonst hell | `theme-toggle.test.tsx` (`parsePatientTheme`) | Grün |
+| Wahl gilt im ganzen Patientenbereich und übersteht Neuladen | `demo-accounts.spec.ts` (chromium + mobile) | Grün (19.07.2026) |
+| Praxisbereich bleibt trotz Dunkel-Cookie hell | `demo-accounts.spec.ts` | Grün (19.07.2026) |
+
 ## Patienten-Profilbild
 
 | Anforderung | Automatisierte Abdeckung | Status |
@@ -102,9 +111,9 @@
 | `pnpm seed` | Grün; deterministisch auch direkt nach E2E-Läufen (D-051) |
 | `pnpm typecheck` | Grün |
 | `pnpm lint` | Grün, 0 Warnungen |
-| `pnpm test` | Grün: 22 Dateien, 114 Tests |
+| `pnpm test` | Grün: 23 Dateien, 116 Tests |
 | `pnpm test:rls` | Grün: 88 Proben |
-| `pnpm e2e` | Grün (Exit 0): 43 bestanden, 16 planmäßig übersprungen (Mobile-Skips mutierender Abläufe); vereinzelte bekannte Latenz-Flakes fängt der Retry |
+| `pnpm e2e` | Grün (Exit 0): 45 bestanden, 16 planmäßig übersprungen (Mobile-Skips mutierender Abläufe); vereinzelte bekannte Latenz-Flakes fängt der Retry |
 | `pnpm build` | Grün |
 | `pnpm docs:sync` | Grün (Obsidian-Vault auf Toms Mac) |
 | Mobiler Browserlauf (iPhone 14) | Grün: Video volle Breite (390/390 px), kein horizontales Scrollen, Avatar-Upload mobil, Kopfzeilen-Avatar, Praxisliste/-detail mit Bild |

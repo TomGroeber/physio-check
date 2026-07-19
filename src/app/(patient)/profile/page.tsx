@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { getSessionContext } from "@/server/services/session";
 import { getOwnAccountEmails, getOwnProfile } from "@/server/services/profile";
 import { getOwnAvatarUrl } from "@/server/services/patient-avatar";
@@ -7,6 +8,8 @@ import { getPatientReminderPreferences } from "@/server/services/reminders";
 import { signOutAction } from "@/server/actions/auth";
 import { AvatarUpload } from "@/components/patient/avatar-upload";
 import { PhoneForm } from "@/components/patient/phone-form";
+import { ThemeToggle } from "@/components/patient/theme-toggle";
+import { THEME_COOKIE, parsePatientTheme } from "@/lib/theme";
 import { ReminderPreferencesForm } from "@/components/patient/reminder-preferences-form";
 import { EmailChangeForm } from "@/components/patient/email-change-form";
 import { PasswordChangeForm } from "@/components/patient/password-change-form";
@@ -82,6 +85,19 @@ export default async function ProfilePage({
         <Card>
           <CardContent className="p-5">
             <PasswordChangeForm />
+          </CardContent>
+        </Card>
+      </section>
+
+      <section aria-labelledby="appearance-heading" className="flex flex-col gap-3">
+        <h2 id="appearance-heading" className="text-2xl font-bold">
+          {t.appearance.heading}
+        </h2>
+        <Card>
+          <CardContent className="p-5">
+            <ThemeToggle
+              initialTheme={parsePatientTheme((await cookies()).get(THEME_COOKIE)?.value)}
+            />
           </CardContent>
         </Card>
       </section>

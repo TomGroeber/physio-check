@@ -303,6 +303,13 @@ export const de = {
     profile: {
       title: "Profil",
       personalHeading: "Persönliche Daten",
+      appearance: {
+        heading: "Darstellung",
+        label: "Wie soll die App aussehen?",
+        light: "Hell",
+        dark: "Dunkel",
+        hint: "Die Wahl gilt für dieses Gerät und wirkt sofort.",
+      },
       avatar: {
         heading: "Profilbild",
         hint: (maxMb: number) =>
