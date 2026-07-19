@@ -36,6 +36,9 @@ export function AvatarUpload({
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState<{ error?: string; success?: string }>({});
   const [pending, startTransition] = useTransition();
+  // Lokale Anzeige-URL: sofortige, zuverlässige Rückmeldung nach
+  // Speichern/Entfernen, unabhängig vom Server-Re-Render (D-053).
+  const [currentUrl, setCurrentUrl] = useState(avatarUrl);
   const previewUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
 
   useEffect(() => {
@@ -94,6 +97,7 @@ export function AvatarUpload({
           return;
         }
         resetSelection();
+        setCurrentUrl(result.avatarUrl);
         setMessage({ success: result.success });
         router.refresh();
       } catch (error) {
@@ -111,6 +115,7 @@ export function AvatarUpload({
       setMessage(result.ok ? { success: result.success } : { error: result.error });
       if (result.ok) {
         resetSelection();
+        setCurrentUrl(null);
         router.refresh();
       }
     });
@@ -130,7 +135,7 @@ export function AvatarUpload({
             <img src={previewUrl} alt="" className="h-full w-full object-cover" />
           </span>
         ) : (
-          <PatientAvatar url={avatarUrl} name={name} size="lg" />
+          <PatientAvatar url={currentUrl} name={name} size="lg" />
         )}
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <p className="text-base text-muted-foreground">{t.hint(MAX_AVATAR_MB)}</p>
@@ -166,7 +171,7 @@ export function AvatarUpload({
             disabled={pending}
             onClick={() => inputRef.current?.click()}
           >
-            {avatarUrl ? t.replace : t.choose}
+            {currentUrl ? t.replace : t.choose}
           </Button>
         ) : (
           <>
@@ -189,7 +194,7 @@ export function AvatarUpload({
             </Button>
           </>
         )}
-        {avatarUrl && !file ? (
+        {currentUrl && !file ? (
           <Button
             type="button"
             variant="outline"

@@ -1059,8 +1059,99 @@ async function main() {
     check(`liest 0 Zeilen aus ${table}`, (data ?? []).length === 0, `bekam ${data?.length}`);
   }
 
+  // ---------- E) Profilbilder ----------
+  console.log("\nE) Profilbilder: nur selbst und aktuell verbundene Praxis");
+  const petraAvatarPath = `${petraId}/rls-avatar.png`;
+  await service.storage.from("patient-avatars").upload(petraAvatarPath, png, {
+    contentType: "image/png",
+    upsert: true,
+  });
+  await service.from("profiles").update({ avatar_path: petraAvatarPath }).eq("id", petraId);
+  {
+    const { data, error } = await patient.storage
+      .from("patient-avatars")
+      .download(petraAvatarPath);
+    check("Patientin lädt das eigene Profilbild", !error && Boolean(data));
+  }
+  {
+    const { data, error } = await therapist.storage
+      .from("patient-avatars")
+      .download(petraAvatarPath);
+    check("aktuell verbundene Praxis sieht das Profilbild", !error && Boolean(data));
+  }
+  {
+    const { data, error } = await foreign.storage
+      .from("patient-avatars")
+      .download(petraAvatarPath);
+    check("fremde Praxis sieht das Profilbild nicht", Boolean(error) && !data);
+  }
+  {
+    const { data, error } = await unconnected.storage
+      .from("patient-avatars")
+      .download(petraAvatarPath);
+    check("anderes Patientenkonto sieht das Profilbild nicht", Boolean(error) && !data);
+  }
+  {
+    const { data, error } = await anonClient()
+      .storage.from("patient-avatars")
+      .download(petraAvatarPath);
+    check("nicht angemeldete Personen erhalten keinen Zugriff", Boolean(error) && !data);
+  }
+  {
+    const { error } = await patient.storage
+      .from("patient-avatars")
+      .upload(`${petraId}/direct-upload.png`, png, { contentType: "image/png" });
+    check("direkter Client-Upload in den Avatar-Bucket ist gesperrt", Boolean(error));
+  }
+  {
+    await patient.storage.from("patient-avatars").remove([petraAvatarPath]);
+    const { data: still } = await service.storage
+      .from("patient-avatars")
+      .info(petraAvatarPath);
+    check("direktes Client-Löschen im Avatar-Bucket ist gesperrt", Boolean(still));
+  }
+  {
+    const { error } = await patient
+      .from("profiles")
+      .update({ avatar_path: "fremder-ordner/bild.png" })
+      .eq("id", petraId);
+    const { data: after } = await service
+      .from("profiles")
+      .select("avatar_path")
+      .eq("id", petraId)
+      .single();
+    check(
+      "avatar_path ist für Clients nicht direkt beschreibbar",
+      Boolean(error) && after?.avatar_path === petraAvatarPath
+    );
+  }
+  // Nach dem C2-Ablauf ist die Phase-J-Patientin wieder aktiv mit der
+  // Demo-Praxis verbunden; die Fremdpraxis ist eine EHEMALIGE Praxis.
+  const phaseJAvatarPath = `${phaseJPatientId}/rls-avatar.png`;
+  await service.storage.from("patient-avatars").upload(phaseJAvatarPath, png, {
+    contentType: "image/png",
+    upsert: true,
+  });
+  {
+    const { data, error } = await foreign.storage
+      .from("patient-avatars")
+      .download(phaseJAvatarPath);
+    check(
+      "ehemalige Praxis sieht das Profilbild nach dem Praxiswechsel nicht",
+      Boolean(error) && !data
+    );
+  }
+  {
+    const { data, error } = await therapist.storage
+      .from("patient-avatars")
+      .download(phaseJAvatarPath);
+    check("aktuell verbundene Praxis sieht das Bild nach dem Rückwechsel", !error && Boolean(data));
+  }
+
   // ---------- Aufräumen ----------
   console.log("\nAufräumen …");
+  await service.from("profiles").update({ avatar_path: null }).eq("id", petraId);
+  await service.storage.from("patient-avatars").remove([petraAvatarPath, phaseJAvatarPath]);
   if (recordedOccurrenceId) {
     await service.from("completion_logs").delete().eq("id", recordedOccurrenceId);
   }

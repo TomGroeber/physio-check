@@ -8,6 +8,7 @@ import {
   discardAvatarUpload,
   finalizeAvatarUpload,
   removeOwnAvatar,
+  signAvatarPath,
 } from "@/server/services/patient-avatar";
 import { AVATAR_MIME_TYPES, isAllowedAvatarSize } from "@/config/media";
 
@@ -63,7 +64,7 @@ export async function prepareAvatarUploadAction(input: {
 }
 
 export type AvatarActionResult =
-  | { ok: true; success: string }
+  | { ok: true; success: string; avatarUrl: string | null }
   | { ok: false; error: string };
 
 export async function finalizeAvatarUploadAction(input: {
@@ -83,7 +84,10 @@ export async function finalizeAvatarUploadAction(input: {
   if (!result.ok) return result;
   revalidatePath("/profile");
   revalidatePath("/", "layout");
-  return { ok: true, success: "Ihr Profilbild wurde gespeichert." };
+  // Frische kurzlebige URL direkt zurückgeben: die Anzeige hängt damit
+  // nicht am (unzuverlässig gestreamten) Re-Render, vgl. D-053.
+  const avatarUrl = await signAvatarPath(patientId, parsed.data.storagePath);
+  return { ok: true, success: "Ihr Profilbild wurde gespeichert.", avatarUrl };
 }
 
 export async function removeAvatarAction(): Promise<AvatarActionResult> {
@@ -93,7 +97,7 @@ export async function removeAvatarAction(): Promise<AvatarActionResult> {
   if (!result.ok) return result;
   revalidatePath("/profile");
   revalidatePath("/", "layout");
-  return { ok: true, success: "Ihr Profilbild wurde entfernt." };
+  return { ok: true, success: "Ihr Profilbild wurde entfernt.", avatarUrl: null };
 }
 
 /** Best effort: räumt ein Objekt auf, wenn der Upload abbricht. */

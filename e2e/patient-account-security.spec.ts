@@ -27,6 +27,8 @@ test("Patient fordert Passwortänderung ausschließlich für die eigene Adresse 
   const before = await mailCount(EMAIL);
   await login(page);
   await page.goto("/profile");
+  // Erst nach der Hydration klicken, sonst verpufft der Klick unter Last.
+  await page.waitForLoadState("networkidle");
   await page.getByRole("button", { name: "Passwort ändern" }).click();
   await expect(page.getByRole("status")).toContainText("E-Mail geschickt");
   await expect.poll(() => mailCount(EMAIL)).toBeGreaterThan(before);
@@ -35,6 +37,7 @@ test("Patient fordert Passwortänderung ausschließlich für die eigene Adresse 
 test("unveränderte E-Mail-Adresse wird ohne Versand abgewiesen", async ({ page }) => {
   await login(page);
   await page.goto("/profile");
+  await page.waitForLoadState("networkidle");
   await page.getByLabel("Neue E-Mail-Adresse").fill(EMAIL.toUpperCase());
   await page.getByRole("button", { name: "Änderung anfordern" }).click();
   await expect(page.getByRole("alert").filter({ hasText: "aktuelle E-Mail-Adresse" })).toBeVisible();

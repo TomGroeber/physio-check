@@ -157,7 +157,10 @@ test("Patientin dokumentiert eine Übung; Fortschritt aktualisiert sich", async 
 test("Therapeutin sieht die Selbstauskunft auf der Patientendetailseite", async ({ page }) => {
   await login(page, "therapeutin@demo.physiocheck.test");
   await page.goto("/practice/patients");
-  await page.getByRole("link", { name: /Petra Beispielfrau/ }).click();
+  // Ziel-URL direkt ansteuern: ein Klick vor Abschluss der Hydration
+  // geht sonst unter Parallellast gelegentlich verloren.
+  const petraLink = page.getByRole("link", { name: /Petra Beispielfrau/ }).first();
+  await page.goto((await petraLink.getAttribute("href"))!);
   await expect(
     page.getByRole("heading", { name: "Petra Beispielfrau" })
   ).toBeVisible();

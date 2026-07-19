@@ -46,6 +46,43 @@ test("Patientenprofil trennt persönliche Daten, Sicherheit und Einstellungen", 
   await expect(page.getByRole("heading", { name: "Passwort ändern" })).toBeVisible();
 });
 
+test("Übungsseite ist video-first und ohne beschreibende Langtexte", async ({ page }) => {
+  await login(page, "patientin@demo.physiocheck.test");
+  // Schulterkreisen: bekommt in keinem Testlauf ein Video – stabiler Leerzustand.
+  await page.getByRole("link", { name: /Übung „Schulterkreisen“ öffnen/ }).click();
+  await expect(page.getByRole("heading", { name: "Schulterkreisen" })).toBeVisible();
+
+  // Kompakte Vorgaben und Dokumentation sind da …
+  await expect(page.getByText("2 Sätze", { exact: true })).toBeVisible();
+  await expect(page.getByText("10 Wiederholungen", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Durchführung dokumentieren" })
+  ).toBeVisible();
+  // … die Langtexte der Übung erscheinen für Patienten nicht mehr.
+  await expect(page.getByText("Ausgangsposition")).toHaveCount(0);
+  await expect(page.getByText("So führen Sie die Übung aus")).toHaveCount(0);
+  await expect(page.getByText(/Aufrechter Sitz oder Stand/)).toHaveCount(0);
+  // Ohne Video und Bild: freundlicher Leerzustand.
+  await expect(
+    page.getByText("Für diese Übung ist noch kein Video hinterlegt.")
+  ).toBeVisible();
+  // Kein horizontales Scrollen (auch im Mobile-Projekt).
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+});
+
+test("Übungsbibliothek behält Ausgangsposition und Schritte für die Praxis", async ({
+  page,
+}) => {
+  await login(page, "therapeutin@demo.physiocheck.test");
+  await page.goto("/practice/exercises");
+  await page.getByText("Brücke (Beckenheben)", { exact: true }).click();
+  await expect(page.getByLabel("Ausgangsposition")).toHaveValue(/Rückenlage/);
+  await expect(page.getByLabel(/Durchführungsschritte/)).not.toHaveValue("");
+});
+
 test("Patientin sieht nur eigene Bereiche – Praxisbereich wird umgeleitet", async ({
   page,
 }) => {

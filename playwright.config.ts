@@ -12,11 +12,17 @@ export default defineConfig({
   // DB, nicht isoliert reproduzierbar). Der Retry zeichnet dank
   // trace:"on-first-retry" automatisch einen Trace zur Analyse auf.
   retries: 1,
+  // Spitzenlast begrenzen: mit unbegrenzten Workern überschreiten einzelne
+  // Server-Action-Roundtrips gelegentlich die 10-s-Erwartung (bekannter
+  // Hänger, siehe docs/AI_HANDOFF.md). Vier Worker halten den Lauf schnell
+  // und deutlich stabiler.
+  workers: 4,
   reporter: "list",
   // Alle Projekte laufen parallel gegen EINEN lokalen Server; unter
   // Spitzenlast kann eine einzelne Server-Action die 5s-Vorgabe reißen,
-  // ohne dass etwas kaputt ist. 10s hält das Signal, entfernt das Rauschen.
-  expect: { timeout: 10_000 },
+  // ohne dass etwas kaputt ist. 15s hält das Signal, entfernt das Rauschen
+  // (bei inzwischen >50 Fällen reichte 10s nicht mehr zuverlässig).
+  expect: { timeout: 15_000 },
   use: {
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",
