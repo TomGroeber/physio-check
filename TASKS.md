@@ -168,6 +168,18 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [x] Teststabilität: Playwright auf 4 Worker begrenzt, Expect-Timeout 15 s, Hydrations-Klickverluste in drei Spezifikationen behoben.
 - [x] Merge nach `main` mit Toms Freigabe (2026-07-19): Fast-Forward `4723363..91591df`, gepusht.
 
+## Auftrag vom 19.07.2026 – Kalenderfarben pro Patient (Branch `claude-patient-calendar-colors-20260719`)
+
+- [x] Unterbrochenen, uncommitteten Stand der Vorsitzung analysiert, als WIP-Commit gesichert und gepusht (kein Stand verworfen).
+- [x] Migration `20260719120000_patient_calendar_colors.sql`: Tabelle `patient_calendar_colors` (Farbe je Praxis+Patient, RLS nur für Mitglieder, Zuweisen nur bei aktiver Verbindung, keine Patienten-Policy, Grants ergänzt); `practice_members.calendar_color` entfernt (D-057).
+- [x] Farbauswahl auf der Praxis-Patientendetailseite (`PatientColorPicker`: 8 Farben + „Keine Farbe“, Farbfeld immer mit Farbname); Einstellungsseite ohne „Meine Kalenderfarbe“.
+- [x] Kalender (Monat/Woche/Tag/Liste) färbt Termine nach Patient; Legende zeigt nur zugeordnete Patienten im sichtbaren Zeitraum; Termine ohne Zuordnung neutral.
+- [x] Fertigstellung nach Übernahme: `AppointmentList` erhält die Farbzuordnung als Prop (vorher Scope-Fehler), `appointments.ts`-Selects, `database.types.ts`, Seed (Demo-Patientin „Petrol“) und alte Picker-Komponente/Validierung/Tests bereinigt.
+- [x] Speicherbestätigung nach dem Redirect-Muster D-053 (`?calendar_color_saved=1`), weil der Rückgabezustand mit `revalidatePath` den Client auf dem Produktionsserver reproduzierbar nicht erreichte; Playwright-Testtimeout auf 60 s angehoben (Navigationen unter Spitzenlast, bekannte Ursache).
+- [x] Tests: 4 neue RLS-Proben (Patientin liest/schreibt nichts, Fremdpraxis liest nichts und kann fremdem Patienten keine Farbe zuweisen, Mitglied setzt Farbe der verbundenen Patientin) → 94 Proben; E2E-Fall „Kalenderfarbe zuweisen und im Kalender sehen“ in `demo-accounts.spec.ts`.
+- [x] Vollständig lokal geprüft: db:reset (22 Migrationen), Seed, Typecheck, Lint, 115 Tests, 94 RLS-Proben, E2E, Build, Browser-Check Desktop + iPhone-Viewport.
+- [ ] Merge nach `main` erst nach Toms Freigabe.
+
 ## Auftrag vom 19.07.2026 – Dunkelmodus für Patienten (Branch `claude-patient-dark-mode-20260719`)
 
 - [x] Umschalter „Darstellung: Hell/Dunkel“ im Patientenprofil (große Radio-Flächen, sofortige Wirkung, Hinweis „gilt für dieses Gerät“).

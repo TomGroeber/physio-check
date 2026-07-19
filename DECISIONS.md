@@ -2,6 +2,10 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-07-19 – Kalenderfarben pro Patient
+
+**D-057 · Kalenderfarben gehören zum Patienten, nicht zum Praxismitglied.** Die Praxis vergibt pro Patient (und pro Praxis – nach einem Praxiswechsel behält jede Praxis ihr eigenes Schema) eine Farbe aus der bestehenden 8er-Palette; der Kalender färbt Termine danach, der Name steht immer zusätzlich dabei (WCAG 1.4.1). Neue Tabelle `patient_calendar_colors` nach dem Muster von `pinned_patients`: interne Organisationsdaten, bewusst KEINE Patienten-Policy (Patienten sehen ihre Zuordnung nie), Zuweisen/Ändern verlangt neben der Mitgliedschaft eine aktive Verbindung (`member_can_view_patient`). Das alte Feld `practice_members.calendar_color` samt Auswahl in den Einstellungen ist ersatzlos entfernt – zwei parallele Farbsysteme im selben Kalender wären mehrdeutig. „Keine Farbe“ ist der Normalzustand: Termine ohne Zuordnung bleiben neutral, die Legende zeigt nur zugeordnete Patienten im sichtbaren Zeitraum.
+
 ## 2026-07-19 – Dunkelmodus für Patienten
 
 **D-056 · Dunkelmodus ist eine reine Patienten-Geräteeinstellung.** Die vorbereitete `.dark`-Token-Palette wird jetzt genutzt: Die Wahl liegt in einem Cookie (`pc-theme`, 1 Jahr, kein Gesundheits-/Kontobezug) und die `.dark`-Klasse liegt ausschließlich auf dem Wrapper des Patienten-Layouts – nie auf `<html>`. Der Praxisbereich liest das Cookie nicht und bleibt dadurch immer hell, selbst auf einem Gerät mit gespeicherter Dunkel-Wahl. Der Umschalter (Hell/Dunkel als große Radio-Flächen) steht nur im Patientenprofil, wirkt sofort ohne Server-Roundtrip und wird serverseitig beim nächsten Render aus dem Cookie bestätigt (kein Flackern).
