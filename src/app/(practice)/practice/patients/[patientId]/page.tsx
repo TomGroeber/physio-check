@@ -30,6 +30,7 @@ import { ExercisePlanBuilder } from "@/components/practice/exercise-plan-builder
 import { getPlanEditorData } from "@/server/services/plans";
 import { getPatientAdherenceAnalytics } from "@/server/services/adherence";
 import { FeedbackReviewButton } from "@/components/practice/feedback-review-button";
+import { PatientAvatar } from "@/components/patient-avatar";
 import { de } from "@/messages/de";
 
 export const metadata: Metadata = { title: de.practice.patients.title };
@@ -91,16 +92,19 @@ export default async function PatientDetailPage({
         {t.backToList}
       </Link>
 
-      <div>
-        <h1 className="flex flex-wrap items-center gap-3 text-2xl font-bold">
-          {link.patient.full_name}
-          {pinned ? <Badge variant="secondary">{de.practice.pinned.badge}</Badge> : null}
-        </h1>
-        <p className="text-base text-muted-foreground">
-          {t.connectedSince(
-            formatDateShort(new Date(link.linked_at), branding.defaultTimeZone)
-          )}
-        </p>
+      <div className="flex items-center gap-4">
+        <PatientAvatar url={link.avatarUrl} name={link.patient.full_name} size="md" />
+        <div>
+          <h1 className="flex flex-wrap items-center gap-3 text-2xl font-bold">
+            {link.patient.full_name}
+            {pinned ? <Badge variant="secondary">{de.practice.pinned.badge}</Badge> : null}
+          </h1>
+          <p className="text-base text-muted-foreground">
+            {t.connectedSince(
+              formatDateShort(new Date(link.linked_at), branding.defaultTimeZone)
+            )}
+          </p>
+        </div>
       </div>
 
       <section aria-labelledby="contact-heading" className="flex flex-col gap-3">

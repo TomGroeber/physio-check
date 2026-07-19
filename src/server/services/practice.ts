@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createSupabaseServerClient } from "@/server/db/server-client";
+import { signAvatarPath } from "@/server/services/patient-avatar";
 import { dayRangeUtc, todayInTimeZone } from "@/lib/datetime";
 
 /**
@@ -108,7 +109,7 @@ export async function listPatients(practiceId: string, search: string) {
     .from("patient_practice_links")
     .select(
       `id, linked_at, status,
-       patient:profiles!inner ( id, full_name, phone )`
+       patient:profiles!inner ( id, full_name, phone, avatar_path )`
     )
     .eq("practice_id", practiceId)
     .eq("status", "active")
@@ -119,7 +120,14 @@ export async function listPatients(practiceId: string, search: string) {
   }
 
   const { data } = await query;
-  return data ?? [];
+  // Kurzlebige Avatar-URLs nur für Patienten mit Bild; die Mitgliedschaft
+  // der aufrufenden Praxis wurde bereits über practiceId verifiziert.
+  return Promise.all(
+    (data ?? []).map(async (link) => ({
+      ...link,
+      avatarUrl: await signAvatarPath(link.patient.id, link.patient.avatar_path),
+    }))
+  );
 }
 
 export async function listOpenPatientInvites(practiceId: string) {
@@ -157,12 +165,16 @@ export async function getPatientDetail(practiceId: string, patientId: string) {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from("patient_practice_links")
-    .select(`id, linked_at, patient:profiles!inner ( id, full_name, phone )`)
+    .select(`id, linked_at, patient:profiles!inner ( id, full_name, phone, avatar_path )`)
     .eq("practice_id", practiceId)
     .eq("patient_profile_id", patientId)
     .eq("status", "active")
     .maybeSingle();
-  return data;
+  if (!data) return null;
+  // Die Berechtigung ist durch den aktiven Link + Mitgliedschaft belegt;
+  // die kurzlebige URL entsteht erst nach der Pfadprüfung.
+  const avatarUrl = await signAvatarPath(data.patient.id, data.patient.avatar_path);
+  return { ...data, avatarUrl };
 }
 
 /**

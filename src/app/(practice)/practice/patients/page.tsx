@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { PatientAvatar } from "@/components/patient-avatar";
 import { de } from "@/messages/de";
 
 export const metadata: Metadata = { title: de.practice.patients.title };
@@ -115,7 +116,12 @@ export default async function PatientsPage({
               >
                 <Card className="transition-colors hover:bg-muted/50">
                   <CardContent className="flex items-center justify-between gap-3 p-4">
-                    <span className="flex flex-col gap-1">
+                    <PatientAvatar
+                      url={link.avatarUrl}
+                      name={link.patient.full_name}
+                      size="sm"
+                    />
+                    <span className="flex flex-1 flex-col gap-1">
                       <span className="flex flex-wrap items-center gap-2">
                         <span className="text-base font-semibold">
                           {link.patient.full_name}
