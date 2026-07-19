@@ -166,7 +166,7 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [x] Tests: 9 neue Unit-/Komponententests (Video-vor-Vorgaben, ausgeblendete Langtexte, Leerzustand, WebP-/Pfad-Prüfungen), 10 neue RLS-Proben (inkl. Ex-Praxis nach Praxiswechsel, Spalten- und Bucket-Schreibschutz), 6 neue E2E-Fälle (Upload/Ablehnungen/Ersetzen/Entfernen/Praxisansicht, video-first-Seite).
 - [x] Vollständig lokal ausgeführt: db:reset (21 Migrationen), Seed, Typecheck, Lint, 114 Tests, 88 RLS-Proben, E2E Exit 0 (43 bestanden/16 planmäßig übersprungen), Build, mobiler Browserlauf (iPhone-Viewport, kein horizontales Scrollen, Video volle Breite).
 - [x] Teststabilität: Playwright auf 4 Worker begrenzt, Expect-Timeout 15 s, Hydrations-Klickverluste in drei Spezifikationen behoben.
-- [ ] Merge nach `main` erst nach Toms Freigabe.
+- [x] Merge nach `main` mit Toms Freigabe (2026-07-19): Fast-Forward `4723363..91591df`, gepusht.
 
 ## Auftrag vom 19.07.2026 – Lokale Prüfungen und Fehlerbehebung (Branch `claude-patient-ui-20260718`)
 
