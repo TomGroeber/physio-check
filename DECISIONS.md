@@ -94,7 +94,7 @@
 
 ## 2026-07-11 – Konsolidierung und Verifikation
 
-**D-031 · Repository ist privat.** Das GitHub-Repository `TomGroeber/physio-check` war versehentlich öffentlich und wurde auf privat gestellt. Es enthielt keine Secrets (nur Platzhalter in `.env.example`), aber ein Gesundheits-App-Projekt bleibt grundsätzlich privat.
+**D-031 · Repository ist privat.** *(Überholt durch D-036: seit Juli 2026 bewusst öffentlich.)* Das GitHub-Repository `TomGroeber/physio-check` war versehentlich öffentlich und wurde auf privat gestellt. Es enthielt keine Secrets (nur Platzhalter in `.env.example`), aber ein Gesundheits-App-Projekt bleibt grundsätzlich privat.
 
 **D-030 · Ein Projektstamm, keine Parallelkopien.** Die als kompletter Ordner `physio-check-phase-ef-updated/` angelieferte Phase-E/F-Implementierung wurde in das Hauptprojekt übernommen und der Ordner gelöscht (Git-Historie behält ihn). Der Root des Repositories ist die einzige technische Wahrheit; künftige Zulieferungen werden direkt dort integriert. Beim ersten echten Datenbanklauf wurde in der Migration `20260711230000` der Alias `authorization` (reserviertes PostgreSQL-Schlüsselwort) zu `auth_rec` korrigiert – die Migration war zuvor in keiner Umgebung ausgeführt worden.
 

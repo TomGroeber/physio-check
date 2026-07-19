@@ -1,10 +1,10 @@
 # PhysioCheck – AI Handoff
 
-> Stand: 2026-07-19 (fünfter Auftrag) · Arbeitszweig: `claude-patient-mobile-20260719` (Basis: `28ee792` auf `claude-patient-calendar-colors-20260719` → `52e6c47` Dark Mode → `main@d0bc716`) · GitHub-Remote: `TomGroeber/physio-check` (öffentlich; keine Secrets/echten Daten)
+> Stand: 2026-07-19 (nach Merge) · `main@a776f23` (PR #2) enthält ALLE bisherigen Aufträge: Patienten-UI, Video-first-Übungsansicht + Profilbild, Dunkelmodus, Kalenderfarben pro Patient und die mobile Patienten-App · GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
 
 ## Letzter Auftrag (19.07.2026, fünfter): Native Patienten-App (Expo)
 
-**Branch-Kette:** `main (d0bc716)` → Dark Mode (`52e6c47`, ungemergt) → Kalenderfarben (`28ee792`, ungemergt) → **Mobile (`claude-patient-mobile-20260719`)**. Kein Merge nach `main` ohne Toms Freigabe; die drei Feature-Branches bauen aufeinander auf und werden sinnvollerweise in dieser Reihenfolge gemergt.
+**Merge-Status:** Die Branch-Kette Dark Mode (`52e6c47`) → Kalenderfarben (`28ee792`) → Mobile (`389c53c`) wurde mit Toms Freigabe über **PR #2 vollständig nach `main` gemergt (`a776f23`, 19.07.2026)**. Es warten keine Feature-Branches mehr auf einen Merge.
 
 **Was existiert:** Vollständige Expo-App unter `apps/patient-mobile` (SDK 57, Expo Router, TS strict, deutsch) mit Code-/Konto-Einstieg, Deep Links, Praxisrollen-Aussperrung, Heute/Übung(Video)/Terminen/Angeboten/Einheiten/Profil(Bild)/Erinnerungen/E-Mail-Änderung/Abmelden/Kontolöschungsantrag; `packages/shared` mit plattformneutraler Logik (Website re-exportiert unter alten Pfaden); Bearer-geschützte `/api/mobile`-Endpunkte in der Website; Migration 24 (`account_deletion_requests`). Details: `docs/MOBILE_ARCHITECTURE.md` (Architektur), `docs/MOBILE_DEVELOPMENT.md` (Betrieb/Eigenheiten inkl. Jest-29-Pinning und async `render`), `docs/APP_STORE_CHECKLIST.md` (Store-Readiness).
 
@@ -12,7 +12,7 @@
 
 **Echte Blocker (kein Codefehler):** kein Xcode/Android SDK auf Toms Mac (kein Simulator-/Emulatorlauf, kein nativer Build), keine EAS-/Store-Konten, keine Push-Credentials, keine Universal-Link-Domain, keine Datenschutzerklärungs-URL, offene Aufbewahrungsrechtsfrage Luxemburg (D-062).
 
-**Nächster konkreter Schritt:** (1) Toms Entscheidung über Merges (Dark Mode → Kalenderfarben → Mobile); (2) Xcode installieren und `pnpm mobile:ios` für den ersten Simulatorlauf; (3) danach Teil-M-Punkte gemäß `docs/APP_STORE_CHECKLIST.md` mit Toms Freigaben. Startbefehle: `supabase start && pnpm db:reset && pnpm seed && pnpm build && pnpm start` (Backend) + `pnpm mobile:start` (App, `.env` nach `.env.example`). Testbefehle: `pnpm mobile:test`, `pnpm test:rls`, `pnpm e2e`.
+**Nächster konkreter Schritt:** (1) Xcode installieren; (2) `pnpm mobile:ios`; (3) vollständiger Simulator-Durchlauf aller Patientenflüsse (Checkliste in `docs/TEST_MATRIX.md`, Abschnitt Mobile); (4) danach die Store-Checkliste (`docs/APP_STORE_CHECKLIST.md`) Punkt für Punkt mit Toms Freigaben. Startbefehle: `supabase start && pnpm db:reset && pnpm seed && pnpm build && pnpm start` (Backend) + `pnpm mobile:start` (App, `.env` nach `.env.example`). Testbefehle: `pnpm mobile:test`, `pnpm test:rls`, `pnpm e2e`.
 
 ## Letzter Auftrag (19.07.2026, vierter): Kalenderfarben pro Patient (aus Unterbrechung gerettet)
 
@@ -35,7 +35,7 @@ Branch `claude-patient-dark-mode-20260719`: Die vorbereitete `.dark`-Token-Palet
 
 ## Vorheriger Auftrag (19.07.2026, zweiter): Video-first-Übungsansicht und Patienten-Profilbild
 
-Fünf Commits auf `claude-patient-exercise-avatar-20260719`, alle gepusht; Merge nach `main` wartet auf Toms Freigabe.
+Fünf Commits auf `claude-patient-exercise-avatar-20260719`; mit Toms Freigabe nach `main` gemergt (Fast-Forward `4723363..91591df`, 19.07.2026).
 
 **Übungsansicht (D-055):** Neue gemeinsame Komponente `src/components/patient/exercise-view.tsx` für `/exercises/[planItemId]` und `/session`: randloses 16:9-Video (Container `aspect-video`, auf Mobil `-mx-4`), Poster, WebVTT-Untertitel, nie Autoplay; ohne Video Alternativbild, sonst freundlicher Leerzustand. Darunter eine Vorgabenfläche mit Dosierungs-Chips (inkl. Hilfsmittel), Schedule-Zeile, Uhrzeiten und hervorgehobener Praxisnotiz. Beschreibung/Ausgangsposition/Schritte/häufige Fehler werden Patienten nicht mehr gezeigt – Daten, Praxis-Formular (`exercise-form.tsx`) und Snapshots unverändert. Komponententests in `exercise-view.test.tsx`.
 
@@ -112,7 +112,7 @@ PhysioCheck verbindet Physiotherapiepraxen mit Patienten: Praxiscode, Heimübung
 
 ## Wichtig: Konsolidierung am 2026-07-11
 
-Die Phase-E/F-Implementierung lag zuvor als kompletter Parallelordner `physio-check-phase-ef-updated/` im Repo (Commit `40a1b02`). Sie wurde in den Projektstamm übernommen, der Ordner gelöscht (D-030). Dabei wurde die bis dahin **nie ausgeführte** Migration `20260711230000_authorizations_and_patient_documents.sql` repariert: `authorization` ist ein reserviertes PostgreSQL-Schlüsselwort und wurde als Tabellen-Alias durch `auth_rec` ersetzt. Außerdem war das GitHub-Repo versehentlich öffentlich und ist jetzt privat (D-031).
+Die Phase-E/F-Implementierung lag zuvor als kompletter Parallelordner `physio-check-phase-ef-updated/` im Repo (Commit `40a1b02`). Sie wurde in den Projektstamm übernommen, der Ordner gelöscht (D-030). Dabei wurde die bis dahin **nie ausgeführte** Migration `20260711230000_authorizations_and_patient_documents.sql` repariert: `authorization` ist ein reserviertes PostgreSQL-Schlüsselwort und wurde als Tabellen-Alias durch `auth_rec` ersetzt. Außerdem war das GitHub-Repo versehentlich öffentlich und wurde damals auf privat gestellt (D-031); inzwischen ist es für die Zusammenarbeit bewusst wieder öffentlich (D-036).
 
 ## Fertig (und am 2026-07-11 lokal verifiziert)
 
@@ -145,7 +145,7 @@ Die Phase-E/F-Implementierung lag zuvor als kompletter Parallelordner `physio-ch
 
 1. Praxisentscheidung für Absageanfragen (annehmen/ablehnen) fehlt; `decideCancellationSchema` existiert bereits ungenutzt in `src/lib/validation/appointments.ts`.
 3. Virenscan/Quarantäne für Uploads vor Pilotbetrieb; aktuell nur Dateityp, Signatur und Größe.
-4. Phase C–J lokal mit `db:reset`, Seed, `test:rls`, E2E und echtem Browser/WCAG-Check prüfen. Testzuordnung: `docs/TEST_MATRIX.md`.
+4. ~~Phase C–J lokal prüfen~~ – am 19.07.2026 vollständig erledigt (db:reset, Seed, RLS, E2E, Browser); Ergebnisse in `docs/TEST_MATRIX.md`.
 5. UX-Beobachtung: Erfolgs-/Fehlermeldungen von Server-Actions gehen verloren, wenn `revalidatePath` die Formular-Komponente neu aufbaut (Abschließen/Zurücknehmen, Angebot annehmen). Der Zustandswechsel selbst ist die Rückmeldung; ein Toast-System wäre die saubere Lösung.
 6. E2E: seltener Hänger eines einzelnen Server-Action-Roundtrips nur unter voller Parallellast (untersucht 2026-07-12: keine blockierten DB-Queries, isoliert nie reproduzierbar). Handling: `expect`-Timeout 10 s, 1 Retry mit `trace: on-first-retry` – bei erneutem Auftreten liegt ein Trace in `test-results/`.
 
@@ -181,8 +181,16 @@ Demo-Logins stehen im README. Keine echten Patientendaten verwenden.
 
 ## GitHub
 
-Remote `origin` ist `https://github.com/TomGroeber/physio-check.git` (privat). Vor jedem Push Status und Diff auf Secrets prüfen; `.env.local`, lokale Supabase-Daten und Patientendaten niemals pushen.
+Remote `origin` ist `https://github.com/TomGroeber/physio-check.git` (öffentlich, D-036 – deshalb erst recht: nie Secrets oder echte Daten). Vor jedem Push Status und Diff auf Secrets prüfen; `.env.local`, lokale Supabase-Daten und Patientendaten niemals pushen.
 
-## Nächster konkreter Auftrag
+## Gesamtstatus und nächste Schritte (19.07.2026, nach Merge a776f23)
 
-Der lokale Abschluss (db:reset, Seed, RLS, E2E, Build, Browser-/Mailpit-/Mobilprüfung) ist am 19.07.2026 erfolgt; Ergebnisse oben und in `docs/TEST_MATRIX.md`. Offen bleiben in Priorität: (1) Toms Entscheidung über den Merge von `claude-patient-ui-20260718` nach `main`; (2) Praxisentscheidung für Absageanfragen (annehmen/ablehnen); (3) Virenscan vor Pilotbetrieb; (4) Benachrichtigungszentrum; (5) bei erneutem Auftreten des Roundtrip-Hängers in Praxisformularen Umstellung auf das Redirect-Muster (D-053).
+**1. Implementiert und getestet:** komplette Praxis-Website (Phasen A–J, Etappen 1–10, Kalenderfarben D-057), komplette Patienten-Weboberfläche inkl. Dunkelmodus, native Patienten-App (Auth/Code/Deep Links, Heute, Übung mit Video, Termine/Angebote, Einheiten, Profil/Bild/Erinnerungen, Kontolöschungsantrag), `/api/mobile`-Endpunkte, 24 Migrationen. Prüfstand: Web Typecheck/Lint/115 Tests/96 RLS-Proben/E2E 49:0/Build grün; Mobile Typecheck/Lint 0 Fehler/10 Jest-Tests/expo-doctor 20:20/iOS-JS-Bundle grün; Integrationsprobe 15:15 gegen lokale Supabase + Next; Obsidian-Sync grün.
+
+**2. Nur als Konzept vorbereitet:** Push-Benachrichtigungen (Architektur + datensparsame Inhalte definiert, kein Versand), Universal/App Links (Schema läuft, Domain-Verifikation dokumentiert), EAS-Build-Profile (Konfiguration liegt, nie gebaut).
+
+**3. Durch externe Konten/Hardware blockiert:** iOS-Simulator/nativer Build (kein Xcode, nur CommandLineTools), Android-Emulator (kein SDK), EAS-/Apple-/Google-Konten, APNs-/FCM-Credentials, Universal-Link-Domain, Datenschutzerklärungs-URL, Rechtsfrage Aufbewahrung Luxemburg (D-062).
+
+**4. Offene Produktfunktionen:** Praxisentscheidung über Absageanfragen, Benachrichtigungszentrum, Virenscan vor Pilot, Terminvorschlags-Workflow nach Absage, `docs/CUSTOMIZATION_GUIDE.md`, konfigurierbare Medienformate, Toast-System für Praxisformulare (D-053-Beobachtung).
+
+**Nächster Schritt in Reihenfolge:** (1) Xcode installieren → (2) `pnpm mobile:ios` → (3) vollständiger Simulator-Durchlauf aller Patientenflüsse → (4) Store-Checkliste mit Toms Freigaben abarbeiten.

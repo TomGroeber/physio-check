@@ -134,20 +134,26 @@
 | Speicherbestätigung per Redirect (D-053) | E2E (`?calendar_color_saved=1`) + Browser-Treiberlauf gegen `pnpm start` | Grün (19.07.2026) |
 | iPhone-Viewport: kein horizontales Scrollen, Farboptionen ≥ 48 px | Browser-Treiberlauf (390 px) | Grün (19.07.2026) |
 
-## Ausgeführte Gesamtprüfungen (19.07.2026, vierter Auftrag, Toms Mac)
+## Ausgeführte Gesamtprüfungen (19.07.2026, Endstand = heutiger main `a776f23`, Toms Mac)
 
 | Befehl | Ergebnis |
 |---|---|
-| `pnpm db:reset` | Grün: 22 Migrationen (inkl. `20260719120000_patient_calendar_colors.sql`) |
+| `pnpm db:reset` | Grün: 24 Migrationen (zuletzt `20260719120000_patient_calendar_colors.sql`, `20260719140000_account_deletion_requests.sql`) |
 | `pnpm seed` | Grün; deterministisch auch direkt nach E2E-Läufen (D-051) |
 | `pnpm typecheck` | Grün |
 | `pnpm lint` | Grün, 0 Warnungen |
 | `pnpm test` | Grün: 23 Dateien, 115 Tests |
-| `pnpm test:rls` | Grün: 94 Proben |
+| `pnpm test:rls` | Grün: 96 Proben |
 | `pnpm e2e` | Grün (Exit 0): 49 bestanden, 17 planmäßig übersprungen, 49 s – nach `rm -rf .next` (verkeilter Turbopack-Cache, siehe Einschränkungen) |
 | `pnpm build` | Grün |
 | `pnpm docs:sync` | Grün (Obsidian-Vault auf Toms Mac) |
 | Browser-Treiberlauf (Desktop 1440 px + iPhone 390 px, gegen `pnpm build && pnpm start`) | Grün: 12 Prüfungen (Farbwahl, Redirect-Bestätigung, Kalender Monat/Liste, Legende, „Keine Farbe“ neutral, Einstellungen ohne Mitgliedsfarbe, kein horizontales Scrollen, Touch-Ziele ≥ 48 px) |
+| `pnpm mobile:typecheck` | Grün |
+| `pnpm mobile:lint` | Grün, 0 Fehler |
+| `pnpm mobile:test` | Grün: 4 Dateien, 10 Tests |
+| `npx expo-doctor` | Grün: 20/20 Checks |
+| `npx expo export --platform ios` | Grün: Hermes-Produktions-Bundle (3,7 MB) |
+| Mobile Integrationsprobe (lokale Supabase + `pnpm start`) | Grün: 15/15 (Login, Rollen-/Link-Erkennung, Heute-Berechnung, `record_exercise_occurrence`, signierte Medien, 401-Grenzen, Code gültig/ungültig, Aussperrung) |
 
 ## Bekannte Einschränkungen
 

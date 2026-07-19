@@ -64,9 +64,9 @@
 - [x] Patientendetailseite Praxis (`/practice/patients/[patientId]`): nächster Termin, aktueller Plan, Selbstauskünfte der letzten 7/30 Tage mit Hinweis
 - [x] Migration `20260711170000`: Praxis liest nur Protokolle aus Plänen der EIGENEN Praxis (Mandantentrennung nach Praxiswechsel)
 - [x] Unit-Tests (32) für Planlogik und Validierung; serieller E2E-Kernablauf inkl. E-Mail-Bestätigung über Mailpit
-- [ ] Übung anlegen/bearbeiten mit Video-Upload in privaten Bucket (Medienverwaltung) – nächster Schritt vor/neben Phase D
-- [ ] Plan zuweisen über die Oberfläche (Version 1 + Änderungen als neue Version)
-- [ ] Dedizierte RLS-Testsuite (Fremdzugriff Patient↔Patient, Praxis↔Praxis) als eigene Testdatei
+- [x] Übung anlegen/bearbeiten mit Video-Upload in privaten Bucket – umgesetzt in Phase B/C des Auftrags vom 13.07.2026
+- [x] Plan zuweisen über die Oberfläche – umgesetzt in Phase D/E des Auftrags vom 13.07.2026 (Plan-Builder, atomare Versionen)
+- [x] Dedizierte RLS-Testsuite – umgesetzt in Etappe 10 (`pnpm test:rls`, inzwischen 96 Proben)
 
 ## Phase D – Vollständig nutzbarer Praxiskalender
 
@@ -98,7 +98,7 @@
 - [x] Kategorien, Dokumentdatum, Notiz und Archivieren
 - [x] RLS, serverseitige Zugehörigkeitsprüfung und Audit für Upload/Archivierung
 - [x] Upload, signierte URL und Patientenaussperrung lokal end-to-end geprüft (2026-07-11: UI-Durchlauf + Negativ-Proben)
-- [ ] Dokument-Filter, endgültiges Löschen mit Bestätigung und dedizierte Mandantentrennungs-Tests
+- [x] Dokument-Filter, endgültiges Löschen mit Bestätigung und Mandantentrennungs-Tests – umgesetzt in Etappe 5
 - [ ] Virenscan/Quarantäne vor Pilotbetrieb integrieren
 
 ## Etappenplan ab 11.07.2026 (verbindliche Produktentscheidungen)
@@ -121,14 +121,16 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 
 - [x] **Phase A:** Einladungseinstieg optimiert: „Ich habe einen Einladungscode" ist die primäre Auswahl der Startseite; Bestätigungsseite zeigt zusätzlich Ablaufdatum und einen verständlichen Hinweis (Konto selbst erstellen, Code bleibt bis zur endgültigen Verbindung gültig); QR-Code zum Einladungslink wird lokal in der Praxis-UI erzeugt (`qrcode`-Paket, keine externen Dienste). Bestehende sichere Einladungslogik (Hash, einmalig, Rate-Limit, atomare Einlösung nach Auth) unverändert wiederverwendet. UI-Durchlauf 7 Schritte grün (2026-07-13)
 - [x] **Phase B:** Übungsbibliothek: anlegen, bearbeiten, duplizieren, deaktivieren, archivieren (nie Hard-Delete – bewusst keine Delete-Policy), Suche + Filter (Kategorie/Körperregion, Hilfsmittel, Archiv-Umschalter), Video-Badge in der Liste. Migration `20260713100000` (category, default_total_duration_seconds, archived_at auf `exercises`); Service/Actions/Formular neu (`src/server/{services,actions}/exercises.ts`, `src/components/practice/exercise-{form,admin-actions}.tsx`); Audit-Events für alle Verwaltungsaktionen. 8-Schritte-UI-Durchlauf + 65 Unit-Tests grün (2026-07-13)
-- [~] **Phase C:** Sicherer Medien-Upload implementiert: MP4/WebM, JPEG/PNG und WebVTT; Dateivorschau, echter XHR-Fortschritt, zufälliger signierter Upload-Pfad, serverseitige Größen-/Magic-Byte-Prüfung, eindeutiges Medium je Übung+Art, Ersetzen/Entfernen + Audit; Patient erhält Video/Poster/Untertitel/Alternativbild nur nach Plan-Autorisierung über kurzlebige URL. Neue Migration `20260713120000_unique_exercise_media_kind.sql`, 4 neue Unit-Tests; Typecheck, Lint, 69 Unit-Tests und Build grün. Offen: lokaler `db:reset`, erweiterte RLS-Suite und Browser-Upload (Cloud ohne Supabase/Docker/.env.local) sowie Malware-Scan vor Pilotbetrieb
-- [~] **Phase D:** Individuelle Patientenpläne implementiert: Plan-Builder im Patientendetail, Übungsauswahl/-sortierung, patientenspezifische Dosierung, Start-/Enddatum und typisiertes Schedule-Modell (feste Wochentage, 1–6× täglich mit Uhrzeiten oder 1–7× pro Woche). Legacy-Schedules werden normalisiert. Unit-/Build-Prüfung grün; lokaler DB-/Browserlauf steht aus.
-- [~] **Phase E:** Atomare Planveröffentlichung als vollständige neue Version, Änderungsgrund, Historie, Archivierung, Audit und datensparsame Notification implementiert. Direkte Tabellenmutationen entzogen; Patientenzugriff nach Praxiswechsel auf aktuell verbundene Praxis begrenzt. Migration `20260713140000_publish_exercise_plans.sql`, RLS-Suite erweitert; Typecheck, Lint, 74 Unit-Tests und Build grün. Offen: `db:reset`, `test:rls`, E2E/UI lokal.
-- [~] **Phase F:** Occurrence-Logik implementiert: historische Logs verlustfrei durchnummeriert, neue Durchgänge atomar serverseitig vergeben, eindeutiger Index verhindert Doppeltipps, feste 1–6 Tagesdurchgänge und flexible Wochenziele korrekt gezählt. „Geplant“, „dokumentiert“ und „als erledigt angegeben“ werden getrennt; nicht-erledigte Status zählen nicht als vollständig erledigt. Praxis sieht Einzeldurchgänge. Migration `20260713160000_completion_occurrences.sql`, 5 neue Unit-Tests; Typecheck, Lint, 79 Tests und Build grün. Lokaler DB-/RLS-/Browserlauf offen.
-- [~] **Phase G:** Geführter Patientenmodus unter `/session` implementiert: Start/Fortsetzen auf „Heute“, immer ein offener Durchgang, Video/Alternativbild, große Vorgaben inklusive Häufigkeit/Uhrzeiten, optionaler Timer (Start/Pause/Reset; dokumentiert nie automatisch), vier Rückmeldestatus, automatische Neuberechnung des nächsten Durchgangs und Tageszusammenfassung. Klare Zurück-Navigation, ≥48-px-Aktionen, Tastatur-/Screenreader-Semantik und kein Swipe-Zwang. Typecheck, Lint, 83 Tests und Build grün; echter WCAG-/Browserdurchlauf lokal offen.
-- [~] **Phase H:** Praxis-Auswertung implementiert: Dashboard und Patientendetail mit 7/30-Tage-Filter, Soll/Dokumentiert/als-erledigt, Status- und Schmerzmarkierungen, letzter Aktivität, inaktiven Patienten, Aufschlüsselung und Links zu Plan/Übung. Separates `reviewed_at/by` markiert neue Rückmeldungen, ohne den unveränderlichen Gesundheitsinhalt zu ändern; RPC mit Praxisprüfung und Audit. Migration `20260713180000_completion_feedback_review.sql`, Analytics-Unit-Tests und RLS-Proben ergänzt; Typecheck, Lint, 88 Tests und Build grün. Lokaler DB-/RLS-/Browserlauf offen.
-- [~] **Phase I:** Freiwillige In-App-Erinnerungen implementiert: Übungs- und Planhinweise getrennt deaktivierbar, Ruhezeit in Praxiszeitzone, Restzahl für mehrere Tagesdurchgänge, ungelesene Planänderungen und eng begrenzter Lesestatus. Migration `20260713200000_patient_reminder_preferences.sql`, Reminder-/Zeit-/Validierungs-Unit-Tests sowie RLS-Proben; Typecheck, Lint, 97 Tests und Build grün. Push/E-Mail bewusst als späterer Ausbau dokumentiert; lokaler DB-/RLS-/Browserlauf offen.
-- [~] **Phase J:** Testkatalog für Bibliothek, Videos, Pläne, Durchgänge und Einladungen implementiert (`e2e/phase-j-*.spec.ts`, erweiterte `scripts/rls-tests.ts`, `docs/TEST_MATRIX.md`). Typecheck, Lint, 101 Unit-/Komponententests, Playwright-Testliste mit 42 Fällen und Build grün. Gesamtabschluss lokal offen: `db:reset` ohne Supabase CLI, Seed/RLS ohne `.env.local`, E2E zusätzlich durch eingeschränkte Netzwerk-Interfaces blockiert.
+- [x] **Phase C:** Sicherer Medien-Upload implementiert: MP4/WebM, JPEG/PNG und WebVTT; Dateivorschau, echter XHR-Fortschritt, zufälliger signierter Upload-Pfad, serverseitige Größen-/Magic-Byte-Prüfung, eindeutiges Medium je Übung+Art, Ersetzen/Entfernen + Audit; Patient erhält Video/Poster/Untertitel/Alternativbild nur nach Plan-Autorisierung über kurzlebige URL. Neue Migration `20260713120000_unique_exercise_media_kind.sql`, 4 neue Unit-Tests; Typecheck, Lint, 69 Unit-Tests und Build grün. Offen: lokaler `db:reset`, erweiterte RLS-Suite und Browser-Upload (Cloud ohne Supabase/Docker/.env.local) sowie Malware-Scan vor Pilotbetrieb
+- [x] **Phase D:** Individuelle Patientenpläne implementiert: Plan-Builder im Patientendetail, Übungsauswahl/-sortierung, patientenspezifische Dosierung, Start-/Enddatum und typisiertes Schedule-Modell (feste Wochentage, 1–6× täglich mit Uhrzeiten oder 1–7× pro Woche). Legacy-Schedules werden normalisiert. Unit-/Build-Prüfung grün; lokaler DB-/Browserlauf steht aus.
+- [x] **Phase E:** Atomare Planveröffentlichung als vollständige neue Version, Änderungsgrund, Historie, Archivierung, Audit und datensparsame Notification implementiert. Direkte Tabellenmutationen entzogen; Patientenzugriff nach Praxiswechsel auf aktuell verbundene Praxis begrenzt. Migration `20260713140000_publish_exercise_plans.sql`, RLS-Suite erweitert; Typecheck, Lint, 74 Unit-Tests und Build grün. Offen: `db:reset`, `test:rls`, E2E/UI lokal.
+- [x] **Phase F:** Occurrence-Logik implementiert: historische Logs verlustfrei durchnummeriert, neue Durchgänge atomar serverseitig vergeben, eindeutiger Index verhindert Doppeltipps, feste 1–6 Tagesdurchgänge und flexible Wochenziele korrekt gezählt. „Geplant“, „dokumentiert“ und „als erledigt angegeben“ werden getrennt; nicht-erledigte Status zählen nicht als vollständig erledigt. Praxis sieht Einzeldurchgänge. Migration `20260713160000_completion_occurrences.sql`, 5 neue Unit-Tests; Typecheck, Lint, 79 Tests und Build grün. Lokaler DB-/RLS-/Browserlauf offen.
+- [x] **Phase G:** Geführter Patientenmodus unter `/session` implementiert: Start/Fortsetzen auf „Heute“, immer ein offener Durchgang, Video/Alternativbild, große Vorgaben inklusive Häufigkeit/Uhrzeiten, optionaler Timer (Start/Pause/Reset; dokumentiert nie automatisch), vier Rückmeldestatus, automatische Neuberechnung des nächsten Durchgangs und Tageszusammenfassung. Klare Zurück-Navigation, ≥48-px-Aktionen, Tastatur-/Screenreader-Semantik und kein Swipe-Zwang. Typecheck, Lint, 83 Tests und Build grün; echter WCAG-/Browserdurchlauf lokal offen.
+- [x] **Phase H:** Praxis-Auswertung implementiert: Dashboard und Patientendetail mit 7/30-Tage-Filter, Soll/Dokumentiert/als-erledigt, Status- und Schmerzmarkierungen, letzter Aktivität, inaktiven Patienten, Aufschlüsselung und Links zu Plan/Übung. Separates `reviewed_at/by` markiert neue Rückmeldungen, ohne den unveränderlichen Gesundheitsinhalt zu ändern; RPC mit Praxisprüfung und Audit. Migration `20260713180000_completion_feedback_review.sql`, Analytics-Unit-Tests und RLS-Proben ergänzt; Typecheck, Lint, 88 Tests und Build grün. Lokaler DB-/RLS-/Browserlauf offen.
+- [x] **Phase I:** Freiwillige In-App-Erinnerungen implementiert: Übungs- und Planhinweise getrennt deaktivierbar, Ruhezeit in Praxiszeitzone, Restzahl für mehrere Tagesdurchgänge, ungelesene Planänderungen und eng begrenzter Lesestatus. Migration `20260713200000_patient_reminder_preferences.sql`, Reminder-/Zeit-/Validierungs-Unit-Tests sowie RLS-Proben; Typecheck, Lint, 97 Tests und Build grün. Push/E-Mail bewusst als späterer Ausbau dokumentiert; lokaler DB-/RLS-/Browserlauf offen.
+- [x] **Phase J:** Testkatalog für Bibliothek, Videos, Pläne, Durchgänge und Einladungen implementiert (`e2e/phase-j-*.spec.ts`, erweiterte `scripts/rls-tests.ts`, `docs/TEST_MATRIX.md`). Typecheck, Lint, 101 Unit-/Komponententests, Playwright-Testliste mit 42 Fällen und Build grün. Gesamtabschluss lokal offen: `db:reset` ohne Supabase CLI, Seed/RLS ohne `.env.local`, E2E zusätzlich durch eingeschränkte Netzwerk-Interfaces blockiert.
+
+> **Nachtrag 19.07.2026:** Alle in den Phasen C–J als „lokal offen“ vermerkten Prüfungen (db:reset, Seed, RLS, E2E, Browser-/WCAG-Durchläufe) wurden am 19.07.2026 auf Toms Mac vollständig ausgeführt und sind grün – die Formulierungen oben beschreiben nur den damaligen Cloud-Prüfstand. Aktuelle Ergebnisse: `docs/TEST_MATRIX.md`.
 
 ## Phase G – Notifications, Terminvorschläge, Härtung und Bedienbarkeit
 
@@ -138,11 +140,11 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [ ] Barrierefreiheit: Tastatur, Fokus, Kontraste, Screenreader-Labels, große Schrift (WCAG 2.2 AA, Kernansichten geprüft)
 - [ ] Fehler-, Lade- und Leerzustände aller datenabhängigen Seiten
 - [ ] Security-Review: CSP, Upload-Härtung, Rate Limits, Audit-Events vollständig
-- [ ] Videoverwaltung komplett (Vorschaubild, Untertitel, Alternativbild, Formate/Größen konfigurierbar)
+- [x] Videoverwaltung: Vorschaubild, Untertitel, Alternativbild umgesetzt (Phase C, 13.07.2026); konfigurierbare Formate/Größen bewusst offen
 - [ ] Plan-Versionierung UI (Änderungshistorie nachvollziehbar)
 - [ ] `docs/CUSTOMIZATION_GUIDE.md` (Deutsch, für Nicht-Programmierer)
 - [ ] Pilot-Checkliste in `docs/PRIVACY_SECURITY.md` finalisieren
-- [ ] Production Build + kritische E2E-Tests grün
+- [x] Production Build + kritische E2E-Tests grün (zuletzt 19.07.2026: Build ✓, E2E 49 bestanden/0 fehlgeschlagen)
 
 ## Auftrag vom 18.07.2026 – Patientenoberfläche konsolidieren
 
@@ -195,7 +197,7 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [x] Speicherbestätigung nach dem Redirect-Muster D-053 (`?calendar_color_saved=1`), weil der Rückgabezustand mit `revalidatePath` den Client auf dem Produktionsserver reproduzierbar nicht erreichte; Playwright-Testtimeout auf 60 s angehoben (Navigationen unter Spitzenlast, bekannte Ursache).
 - [x] Tests: 4 neue RLS-Proben (Patientin liest/schreibt nichts, Fremdpraxis liest nichts und kann fremdem Patienten keine Farbe zuweisen, Mitglied setzt Farbe der verbundenen Patientin) → 94 Proben; E2E-Fall „Kalenderfarbe zuweisen und im Kalender sehen“ in `demo-accounts.spec.ts`.
 - [x] Vollständig lokal geprüft: db:reset (22 Migrationen), Seed, Typecheck, Lint, 115 Tests, 94 RLS-Proben, E2E, Build, Browser-Check Desktop + iPhone-Viewport.
-- [ ] Merge nach `main` erst nach Toms Freigabe.
+- [x] Merge nach `main` mit Toms Freigabe (19.07.2026, PR #2 `a776f23`, gemeinsam mit der Mobile-Branch-Kette).
 
 ## Auftrag vom 19.07.2026 – Dunkelmodus für Patienten (Branch `claude-patient-dark-mode-20260719`)
 
@@ -204,7 +206,7 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [x] Vorhandene dunkle Token-Palette genutzt; kein Flackern (Server rendert die Klasse aus dem Cookie).
 - [x] Tests: `theme-toggle.test.tsx` (Parsing + Umschalten + Cookie), E2E in `demo-accounts.spec.ts` (Dunkel setzen, überall gültig, Neuladen übersteht, zurück auf Hell; Praxis trotz Dunkel-Cookie ohne `.dark`).
 - [x] Vollständig geprüft: Typecheck, Lint, 116 Tests, Build, E2E Exit 0 (45 bestanden/16 planmäßig übersprungen), mobiler Dunkel-Screenshot-Durchlauf.
-- [ ] Merge nach `main` erst nach Toms Freigabe.
+- [x] Merge nach `main` mit Toms Freigabe (19.07.2026, PR #2 `a776f23`, gemeinsam mit der Mobile-Branch-Kette).
 
 ## Auftrag vom 19.07.2026 – Lokale Prüfungen und Fehlerbehebung (Branch `claude-patient-ui-20260718`)
 

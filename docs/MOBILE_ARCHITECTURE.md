@@ -1,6 +1,6 @@
 # PhysioCheck – Mobile-Architektur (Patienten-App)
 
-> Stand: 2026-07-19 · Branch `claude-patient-mobile-20260719` (Basis: `28ee792` auf `claude-patient-calendar-colors-20260719`) · Verbindliche Entscheidungen: `DECISIONS.md` D-058 ff.
+> Stand: 2026-07-19 · seit PR #2 (`a776f23`) vollständig in `main` · Verbindliche Entscheidungen: `DECISIONS.md` D-058 ff.
 
 ## Zielbild
 

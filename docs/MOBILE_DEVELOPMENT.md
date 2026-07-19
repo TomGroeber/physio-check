@@ -55,6 +55,13 @@ apps/patient-mobile/
 - `pnpm mobile:typecheck` ✓ · `pnpm mobile:lint` ✓ (0 Fehler/0 Warnungen) · `pnpm mobile:test` ✓ (10 Tests) · `expo-doctor` 20/20 ✓ · `expo export --platform ios` ✓ (Hermes-Bundle)
 - Integrationsprobe gegen lokale Supabase + Next-Server (15 Proben, Skript im Sitzungs-Scratchpad dokumentiert in `docs/TEST_MATRIX.md`): Login, Rollen-/Linkerkennung, Heute-Berechnung, Durchgangs-RPC, Medien-Endpunkt (signierte URLs), 401-Grenzen, Code-Prüfung gültig/ungültig.
 
+## Nächste Schritte (in dieser Reihenfolge)
+
+1. Xcode installieren (App Store; danach `sudo xcode-select -s /Applications/Xcode.app`)
+2. `pnpm mobile:ios`
+3. Vollständiger Simulator-Durchlauf aller Patientenflüsse (Code-Einstieg, Heute, Übung mit Video, Termine/Angebote, Profilbild, Kontolöschungsantrag; Checkliste: `docs/TEST_MATRIX.md`)
+4. Danach `docs/APP_STORE_CHECKLIST.md` mit Toms Freigaben abarbeiten
+
 ## Echte externe Blocker (kein Codefehler)
 
 1. **Xcode fehlt** (nur CommandLineTools): kein iOS-Simulator, kein nativer Build. Beheben: Xcode aus dem App Store, dann `pnpm mobile:ios`.
