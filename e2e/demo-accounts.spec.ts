@@ -83,6 +83,38 @@ test("Übungsbibliothek behält Ausgangsposition und Schritte für die Praxis", 
   await expect(page.getByLabel(/Durchführungsschritte/)).not.toHaveValue("");
 });
 
+test("Patientin stellt die App auf Dunkel; die Wahl bleibt erhalten", async ({ page }) => {
+  await login(page, "patientin@demo.physiocheck.test");
+  await page.goto("/profile");
+  await page.waitForLoadState("networkidle");
+  const root = page.locator("[data-patient-theme-root]");
+  await expect(root).not.toHaveClass(/dark/);
+
+  await page.getByRole("radio", { name: "Dunkel" }).check();
+  await expect(root).toHaveClass(/dark/);
+  // Wahl gilt überall im Patientenbereich und übersteht ein Neuladen.
+  await page.goto("/today");
+  await expect(page.locator("[data-patient-theme-root]")).toHaveClass(/dark/);
+  await page.reload();
+  await expect(page.locator("[data-patient-theme-root]")).toHaveClass(/dark/);
+
+  await page.goto("/profile");
+  await page.waitForLoadState("networkidle");
+  await page.getByRole("radio", { name: "Hell" }).check();
+  await expect(page.locator("[data-patient-theme-root]")).not.toHaveClass(/dark/);
+});
+
+test("Praxisbereich bleibt trotz Dunkel-Cookie immer hell", async ({ page, context }) => {
+  // Selbst wenn das Gerät die Patientenwahl „dunkel“ gespeichert hat,
+  // liest der Praxisbereich das Cookie nicht.
+  await context.addCookies([
+    { name: "pc-theme", value: "dark", url: "http://localhost:3000" },
+  ]);
+  await login(page, "therapeutin@demo.physiocheck.test");
+  await expect(page).toHaveURL(/\/practice$/);
+  await expect(page.locator(".dark")).toHaveCount(0);
+});
+
 test("Patientin sieht nur eigene Bereiche – Praxisbereich wird umgeleitet", async ({
   page,
 }) => {

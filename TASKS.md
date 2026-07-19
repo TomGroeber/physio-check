@@ -168,6 +168,15 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [x] Teststabilität: Playwright auf 4 Worker begrenzt, Expect-Timeout 15 s, Hydrations-Klickverluste in drei Spezifikationen behoben.
 - [x] Merge nach `main` mit Toms Freigabe (2026-07-19): Fast-Forward `4723363..91591df`, gepusht.
 
+## Auftrag vom 19.07.2026 – Dunkelmodus für Patienten (Branch `claude-patient-dark-mode-20260719`)
+
+- [x] Umschalter „Darstellung: Hell/Dunkel“ im Patientenprofil (große Radio-Flächen, sofortige Wirkung, Hinweis „gilt für dieses Gerät“).
+- [x] `.dark`-Klasse nur auf dem Patienten-Layout-Wrapper (Cookie `pc-theme`); Praxisbereich liest das Cookie nicht und bleibt immer hell (D-056).
+- [x] Vorhandene dunkle Token-Palette genutzt; kein Flackern (Server rendert die Klasse aus dem Cookie).
+- [x] Tests: `theme-toggle.test.tsx` (Parsing + Umschalten + Cookie), E2E in `demo-accounts.spec.ts` (Dunkel setzen, überall gültig, Neuladen übersteht, zurück auf Hell; Praxis trotz Dunkel-Cookie ohne `.dark`).
+- [x] Vollständig geprüft: Typecheck, Lint, 116 Tests, Build, E2E Exit 0 (45 bestanden/16 planmäßig übersprungen), mobiler Dunkel-Screenshot-Durchlauf.
+- [ ] Merge nach `main` erst nach Toms Freigabe.
+
 ## Auftrag vom 19.07.2026 – Lokale Prüfungen und Fehlerbehebung (Branch `claude-patient-ui-20260718`)
 
 - [x] `supabase start`, `pnpm db:reset` (20 Migrationen), `pnpm seed`, Typecheck, Lint, 105 Unit-Tests grün.

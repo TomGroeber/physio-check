@@ -2,6 +2,10 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-07-19 – Dunkelmodus für Patienten
+
+**D-056 · Dunkelmodus ist eine reine Patienten-Geräteeinstellung.** Die vorbereitete `.dark`-Token-Palette wird jetzt genutzt: Die Wahl liegt in einem Cookie (`pc-theme`, 1 Jahr, kein Gesundheits-/Kontobezug) und die `.dark`-Klasse liegt ausschließlich auf dem Wrapper des Patienten-Layouts – nie auf `<html>`. Der Praxisbereich liest das Cookie nicht und bleibt dadurch immer hell, selbst auf einem Gerät mit gespeicherter Dunkel-Wahl. Der Umschalter (Hell/Dunkel als große Radio-Flächen) steht nur im Patientenprofil, wirkt sofort ohne Server-Roundtrip und wird serverseitig beim nächsten Render aus dem Cookie bestätigt (kein Flackern).
+
 ## 2026-07-19 – Video-first-Übungsansicht und Profilbilder
 
 **D-055 · Patientenansicht zeigt keine beschreibenden Langtexte mehr.** Kurzbeschreibung, Ausgangsposition, Durchführungsschritte und häufige Fehler bleiben vollständig in der Datenbank und in der Übungsbibliothek der Praxis bearbeitbar, erscheinen aber nicht mehr auf der Patienten-Übungsseite und im geführten Modus. Dort stehen Video (16:9, auf Mobilgeräten randlos) und kompakte Vorgaben (Dosierungs-Chips, Häufigkeit, Uhrzeiten, Hilfsmittel, Praxisnotiz) im Vordergrund – gemeinsame Komponente `ExerciseView`, damit beide Ansichten identisch bleiben. Historische Daten und Snapshots sind unberührt.

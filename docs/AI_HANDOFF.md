@@ -2,7 +2,11 @@
 
 > Stand: 2026-07-19 (zweiter Auftrag) · Arbeitszweig: `claude-patient-exercise-avatar-20260719` (Basis: `main@4723363`) · GitHub-Remote: `TomGroeber/physio-check` (öffentlich; keine Secrets/echten Daten)
 
-## Letzter Auftrag (19.07.2026, zweiter): Video-first-Übungsansicht und Patienten-Profilbild
+## Letzter Auftrag (19.07.2026, dritter): Dunkelmodus für Patienten
+
+Branch `claude-patient-dark-mode-20260719`: Die vorbereitete `.dark`-Token-Palette ist jetzt für Patienten aktivierbar (D-056). `src/lib/theme.ts` (Cookie `pc-theme`, Parsing, `applyPatientTheme`), Umschalter `src/components/patient/theme-toggle.tsx` im Profilbereich „Darstellung“, Patienten-Layout liest das Cookie serverseitig und setzt `.dark` + `color-scheme` NUR auf dem Wrapper (`data-patient-theme-root`) – der Praxisbereich liest das Cookie nie und bleibt hell. Tailwinds `dark:`-Variante greift dank `@custom-variant dark (&:is(.dark *))` auch unter dem Wrapper. Geprüft: Typecheck, Lint, 116 Tests, Build, E2E Exit 0 (45 bestanden), mobiler Dunkel-Screenshot-Lauf.
+
+## Vorheriger Auftrag (19.07.2026, zweiter): Video-first-Übungsansicht und Patienten-Profilbild
 
 Fünf Commits auf `claude-patient-exercise-avatar-20260719`, alle gepusht; Merge nach `main` wartet auf Toms Freigabe.
 
