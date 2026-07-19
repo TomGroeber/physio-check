@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Das geteilte Paket liegt als TypeScript-Quelle im Workspace (D-059).
+  transpilePackages: ["@physio-check/shared"],
 };
 
 export default nextConfig;

@@ -1223,6 +1223,38 @@ export type Database = {
           },
         ]
       }
+      account_deletion_requests: {
+        Row: {
+          id: string
+          processed_at: string | null
+          profile_id: string
+          requested_at: string
+          status: string
+        }
+        Insert: {
+          id?: string
+          processed_at?: string | null
+          profile_id: string
+          requested_at?: string
+          status?: string
+        }
+        Update: {
+          id?: string
+          processed_at?: string | null
+          profile_id?: string
+          requested_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_deletion_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patient_calendar_colors: {
         Row: {
           color: string

@@ -30,5 +30,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "PHYSIOCHECK_PHASE_B", "__MACOSX"]
+  "exclude": ["node_modules", "PHYSIOCHECK_PHASE_B", "__MACOSX", "apps", "packages"]
 }

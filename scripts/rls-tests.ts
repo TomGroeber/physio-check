@@ -278,6 +278,15 @@ async function main() {
     check("kann sich selbst keine Kalenderfarbe zuweisen", Boolean(error));
   }
   {
+    // Löschanträge laufen NUR über den Server (D-062): kein Client-Zugriff.
+    const { data } = await patient.from("account_deletion_requests").select("id");
+    check("liest 0 Zeilen aus account_deletion_requests", (data ?? []).length === 0);
+    const { error } = await patient
+      .from("account_deletion_requests")
+      .insert({ profile_id: petraId });
+    check("kann Löschantrag nicht direkt einfügen", Boolean(error));
+  }
+  {
     const { data } = await patient.from("appointments").select("patient_profile_id");
     check(
       "appointments: ausschließlich eigene Termine",
