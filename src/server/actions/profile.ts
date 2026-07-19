@@ -3,13 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { getSessionContext } from "@/server/services/session";
 import { getPatientDetail } from "@/server/services/practice";
+import { setPatientPhone, updateOwnPhone } from "@/server/services/profile";
 import {
-  setOwnCalendarColor,
-  setPatientPhone,
-  updateOwnPhone,
-} from "@/server/services/profile";
-import {
-  setCalendarColorSchema,
   updateOwnPhoneSchema,
   updatePatientPhoneSchema,
 } from "@/lib/validation/profile";
@@ -60,25 +55,4 @@ export async function updatePatientPhoneAction(
   revalidatePath(`/practice/patients/${parsed.data.patientId}`);
   revalidatePath("/practice/patients");
   return { success: de.profilePhone.saved };
-}
-
-/** Praxismitglied wählt die eigene Kalenderfarbe. */
-export async function setCalendarColorAction(
-  _state: ProfileActionState,
-  formData: FormData
-): Promise<ProfileActionState> {
-  const parsed = setCalendarColorSchema.safeParse({ color: formData.get("color") });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
-  const session = await getSessionContext();
-  const membership = session?.memberships[0];
-  if (!session || !membership) return { error: de.errors.notSignedIn };
-
-  try {
-    await setOwnCalendarColor(membership.memberId, session.userId, parsed.data.color);
-  } catch {
-    return { error: de.practice.settings.colorSaveError };
-  }
-  revalidatePath("/practice/settings");
-  revalidatePath("/practice/calendar");
-  return { success: de.practice.settings.colorSaved };
 }

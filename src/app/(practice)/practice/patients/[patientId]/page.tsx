@@ -26,6 +26,8 @@ import { getPatientInternalProfile } from "@/server/services/internal-profile";
 import { InternalProfileForm } from "@/components/practice/internal-profile-form";
 import { getPinnedPatient } from "@/server/services/pinned-patients";
 import { PinPatientForm } from "@/components/practice/pin-patient-form";
+import { getPatientCalendarColor } from "@/server/services/patient-calendar-colors";
+import { PatientColorPicker } from "@/components/practice/patient-color-picker";
 import { ExercisePlanBuilder } from "@/components/practice/exercise-plan-builder";
 import { getPlanEditorData } from "@/server/services/plans";
 import { getPatientAdherenceAnalytics } from "@/server/services/adherence";
@@ -62,7 +64,7 @@ export default async function PatientDetailPage({
   const link = await getPatientDetail(practiceId, patientId);
   if (!link) notFound();
 
-  const [logs, planEditor, nextAppointment, authorizations, documents, unitStatus, internalProfile, pinned, analytics] =
+  const [logs, planEditor, nextAppointment, authorizations, documents, unitStatus, internalProfile, pinned, analytics, calendarColor] =
     await Promise.all([
       getPatientCompletionLogs(practiceId, patientId, days),
       getPlanEditorData(practiceId, patientId),
@@ -73,6 +75,7 @@ export default async function PatientDetailPage({
       getPatientInternalProfile(practiceId, patientId),
       getPinnedPatient(practiceId, patientId),
       getPatientAdherenceAnalytics(practiceId, patientId, days),
+      getPatientCalendarColor(practiceId, patientId),
     ]);
   const warnings = unitStatus
     ? evaluateAuthorizationWarnings({
@@ -157,6 +160,17 @@ export default async function PatientDetailPage({
       ) : null}
 
       <PinPatientForm patientId={patientId} pinned={pinned ? { note: pinned.note } : null} />
+
+      <section aria-labelledby="calendar-color-heading" className="flex flex-col gap-3">
+        <h2 id="calendar-color-heading" className="text-xl font-bold">
+          {t.calendarColor.heading}
+        </h2>
+        <Card>
+          <CardContent className="p-5">
+            <PatientColorPicker patientId={patientId} currentColor={calendarColor} />
+          </CardContent>
+        </Card>
+      </section>
 
       <InternalProfileForm
         patientId={patientId}

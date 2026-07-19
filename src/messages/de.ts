@@ -506,6 +506,14 @@ export const de = {
     patientDetail: {
       backToList: "Zurück zur Patientenliste",
       connectedSince: (date: string) => `Verbunden seit ${date}`,
+      calendarColor: {
+        heading: "Kalenderfarbe",
+        hint:
+          "Termine dieses Patienten erscheinen im Kalender in dieser Farbe. Der Name steht immer zusätzlich dabei. Die Farbe ist nur für die Praxis sichtbar.",
+        none: "Keine Farbe",
+        save: "Farbe speichern",
+        saved: "Kalenderfarbe gespeichert.",
+      },
       nextAppointment: "Nächster Termin",
       noAppointment: "Kein Termin geplant.",
       currentPlan: "Aktueller Übungsplan",
@@ -812,12 +820,6 @@ export const de = {
     settings: {
       title: "Einstellungen",
       practiceData: "Praxisdaten",
-      calendarColorTitle: "Meine Kalenderfarbe",
-      calendarColorHint:
-        "Diese Farbe kennzeichnet Ihre Termine im Praxiskalender. Der Name der behandelnden Person steht immer zusätzlich dabei.",
-      calendarColorSave: "Farbe speichern",
-      colorSaved: "Kalenderfarbe gespeichert.",
-      colorSaveError: "Die Kalenderfarbe konnte nicht gespeichert werden.",
     },
   },
 
