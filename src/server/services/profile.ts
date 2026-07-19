@@ -1,7 +1,6 @@
 import "server-only";
 
 import { createSupabaseServerClient } from "@/server/db/server-client";
-import type { CalendarColor } from "@/lib/calendar-colors";
 
 /** Eigenes Profil (Name, Telefonnummer) für die Profilseite. */
 export async function getOwnProfile(userId: string) {
@@ -49,29 +48,4 @@ export async function setPatientPhone(patientId: string, phone: string) {
     new_phone: phone,
   });
   if (error) throw new Error(`Telefonnummer konnte nicht gespeichert werden: ${error.message}`);
-}
-
-/** Aktuelle Kalenderfarbe der eigenen Mitgliedschaft. */
-export async function getOwnCalendarColor(memberId: string) {
-  const supabase = await createSupabaseServerClient();
-  const { data } = await supabase
-    .from("practice_members")
-    .select("calendar_color")
-    .eq("id", memberId)
-    .maybeSingle();
-  return data?.calendar_color ?? "teal";
-}
-
-/**
- * Eigene Kalenderfarbe setzen. Spaltenrecht + RLS begrenzen die
- * Änderung auf calendar_color der eigenen Mitgliedschaft.
- */
-export async function setOwnCalendarColor(memberId: string, userId: string, color: CalendarColor) {
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase
-    .from("practice_members")
-    .update({ calendar_color: color })
-    .eq("id", memberId)
-    .eq("profile_id", userId);
-  if (error) throw new Error(`Kalenderfarbe konnte nicht gespeichert werden: ${error.message}`);
 }

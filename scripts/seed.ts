@@ -162,8 +162,8 @@ async function main() {
   const { data: therapistMember, error: memberError } = await db
     .from("practice_members")
     .insert([
-      { practice_id: practice.id, profile_id: therapistId, role: "therapist", calendar_color: "indigo" },
-      { practice_id: practice.id, profile_id: adminId, role: "admin", calendar_color: "amber" },
+      { practice_id: practice.id, profile_id: therapistId, role: "therapist" },
+      { practice_id: practice.id, profile_id: adminId, role: "admin" },
     ])
     .select("id, profile_id");
   if (memberError || !therapistMember) throw new Error(`members: ${memberError?.message}`);
@@ -185,6 +185,13 @@ async function main() {
     practice_id: practice.id,
     primary_therapist_id: therapistMemberId,
     status: "active",
+  });
+
+  // Demo-Kalenderfarbe der Patientin (D-057: Farbe je Patient und Praxis).
+  await db.from("patient_calendar_colors").insert({
+    practice_id: practice.id,
+    patient_profile_id: patientId,
+    color: "teal",
   });
 
   console.log("Lege Übungsbibliothek an …");

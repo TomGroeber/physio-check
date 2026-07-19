@@ -23,6 +23,13 @@ export default defineConfig({
   // ohne dass etwas kaputt ist. 15s hält das Signal, entfernt das Rauschen
   // (bei inzwischen >50 Fällen reichte 10s nicht mehr zuverlässig).
   expect: { timeout: 15_000 },
+  // Testtimeout (Default 30s) anheben: page.goto fällt nicht unter den
+  // expect-Timeout, und einzelne Navigationen können unter Spitzenlast
+  // >30s dauern. Achtung: Hängen Navigationen trotzdem dauerhaft und
+  // loggt der WebServer ChunkLoadErrors, ist der Turbopack-Cache nach
+  // wiederholten DB-Resets verkeilt – dann `rm -rf .next` (19.07.2026
+  // verifiziert: Suite danach vollständig grün und am schnellsten).
+  timeout: 60_000,
   use: {
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",

@@ -261,12 +261,30 @@ async function main() {
     "patient_documents",
     "patient_internal_profiles",
     "pinned_patients",
+    "patient_calendar_colors",
     "practice_waitlist_entries",
     "audit_events",
     "patient_invites",
   ] as const) {
     const { data } = await patient.from(table).select("id");
     check(`liest 0 Zeilen aus ${table}`, (data ?? []).length === 0, `bekam ${data?.length}`);
+  }
+  {
+    const { error } = await patient.from("patient_calendar_colors").insert({
+      practice_id: practiceAId,
+      patient_profile_id: petraId,
+      color: "rose",
+    });
+    check("kann sich selbst keine Kalenderfarbe zuweisen", Boolean(error));
+  }
+  {
+    // Löschanträge laufen NUR über den Server (D-062): kein Client-Zugriff.
+    const { data } = await patient.from("account_deletion_requests").select("id");
+    check("liest 0 Zeilen aus account_deletion_requests", (data ?? []).length === 0);
+    const { error } = await patient
+      .from("account_deletion_requests")
+      .insert({ profile_id: petraId });
+    check("kann Löschantrag nicht direkt einfügen", Boolean(error));
   }
   {
     const { data } = await patient.from("appointments").select("patient_profile_id");
@@ -424,6 +442,7 @@ async function main() {
     "patient_documents",
     "patient_internal_profiles",
     "pinned_patients",
+    "patient_calendar_colors",
     "practice_waitlist_entries",
     "appointment_offers",
     "appointments",
@@ -434,6 +453,16 @@ async function main() {
   ] as const) {
     const { data } = await foreign.from(table).select("id");
     check(`liest 0 Zeilen aus ${table}`, (data ?? []).length === 0, `bekam ${data?.length}`);
+  }
+  {
+    // Auch mit der EIGENEN practice_id scheitert die Zuordnung, weil
+    // member_can_view_patient eine aktive Verbindung zu Petra verlangt.
+    const { error } = await foreign.from("patient_calendar_colors").insert({
+      practice_id: foreignPracticeId,
+      patient_profile_id: petraId,
+      color: "violet",
+    });
+    check("kann fremdem Patienten keine Kalenderfarbe zuweisen", Boolean(error));
   }
   {
     const { data } = await foreign.from("profiles").select("id").eq("id", petraId);
@@ -574,6 +603,27 @@ async function main() {
     check(
       "Einladungs-Hash ist für normale Mitglieder nicht lesbar",
       (invites ?? []).length === 0 || (invites ?? []).every((row) => !row.code_hash)
+    );
+  }
+  {
+    const { error } = await therapist.from("patient_calendar_colors").upsert(
+      { practice_id: practiceAId, patient_profile_id: petraId, color: "indigo" },
+      { onConflict: "practice_id,patient_profile_id" }
+    );
+    const { data: after } = await therapist
+      .from("patient_calendar_colors")
+      .select("color")
+      .eq("practice_id", practiceAId)
+      .eq("patient_profile_id", petraId)
+      .maybeSingle();
+    check(
+      "Kalenderfarbe: Mitglied setzt Farbe der verbundenen Patientin",
+      !error && after?.color === "indigo"
+    );
+    // Seed-Stand wiederherstellen, damit Folgeläufe deterministisch bleiben.
+    await therapist.from("patient_calendar_colors").upsert(
+      { practice_id: practiceAId, patient_profile_id: petraId, color: "teal" },
+      { onConflict: "practice_id,patient_profile_id" }
     );
   }
   {
@@ -1054,6 +1104,7 @@ async function main() {
     "patient_documents",
     "completion_logs",
     "exercise_plans",
+    "patient_calendar_colors",
   ] as const) {
     const { data } = await unconnected.from(table).select("id");
     check(`liest 0 Zeilen aus ${table}`, (data ?? []).length === 0, `bekam ${data?.length}`);

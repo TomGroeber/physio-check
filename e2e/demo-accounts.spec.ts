@@ -142,6 +142,45 @@ test("Therapeutin sieht die Übungsbibliothek der Praxis", async ({ page }) => {
   await expect(page.getByText("Wandsitz").first()).toBeVisible();
 });
 
+test("Therapeutin weist eine Kalenderfarbe zu und sieht sie im Kalender", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "chromium", "Mutierender Ablauf läuft nur einmal.");
+  await login(page, "therapeutin@demo.physiocheck.test");
+  await page.goto("/practice/patients");
+  await page.getByRole("link", { name: /Petra Beispielfrau/ }).first().click();
+  await page.waitForURL(/\/practice\/patients\/[0-9a-f-]+$/);
+  const detailUrl = page.url();
+  // Gegen Klickverlust vor der Hydration (bekanntes Muster dieser Suite).
+  await page.waitForLoadState("networkidle");
+
+  // Seed-Zustand: Petrol ist zugeordnet. Auf Indigo wechseln.
+  await expect(page.getByRole("heading", { name: "Kalenderfarbe" })).toBeVisible();
+  await expect(page.getByRole("radio", { name: "Petrol" })).toBeChecked();
+  // Die Radio-Inputs sind sr-only; das sichtbare Farbfeld fängt den Klick ab,
+  // deshalb force (check() verifiziert den Zustand trotzdem).
+  await page.getByRole("radio", { name: "Indigo" }).check({ force: true });
+  await page.getByRole("button", { name: "Farbe speichern" }).click();
+  // Bestätigung kommt per Redirect mit Query-Parameter (D-053).
+  await page.waitForURL(/calendar_color_saved=1/);
+  await expect(page.getByText("Kalenderfarbe gespeichert.").first()).toBeVisible();
+
+  // Kalender: Legende nennt die Patientin, Termin-Chips tragen die Farbe.
+  await page.goto("/practice/calendar");
+  const legend = page.getByRole("list", { name: "Farben der Patienten" });
+  await expect(legend).toContainText("Petra Beispielfrau");
+  await expect(page.locator("a.border-l-indigo-600").first()).toBeVisible();
+
+  // Seed-Zustand wiederherstellen, damit Folgeläufe deterministisch bleiben.
+  // Bewusst frische URL ohne Query-Parameter: nach einem goBack stünde
+  // ?calendar_color_saved=1 schon in der URL und waitForURL wäre sofort
+  // erfüllt, bevor die Aktion überhaupt gespeichert hat.
+  await page.goto(detailUrl);
+  await page.waitForLoadState("networkidle");
+  await page.getByRole("radio", { name: "Petrol" }).check({ force: true });
+  await page.getByRole("button", { name: "Farbe speichern" }).click();
+  await page.waitForURL(/calendar_color_saved=1/);
+  await expect(page.getByRole("radio", { name: "Petrol" })).toBeChecked();
+});
+
 test("Unverbundenes Konto sieht nur den Verbindungsbereich", async ({
   page,
 }) => {

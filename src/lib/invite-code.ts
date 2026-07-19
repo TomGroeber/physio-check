@@ -1,27 +1,19 @@
 import { createHash, randomInt } from "node:crypto";
+import {
+  INVITE_CODE_ALPHABET,
+  INVITE_CODE_LENGTH,
+  normalizeInviteCode,
+} from "@physio-check/shared/invite-code-format";
 
-export const INVITE_CODE_LENGTH = 12;
-export const INVITE_CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-
-/** Entfernt Trennzeichen und vereinheitlicht die Eingabe. */
-export function normalizeInviteCode(value: string): string {
-  return value.toUpperCase().replace(/[^A-Z0-9]/g, "");
-}
-
-/** Gut lesbare Darstellung, z. B. ABCD-EFGH-JK23. */
-export function formatInviteCode(value: string): string {
-  return normalizeInviteCode(value).match(/.{1,4}/g)?.join("-") ?? "";
-}
-
-export function isInviteCodeShapeValid(value: string): boolean {
-  const normalized = normalizeInviteCode(value);
-  return (
-    normalized.length === INVITE_CODE_LENGTH &&
-    [...normalized].every((character) =>
-      INVITE_CODE_ALPHABET.includes(character)
-    )
-  );
-}
+// Formatlogik liegt im plattformneutralen Paket (D-059); Erzeugung und
+// Hashing bleiben serverseitig hier.
+export {
+  INVITE_CODE_ALPHABET,
+  INVITE_CODE_LENGTH,
+  formatInviteCode,
+  isInviteCodeShapeValid,
+  normalizeInviteCode,
+} from "@physio-check/shared/invite-code-format";
 
 export function generateInviteCode(): string {
   return Array.from({ length: INVITE_CODE_LENGTH }, () =>
@@ -32,4 +24,3 @@ export function generateInviteCode(): string {
 export function hashInviteCode(value: string): string {
   return createHash("sha256").update(normalizeInviteCode(value)).digest("hex");
 }
-

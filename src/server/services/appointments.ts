@@ -24,7 +24,7 @@ export async function getAppointmentOptions(practiceId: string) {
       .eq("status", "active"),
     supabase
       .from("practice_members")
-      .select("id, profile_id, calendar_color, profiles ( full_name )")
+      .select("id, profile_id, profiles ( full_name )")
       .eq("practice_id", practiceId)
       .eq("is_active", true)
       .order("created_at"),
@@ -51,7 +51,7 @@ export async function listCalendarAppointments(
        cancellation_reason, cancelled_at, completed_at,
        patient:profiles!appointments_patient_profile_id_fkey ( id, full_name ),
        therapist:practice_members!appointments_therapist_member_id_fkey (
-         id, calendar_color, profiles ( full_name )
+         id, profiles ( full_name )
        )`
     )
     .eq("practice_id", practiceId)
@@ -78,7 +78,7 @@ export async function getPracticeAppointment(practiceId: string, appointmentId: 
        completed_at,
        patient:profiles!appointments_patient_profile_id_fkey ( id, full_name ),
        therapist:practice_members!appointments_therapist_member_id_fkey (
-         id, calendar_color, profiles ( full_name )
+         id, profiles ( full_name )
        )`
     )
     .eq("id", appointmentId)

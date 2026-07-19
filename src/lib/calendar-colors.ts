@@ -1,8 +1,8 @@
 /**
- * Feste, barrierefreie Farbpalette für Praxismitglieder im Kalender.
+ * Feste, barrierefreie Farbpalette für Patienten im Kalender (D-057).
  * Farben sind nie das einzige Unterscheidungsmerkmal: Name/Text steht
  * immer daneben (WCAG 1.4.1). Die Schlüssel entsprechen dem
- * CHECK-Constraint auf practice_members.calendar_color.
+ * CHECK-Constraint auf patient_calendar_colors.color.
  */
 
 export const CALENDAR_COLORS = [

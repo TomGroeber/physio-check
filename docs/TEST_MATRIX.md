@@ -103,23 +103,55 @@
 | Praxiswechsel | RLS-Suite + UI-Bestätigung | Grün (19.07.2026) |
 | Neues Gerät braucht keinen neuen Code | Browser mit frischem Context | Grün (19.07.2026) |
 
-## Ausgeführte Gesamtprüfungen (19.07.2026, Toms Mac)
+## Mobile Patienten-App (Teile H–M, 19.07.2026)
+
+| Anforderung | Automatisierte Abdeckung | Status |
+|---|---|---|
+| Auth-Session sicher gespeichert (AES + SecureStore-Schlüssel) | Implementierung `secure-session-storage.ts`; Roundtrip implizit über Integrationsprobe (Login/Session) | Grün (19.07.2026) |
+| Code vor Konto, gültiger/ungültiger Code | Jest (`invite.test.ts`, lokale Formatprüfung ohne Netz) + Integrationsprobe gegen `/api/mobile/invite/check` (200/404) | Grün (19.07.2026) |
+| Einladung atomar annehmen, Praxiswechsel | bestehende RPC `redeem_patient_invite` (RLS-Suite deckt Zustände ab); App-Fluss implementiert | RPC grün; UI-Fluss auf Gerät offen (kein Simulator) |
+| Praxisrollen-Aussperrung | Integrationsprobe (Mitgliedszeile via RLS erkannt) + `practice-blocked`-Screen | Grün (19.07.2026) |
+| Heute: dokumentiert ≠ erledigt, Erfolg NUR bei completed | Jest `today.test.tsx` (3 Fälle inkl. Leerzustand) | Grün (19.07.2026) |
+| Durchgangs-Dokumentation (alle Status, Mehrfach-Durchgänge) | Integrationsprobe (`record_exercise_occurrence` echt) + bestehende RLS-Proben (Duplikat/Fremdzugriff) | Grün (19.07.2026) |
+| Video/signierte URLs nur für eigenen aktuellen Plan | Integrationsprobe: Medien-Endpunkt 200 mit Feldern, 401 ohne Token; Route prüft current_version + Besitzer | Grün (19.07.2026) |
+| Profilbild Upload/Ersetzen/Entfernen (Ticket, Magic Bytes) | bestehende Avatar-Services + RLS-Sektion E (10 Proben); mobile Endpunkte 401-geprüft | Grün serverseitig; UI-Fluss auf Gerät offen |
+| Kontolöschungsantrag (Audit, Zugangssperre, keine Client-Schreibrechte) | RLS-Proben (0 Zeilen lesbar, Insert abgelehnt) + Endpunkt 401-geprüft | Grün (19.07.2026) |
+| Barrierefreiheit: beschriftete Buttons, Live-Regionen, Label↔Eingabe | Jest `ui.test.tsx` | Grün (19.07.2026) |
+| Sprachhygiene der App-Texte | Jest `de.test.ts` | Grün (19.07.2026) |
+| Offline-/Lade-/Fehlerzustände | `useLoad` + ErrorView implementiert; Gerätetest offen | Implementiert; Gerätetest offen (kein Simulator) |
+| Großschrift/Screenreader/kleine+große Viewports auf echtem Gerät | – | OFFEN: erst mit Xcode/Simulator bzw. Gerät möglich (dokumentierter Blocker) |
+
+## Kalenderfarben pro Patient (D-057)
+
+| Anforderung | Automatisierte Abdeckung | Status |
+|---|---|---|
+| Mitglied setzt Farbe der verbundenen Patientin | RLS-Suite (Upsert + Kontrolle) + E2E `demo-accounts.spec.ts` | Grün (19.07.2026) |
+| Patientin liest/schreibt keine Farbzuordnungen | RLS-Suite (0 Zeilen + Insert abgelehnt) | Grün (19.07.2026) |
+| Fremdpraxis liest nichts und kann fremdem Patienten keine Farbe zuweisen (auch nicht mit eigener practice_id) | RLS-Suite | Grün (19.07.2026) |
+| Unverbundenes Konto liest nichts | RLS-Suite | Grün (19.07.2026) |
+| Kalender färbt nach Patient, Legende, neutral ohne Zuordnung | E2E + Browser-Treiberlauf (Monat + Liste, „Keine Farbe“) | Grün (19.07.2026) |
+| Einstellungen ohne persönliche Mitgliedsfarbe | Browser-Treiberlauf | Grün (19.07.2026) |
+| Speicherbestätigung per Redirect (D-053) | E2E (`?calendar_color_saved=1`) + Browser-Treiberlauf gegen `pnpm start` | Grün (19.07.2026) |
+| iPhone-Viewport: kein horizontales Scrollen, Farboptionen ≥ 48 px | Browser-Treiberlauf (390 px) | Grün (19.07.2026) |
+
+## Ausgeführte Gesamtprüfungen (19.07.2026, vierter Auftrag, Toms Mac)
 
 | Befehl | Ergebnis |
 |---|---|
-| `pnpm db:reset` | Grün: 21 Migrationen (inkl. `20260719100000_patient_avatars.sql`) |
+| `pnpm db:reset` | Grün: 22 Migrationen (inkl. `20260719120000_patient_calendar_colors.sql`) |
 | `pnpm seed` | Grün; deterministisch auch direkt nach E2E-Läufen (D-051) |
 | `pnpm typecheck` | Grün |
 | `pnpm lint` | Grün, 0 Warnungen |
-| `pnpm test` | Grün: 23 Dateien, 116 Tests |
-| `pnpm test:rls` | Grün: 88 Proben |
-| `pnpm e2e` | Grün (Exit 0): 45 bestanden, 16 planmäßig übersprungen (Mobile-Skips mutierender Abläufe); vereinzelte bekannte Latenz-Flakes fängt der Retry |
+| `pnpm test` | Grün: 23 Dateien, 115 Tests |
+| `pnpm test:rls` | Grün: 94 Proben |
+| `pnpm e2e` | Grün (Exit 0): 49 bestanden, 17 planmäßig übersprungen, 49 s – nach `rm -rf .next` (verkeilter Turbopack-Cache, siehe Einschränkungen) |
 | `pnpm build` | Grün |
 | `pnpm docs:sync` | Grün (Obsidian-Vault auf Toms Mac) |
-| Mobiler Browserlauf (iPhone 14) | Grün: Video volle Breite (390/390 px), kein horizontales Scrollen, Avatar-Upload mobil, Kopfzeilen-Avatar, Praxisliste/-detail mit Bild |
+| Browser-Treiberlauf (Desktop 1440 px + iPhone 390 px, gegen `pnpm build && pnpm start`) | Grün: 12 Prüfungen (Farbwahl, Redirect-Bestätigung, Kalender Monat/Liste, Legende, „Keine Farbe“ neutral, Einstellungen ohne Mitgliedsfarbe, kein horizontales Scrollen, Touch-Ziele ≥ 48 px) |
 
 ## Bekannte Einschränkungen
 
+- Nach wiederholten `db:reset`/Seed-Zyklen kann sich der Turbopack-Dev-Cache verkeilen: E2E-Navigationen hängen dann dauerhaft und der WebServer loggt ChunkLoadErrors. Abhilfe: `rm -rf .next` vor dem Lauf (19.07.2026 verifiziert; Suite danach vollständig grün in 49 s). Nicht mit echten Latenz-Flakes verwechseln.
 - Ein einzelner Server-Action-Roundtrip kann unter voller E2E-Parallellast selten >10 s dauern (Einladungscode-Erzeugung); der konfigurierte Retry mit Trace fängt das auf.
 - Formulare mit `state`+`revalidatePath` (Praxisbereich, Telefonnummer, Erinnerungen) sind vom intermittierenden Roundtrip-Problem grundsätzlich weiter betroffen (im Test 5×/5 stabil); patientenkritische Bestätigungen nutzen deshalb das Redirect-Muster (D-053).
 - Browser-Tests der E-Mail-Änderung hinterlassen ein umbenanntes Demo-Konto; vor `pnpm test:rls` neu seeden bzw. Reste löschen.

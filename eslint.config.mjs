@@ -16,6 +16,9 @@ const eslintConfig = defineConfig([
     "PHYSIOCHECK_PHASE_B/**",
     "__MACOSX/**",
     "test-results/**",
+    // Eigene Lint-Konfigurationen: App (expo lint) und geteiltes Paket.
+    "apps/**",
+    "packages/**",
   ]),
 ]);
 

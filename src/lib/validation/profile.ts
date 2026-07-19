@@ -1,8 +1,7 @@
 import { z } from "zod";
-import { CALENDAR_COLORS } from "@/lib/calendar-colors";
 
 /**
- * Validierung für Kontaktdaten und Kalenderfarbe. Die Telefonnummer
+ * Validierung für Kontaktdaten. Die Telefonnummer
  * ist bewusst optional (Datenminimierung) und formatoffen: Ziffern,
  * Leerzeichen und übliche Zeichen (+ ( ) / . -), maximal 30 Zeichen.
  */
@@ -29,8 +28,4 @@ export const updateOwnPhoneSchema = z.object({
 export const updatePatientPhoneSchema = z.object({
   patientId: z.uuid("Ungültiger Patient."),
   phone: phoneSchema,
-});
-
-export const setCalendarColorSchema = z.object({
-  color: z.enum(CALENDAR_COLORS, "Bitte wählen Sie eine Farbe aus der Liste."),
 });

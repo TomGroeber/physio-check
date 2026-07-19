@@ -2,3 +2,9 @@ allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
+
+# Monorepo (D-058): Die Next.js-Website bleibt an der Repo-Wurzel,
+# die Patienten-App und geteilte Pakete liegen in eigenen Ordnern.
+packages:
+  - "apps/*"
+  - "packages/*"

@@ -1223,9 +1223,82 @@ export type Database = {
           },
         ]
       }
+      account_deletion_requests: {
+        Row: {
+          id: string
+          processed_at: string | null
+          profile_id: string
+          requested_at: string
+          status: string
+        }
+        Insert: {
+          id?: string
+          processed_at?: string | null
+          profile_id: string
+          requested_at?: string
+          status?: string
+        }
+        Update: {
+          id?: string
+          processed_at?: string | null
+          profile_id?: string
+          requested_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_deletion_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_calendar_colors: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          patient_profile_id: string
+          practice_id: string
+          updated_at: string
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          id?: string
+          patient_profile_id: string
+          practice_id: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          patient_profile_id?: string
+          practice_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_calendar_colors_patient_profile_id_fkey"
+            columns: ["patient_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_calendar_colors_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       practice_members: {
         Row: {
-          calendar_color: string
           created_at: string
           id: string
           is_active: boolean
@@ -1234,7 +1307,6 @@ export type Database = {
           role: Database["public"]["Enums"]["practice_role"]
         }
         Insert: {
-          calendar_color?: string
           created_at?: string
           id?: string
           is_active?: boolean
@@ -1243,7 +1315,6 @@ export type Database = {
           role: Database["public"]["Enums"]["practice_role"]
         }
         Update: {
-          calendar_color?: string
           created_at?: string
           id?: string
           is_active?: boolean

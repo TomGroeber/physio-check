@@ -1,8 +1,35 @@
 # PhysioCheck – AI Handoff
 
-> Stand: 2026-07-19 (zweiter Auftrag) · Arbeitszweig: `claude-patient-exercise-avatar-20260719` (Basis: `main@4723363`) · GitHub-Remote: `TomGroeber/physio-check` (öffentlich; keine Secrets/echten Daten)
+> Stand: 2026-07-19 (fünfter Auftrag) · Arbeitszweig: `claude-patient-mobile-20260719` (Basis: `28ee792` auf `claude-patient-calendar-colors-20260719` → `52e6c47` Dark Mode → `main@d0bc716`) · GitHub-Remote: `TomGroeber/physio-check` (öffentlich; keine Secrets/echten Daten)
 
-## Letzter Auftrag (19.07.2026, dritter): Dunkelmodus für Patienten
+## Letzter Auftrag (19.07.2026, fünfter): Native Patienten-App (Expo)
+
+**Branch-Kette:** `main (d0bc716)` → Dark Mode (`52e6c47`, ungemergt) → Kalenderfarben (`28ee792`, ungemergt) → **Mobile (`claude-patient-mobile-20260719`)**. Kein Merge nach `main` ohne Toms Freigabe; die drei Feature-Branches bauen aufeinander auf und werden sinnvollerweise in dieser Reihenfolge gemergt.
+
+**Was existiert:** Vollständige Expo-App unter `apps/patient-mobile` (SDK 57, Expo Router, TS strict, deutsch) mit Code-/Konto-Einstieg, Deep Links, Praxisrollen-Aussperrung, Heute/Übung(Video)/Terminen/Angeboten/Einheiten/Profil(Bild)/Erinnerungen/E-Mail-Änderung/Abmelden/Kontolöschungsantrag; `packages/shared` mit plattformneutraler Logik (Website re-exportiert unter alten Pfaden); Bearer-geschützte `/api/mobile`-Endpunkte in der Website; Migration 24 (`account_deletion_requests`). Details: `docs/MOBILE_ARCHITECTURE.md` (Architektur), `docs/MOBILE_DEVELOPMENT.md` (Betrieb/Eigenheiten inkl. Jest-29-Pinning und async `render`), `docs/APP_STORE_CHECKLIST.md` (Store-Readiness).
+
+**Prüfstand mobile:** `pnpm mobile:typecheck` ✓ · `pnpm mobile:lint` 0 Fehler ✓ · `pnpm mobile:test` 10/10 ✓ · `expo-doctor` 20/20 ✓ · `expo export --platform ios` (Hermes-Bundle) ✓ · Integrationsprobe 15/15 gegen lokale Supabase + `pnpm start` (Login, Rollen/Link, Heute-Berechnung, `record_exercise_occurrence`, Medien-Endpunkt mit signierten URLs, 401-Grenzen, Code-Prüfung, Aussperrung). **Web nach Umbau komplett grün:** Typecheck, Lint, 115 Tests, db:reset (24 Migrationen), Seed, 96 RLS-Proben, E2E 49 bestanden/0 fehlgeschlagen, Build.
+
+**Echte Blocker (kein Codefehler):** kein Xcode/Android SDK auf Toms Mac (kein Simulator-/Emulatorlauf, kein nativer Build), keine EAS-/Store-Konten, keine Push-Credentials, keine Universal-Link-Domain, keine Datenschutzerklärungs-URL, offene Aufbewahrungsrechtsfrage Luxemburg (D-062).
+
+**Nächster konkreter Schritt:** (1) Toms Entscheidung über Merges (Dark Mode → Kalenderfarben → Mobile); (2) Xcode installieren und `pnpm mobile:ios` für den ersten Simulatorlauf; (3) danach Teil-M-Punkte gemäß `docs/APP_STORE_CHECKLIST.md` mit Toms Freigaben. Startbefehle: `supabase start && pnpm db:reset && pnpm seed && pnpm build && pnpm start` (Backend) + `pnpm mobile:start` (App, `.env` nach `.env.example`). Testbefehle: `pnpm mobile:test`, `pnpm test:rls`, `pnpm e2e`.
+
+## Letzter Auftrag (19.07.2026, vierter): Kalenderfarben pro Patient (aus Unterbrechung gerettet)
+
+Die Vorsitzung wurde mitten in diesem Feature durch das Nutzungslimit beendet; 11 Dateien lagen uncommittet im Working Tree. Vorgehen der Übernahme: Zustand vollständig nur lesend analysiert, nichts verworfen, alles als ehrlicher `WIP:`-Commit `96e61bf` gesichert und gepusht, danach fertiggestellt.
+
+**Wichtig zur Einordnung:** Die `calendarColor`-Erweiterung des `Promise.all` auf der Praxis-Patientendetailseite gehört NICHT zum Avatar-Platzhalter (der Avatar-Auftrag war bereits fertig auf `main`), sondern ist Teil dieses eigenständigen Features D-057.
+
+**Feature (D-057):** Kalenderfarben wandern vom Praxismitglied zum Patienten. Migration `20260719120000_patient_calendar_colors.sql` (22. Migration): neue Tabelle `patient_calendar_colors` (Farbe je Praxis+Patient, Muster `pinned_patients`: keine Patienten-Policy), `practice_members.calendar_color` entfernt. Farbwahl auf der Patientendetailseite (`PatientColorPicker`, 8 Farben + „Keine Farbe“), Kalender färbt nach Patient, Legende nur zugeordnete Patienten im sichtbaren Zeitraum.
+
+**Bei der Fertigstellung ergänzt/repariert:** (1) Migration gehärtet – Insert/Update verlangen `member_can_view_patient` (aktive Verbindung) wie bei `pinned_patients`, fehlende `grant`-Rechte ergänzt; (2) Scope-Fehler in `AppointmentList` (nutzte Helfer aus `CalendarPage`) – Farbzuordnung jetzt als Prop; (3) `calendar_color` aus den drei Selects in `appointments.ts`, aus `database.types.ts` (von Hand, kein Voll-Regen! s. u.), Seed (Demo-Patientin „Petrol“), alter `CalendarColorPicker` + Schema + Test entfernt; (4) Legende in `de.ts` von „Farben der Behandelnden“ auf „Farben der Patienten“ korrigiert; (5) 4 neue RLS-Proben (94 gesamt) und E2E-Fall „Kalenderfarbe zuweisen“ in `demo-accounts.spec.ts`.
+
+**Zwei Debugging-Erkenntnisse dieser Sitzung:**
+
+1. **D-053 trifft auch dieses Formular – auf dem Produktionsserver reproduzierbar.** Der ursprüngliche Rückgabezustand (`success` + `revalidatePath`) erreichte den Client beim Browserlauf gegen `pnpm start` in 2 von 2 Versuchen nicht (Button blieb auf „Wird geladen …“, serverseitig war korrekt gespeichert). Die Action bestätigt jetzt per `redirect(…?calendar_color_saved=1)`, die Detailseite zeigt das Banner. Beim Testen solcher Redirects beachten: Nach einem `goBack` steht der Query-Parameter schon in der URL, `waitForURL` wäre sofort erfüllt – für Wiederherstellungs-Schritte immer eine frische URL ohne Parameter ansteuern.
+2. **E2E-Hänger = verkeilter Turbopack-Cache, nicht Last.** Zwei Mobile-Navigationstests hingen über mehrere Läufe dauerhaft (`page.goto` lud nie fertig, auch mit 60 s Timeout; WebServer-Log voller ChunkLoadErrors). Ursache ist das im `verify`-Skill dokumentierte Verkeilen des Turbopack-Dev-Caches nach wiederholten DB-Resets/Seeds: Nach `rm -rf .next` lief die komplette Suite grün und mit 49 s so schnell wie nie. Betriebsregel: Hängen E2E-Navigationen und erscheinen ChunkLoadErrors im WebServer-Log → `.next` löschen, nicht an Timeouts drehen. Der auf 60 s angehobene Testtimeout in `playwright.config.ts` bleibt als Reserve für echte Lastspitzen.
+
+## Vorheriger Auftrag (19.07.2026, dritter): Dunkelmodus für Patienten
 
 Branch `claude-patient-dark-mode-20260719`: Die vorbereitete `.dark`-Token-Palette ist jetzt für Patienten aktivierbar (D-056). `src/lib/theme.ts` (Cookie `pc-theme`, Parsing, `applyPatientTheme`), Umschalter `src/components/patient/theme-toggle.tsx` im Profilbereich „Darstellung“, Patienten-Layout liest das Cookie serverseitig und setzt `.dark` + `color-scheme` NUR auf dem Wrapper (`data-patient-theme-root`) – der Praxisbereich liest das Cookie nie und bleibt hell. Tailwinds `dark:`-Variante greift dank `@custom-variant dark (&:is(.dark *))` auch unter dem Wrapper. Geprüft: Typecheck, Lint, 116 Tests, Build, E2E Exit 0 (45 bestanden), mobiler Dunkel-Screenshot-Lauf.
 

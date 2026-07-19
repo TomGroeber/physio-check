@@ -3,9 +3,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionContext } from "@/server/services/session";
 import { getAppointmentOptions, listCalendarAppointments } from "@/server/services/appointments";
+import { getPatientCalendarColors } from "@/server/services/patient-calendar-colors";
 import { isCalendarView, isIsoDate, monthGridDays, navigateDate, visibleRange, weekDaysIso, type CalendarView } from "@/lib/calendar";
 import { formatDateLong, formatTime, isoDateInTimeZone, todayInTimeZone, zonedTimeToUtc } from "@/lib/datetime";
-import { colorStyle } from "@/lib/calendar-colors";
+import { colorStyle, type CalendarColor } from "@/lib/calendar-colors";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { de } from "@/messages/de";
@@ -31,6 +32,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
   const range = visibleRange(view, date);
   const start = zonedTimeToUtc(range.start, "00:00", options.practice.timezone).toISOString();
   const end = zonedTimeToUtc(range.endExclusive, "00:00", options.practice.timezone).toISOString();
+  const patientColors = await getPatientCalendarColors(membership.practiceId);
   const appointments = await listCalendarAppointments(membership.practiceId, start, end, {
     therapistId: params.therapist,
     patientId: params.patient,
@@ -47,6 +49,24 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
     Object.entries(overrides).forEach(([key, value]) => value ? next.set(key, value) : next.delete(key));
     return `/practice/calendar?${next}`;
   };
+
+  // Farbe je PATIENT (D-057): ohne Zuordnung bleibt der Termin neutral.
+  const patientChip = (patientId: string) => {
+    const color = patientColors[patientId];
+    return color ? colorStyle(color).chip : "";
+  };
+  const patientDot = (patientId: string) => {
+    const color = patientColors[patientId];
+    return color ? colorStyle(color).dot : null;
+  };
+  // Legende: nur Patienten mit Farbe, die im sichtbaren Zeitraum vorkommen.
+  const legendPatients = Array.from(
+    new Map(
+      appointments
+        .filter((appointment) => patientColors[appointment.patient.id])
+        .map((appointment) => [appointment.patient.id, appointment.patient])
+    ).values()
+  );
 
   const appointmentsForDay = (day: string) => appointments.filter((appointment) => isoDateInTimeZone(new Date(appointment.starts_at), options.practice!.timezone) === day);
   const days = view === "month" ? monthGridDays(date) : view === "week" ? weekDaysIso(date) : view === "day" ? [date] : [];
@@ -84,12 +104,12 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
         <Button type="submit" variant="secondary" className="h-11 text-base">{de.practice.calendar.filter}</Button>
       </form>
 
-      {options.therapists.length > 0 ? (
+      {legendPatients.length > 0 ? (
         <ul aria-label={de.practice.calendar.legend} className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-          {options.therapists.map((row) => (
-            <li key={row.id} className="flex items-center gap-1.5">
-              <span aria-hidden className={`size-2.5 rounded-full ${colorStyle(row.calendar_color).dot}`} />
-              {row.profiles.full_name}
+          {legendPatients.map((patient) => (
+            <li key={patient.id} className="flex items-center gap-1.5">
+              <span aria-hidden className={`size-2.5 rounded-full ${patientDot(patient.id)}`} />
+              {patient.full_name}
             </li>
           ))}
         </ul>
@@ -102,22 +122,36 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
             const dayAppointments = appointmentsForDay(day);
             return <div key={day} className={`min-h-32 bg-card p-2 ${day === today ? "ring-2 ring-inset ring-primary" : ""}`} role="gridcell">
               <div className="mb-2 flex items-center justify-between"><span className="text-sm font-bold">{Number(day.slice(-2))}</span><Link href={`/practice/calendar/new?date=${day}`} className="text-sm text-primary" aria-label={`${day}: Termin anlegen`}>+</Link></div>
-              <div className="flex flex-col gap-1">{dayAppointments.slice(0, 4).map((appointment) => <Link key={appointment.id} href={`/practice/calendar/${appointment.id}`} className={`flex items-center gap-1 rounded bg-primary/10 px-2 py-1 text-xs hover:bg-primary/20 ${colorStyle(appointment.therapist?.calendar_color).chip}`}><span aria-hidden className={`size-2 shrink-0 rounded-full ${colorStyle(appointment.therapist?.calendar_color).dot}`} /><span className="font-bold">{formatTime(new Date(appointment.starts_at), appointment.timezone)}</span> <span className="truncate">{appointment.patient.full_name}</span></Link>)}{dayAppointments.length > 4 ? <Link href={base({ view: "day", date: day })} className="text-xs font-semibold text-primary">+ {dayAppointments.length - 4} weitere</Link> : null}</div>
+              <div className="flex flex-col gap-1">{dayAppointments.slice(0, 4).map((appointment) => <Link key={appointment.id} href={`/practice/calendar/${appointment.id}`} className={`flex items-center gap-1 rounded bg-primary/10 px-2 py-1 text-xs hover:bg-primary/20 ${patientChip(appointment.patient.id)}`}>{patientDot(appointment.patient.id) ? <span aria-hidden className={`size-2 shrink-0 rounded-full ${patientDot(appointment.patient.id)}`} /> : null}<span className="font-bold">{formatTime(new Date(appointment.starts_at), appointment.timezone)}</span> <span className="truncate">{appointment.patient.full_name}</span></Link>)}{dayAppointments.length > 4 ? <Link href={base({ view: "day", date: day })} className="text-xs font-semibold text-primary">+ {dayAppointments.length - 4} weitere</Link> : null}</div>
             </div>;
           })}
         </div>
       ) : view === "list" ? (
-        <AppointmentList appointments={appointments} />
+        <AppointmentList appointments={appointments} patientColors={patientColors} />
       ) : (
         <div className={`grid gap-3 ${view === "week" ? "lg:grid-cols-7" : ""}`}>
-          {days.map((day) => <section key={day} className="min-h-48 rounded-xl border bg-card p-3"><div className="mb-3 flex items-center justify-between"><h2 className="font-bold">{formatDateLong(zonedTimeToUtc(day, "12:00", options.practice!.timezone), options.practice!.timezone)}</h2><Link href={`/practice/calendar/new?date=${day}`} className="text-sm font-semibold text-primary">+</Link></div><AppointmentList appointments={appointmentsForDay(day)} /></section>)}
+          {days.map((day) => <section key={day} className="min-h-48 rounded-xl border bg-card p-3"><div className="mb-3 flex items-center justify-between"><h2 className="font-bold">{formatDateLong(zonedTimeToUtc(day, "12:00", options.practice!.timezone), options.practice!.timezone)}</h2><Link href={`/practice/calendar/new?date=${day}`} className="text-sm font-semibold text-primary">+</Link></div><AppointmentList appointments={appointmentsForDay(day)} patientColors={patientColors} /></section>)}
         </div>
       )}
     </div>
   );
 }
 
-function AppointmentList({ appointments }: { appointments: Awaited<ReturnType<typeof listCalendarAppointments>> }) {
+function AppointmentList({
+  appointments,
+  patientColors,
+}: {
+  appointments: Awaited<ReturnType<typeof listCalendarAppointments>>;
+  patientColors: Record<string, CalendarColor>;
+}) {
   if (!appointments.length) return <p className="text-sm text-muted-foreground">{de.practice.calendar.empty}</p>;
-  return <ul className="flex flex-col gap-2">{appointments.map((appointment) => <li key={appointment.id}><Link href={`/practice/calendar/${appointment.id}`} className={`flex flex-wrap items-center gap-2 rounded-lg border p-3 hover:bg-muted ${colorStyle(appointment.therapist?.calendar_color).chip}`}><span className="font-bold">{formatTime(new Date(appointment.starts_at), appointment.timezone)}</span><span className="flex-1">{appointment.patient.full_name}</span>{appointment.therapist ? <span className="flex items-center gap-1.5 text-sm text-muted-foreground"><span aria-hidden className={`size-2.5 rounded-full ${colorStyle(appointment.therapist.calendar_color).dot}`} />{appointment.therapist.profiles?.full_name}</span> : null}<Badge variant="secondary">{statusLabel(appointment.status)}</Badge></Link></li>)}</ul>;
+  const chip = (patientId: string) => {
+    const color = patientColors[patientId];
+    return color ? colorStyle(color).chip : "";
+  };
+  const dot = (patientId: string) => {
+    const color = patientColors[patientId];
+    return color ? colorStyle(color).dot : null;
+  };
+  return <ul className="flex flex-col gap-2">{appointments.map((appointment) => <li key={appointment.id}><Link href={`/practice/calendar/${appointment.id}`} className={`flex flex-wrap items-center gap-2 rounded-lg border p-3 hover:bg-muted ${chip(appointment.patient.id)}`}><span className="font-bold">{formatTime(new Date(appointment.starts_at), appointment.timezone)}</span><span className="flex flex-1 items-center gap-1.5">{dot(appointment.patient.id) ? <span aria-hidden className={`size-2.5 shrink-0 rounded-full ${dot(appointment.patient.id)}`} /> : null}{appointment.patient.full_name}</span>{appointment.therapist ? <span className="text-sm text-muted-foreground">{appointment.therapist.profiles?.full_name}</span> : null}<Badge variant="secondary">{statusLabel(appointment.status)}</Badge></Link></li>)}</ul>;
 }

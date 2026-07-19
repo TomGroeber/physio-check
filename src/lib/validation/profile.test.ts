@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  setCalendarColorSchema,
   updateOwnPhoneSchema,
   updatePatientPhoneSchema,
 } from "@/lib/validation/profile";
@@ -47,13 +46,5 @@ describe("phone validation", () => {
         phone: "123456",
       }).success
     ).toBe(true);
-  });
-});
-
-describe("calendar color validation", () => {
-  it("accepts palette colors only", () => {
-    expect(setCalendarColorSchema.safeParse({ color: "indigo" }).success).toBe(true);
-    expect(setCalendarColorSchema.safeParse({ color: "hotpink" }).success).toBe(false);
-    expect(setCalendarColorSchema.safeParse({ color: "" }).success).toBe(false);
   });
 });

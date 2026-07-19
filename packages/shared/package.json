@@ -1,0 +1,21 @@
+{
+  "name": "@physio-check/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plattformunabhaengige Typen, Schemas und Logik fuer Website und Patienten-App (D-058/D-059).",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}
