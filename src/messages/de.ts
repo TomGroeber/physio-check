@@ -196,6 +196,8 @@ export const de = {
       commonMistakes: "Darauf sollten Sie achten",
       equipment: "Hilfsmittel",
       prescriptionHeading: "Ihre Vorgaben",
+      noVideoBody:
+        "Ihre Praxis erklärt Ihnen die Übung gern beim nächsten Termin.",
       scheduleFixed: (days: string, times: number) =>
         `${days} · ${times} ${times === 1 ? "Durchgang" : "Durchgänge"} pro Tag`,
       scheduleFlexible: (times: number) =>

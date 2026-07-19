@@ -4,42 +4,20 @@ import { notFound } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft02Icon, Tick02Icon } from "@hugeicons/core-free-icons";
 import { getSessionContext } from "@/server/services/session";
-import {
-  getExerciseDetailForPatient,
-  type ExerciseDetail,
-} from "@/server/services/exercise-log";
-import { Card, CardContent } from "@/components/ui/card";
-import { de } from "@/messages/de";
+import { getExerciseDetailForPatient } from "@/server/services/exercise-log";
+import { ExerciseView } from "@/components/patient/exercise-view";
 import { ExerciseLogForm } from "@/components/patient/exercise-log-form";
+import { de } from "@/messages/de";
 
 const t = de.patient.exercise;
-const u = de.units;
 
 export const metadata: Metadata = { title: de.patient.today.exercisesHeading };
 
-/** Vorgaben als gut lesbare Liste, z. B. "3 Sätze · 12 Wiederholungen". */
-function prescriptionParts(detail: ExerciseDetail): string[] {
-  const parts: string[] = [];
-  if (detail.sets)
-    parts.push(`${detail.sets} ${detail.sets === 1 ? u.set : u.sets}`);
-  if (detail.repetitions) parts.push(`${detail.repetitions} ${u.repetitions}`);
-  if (detail.holdSeconds) parts.push(u.holdSeconds(detail.holdSeconds));
-  if (detail.totalDurationSeconds)
-    parts.push(u.minutes(Math.round(detail.totalDurationSeconds / 60)));
-  if (detail.restSeconds) parts.push(u.restSeconds(detail.restSeconds));
-  return parts;
-}
-
-function scheduleText(detail: ExerciseDetail): string {
-  if (detail.schedule.mode === "times_per_week") {
-    return t.scheduleFlexible(detail.schedule.times_per_week);
-  }
-  const days = detail.schedule.weekdays
-    .map((weekday) => de.patient.session.weekdaysShort[weekday - 1])
-    .join(", ");
-  return t.scheduleFixed(days, detail.schedule.times_per_day);
-}
-
+/**
+ * Übungsseite für Patienten: kompakter Titel, großes Video, kompakte
+ * Vorgaben, dann die Dokumentation. Beschreibende Langtexte der Übung
+ * erscheinen hier bewusst nicht mehr (siehe ExerciseView).
+ */
 export default async function ExerciseDetailPage({
   params,
 }: {
@@ -51,7 +29,7 @@ export default async function ExerciseDetailPage({
   if (!detail) notFound();
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       <Link
         href="/today"
         className="flex min-h-12 items-center gap-2 text-lg font-semibold text-primary"
@@ -61,153 +39,43 @@ export default async function ExerciseDetailPage({
       </Link>
 
       <h1 className="text-2xl font-bold">{detail.title}</h1>
-      {detail.description ? (
-        <p className="text-lg text-muted-foreground">{detail.description}</p>
-      ) : null}
 
-      <section aria-label={t.videoHeading}>
-        {detail.videoUrl ? (
-          // Kein Autoplay; Ton startet nur auf Wunsch des Patienten.
-          <video
-            controls
-            preload="metadata"
-            playsInline
-            poster={detail.posterUrl ?? undefined}
-            className="w-full rounded-xl border bg-black"
-          >
-            <source src={detail.videoUrl} />
-            {detail.captionsUrl ? (
-              <track
-                kind="captions"
-                src={detail.captionsUrl}
-                srcLang="de"
-                label={t.germanCaptions}
-                default
-              />
-            ) : null}
-            {t.videoUnsupported}
-          </video>
-        ) : detail.fallbackImageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element -- kurzlebige signierte Storage-URL.
-          <img
-            src={detail.fallbackImageUrl}
-            alt={t.fallbackImageAlt(detail.title)}
-            className="w-full rounded-xl border object-contain"
-          />
-        ) : (
-          <Card>
-            <CardContent className="p-5 text-lg text-muted-foreground">
-              {t.noVideo}
-            </CardContent>
-          </Card>
-        )}
-      </section>
+      <ExerciseView detail={detail} />
 
-      <section aria-labelledby="prescription-heading" className="flex flex-col gap-2">
-        <h2 id="prescription-heading" className="text-xl font-bold">
-          {t.prescriptionHeading}
-        </h2>
-        {prescriptionParts(detail).length > 0 ? (
-          <p className="text-lg">{prescriptionParts(detail).join(" · ")}</p>
-        ) : null}
-        <p className="text-lg">{scheduleText(detail)}</p>
-        {detail.schedule.preferred_times.length > 0 ? (
-          <p className="text-base text-muted-foreground">
-            {t.preferredTimes(
-              detail.schedule.preferred_times
-                .map((time) => `${time} ${de.units.timeSuffix}`)
-                .join(", ")
-            )}
-          </p>
-        ) : null}
-        {detail.planNote ? (
-          <div className="rounded-lg bg-muted p-4">
-            <p className="text-base font-semibold">{t.planNote}</p>
-            <p className="text-lg">{detail.planNote}</p>
-          </div>
-        ) : null}
-      </section>
-
-      {detail.startingPosition ? (
-        <section aria-labelledby="position-heading" className="flex flex-col gap-2">
-          <h2 id="position-heading" className="text-xl font-bold">
-            {t.startingPosition}
-          </h2>
-          <p className="text-lg">{detail.startingPosition}</p>
-        </section>
-      ) : null}
-
-      {detail.steps.length > 0 ? (
-        <section aria-labelledby="steps-heading" className="flex flex-col gap-2">
-          <h2 id="steps-heading" className="text-xl font-bold">
-            {t.steps}
-          </h2>
-          <ol className="flex list-decimal flex-col gap-2 pl-6 text-lg">
-            {detail.steps.map((step, index) => (
-              <li key={index}>{step}</li>
-            ))}
-          </ol>
-        </section>
-      ) : null}
-
-      {detail.commonMistakes ? (
-        <section aria-labelledby="mistakes-heading" className="flex flex-col gap-2">
-          <h2 id="mistakes-heading" className="text-xl font-bold">
-            {t.commonMistakes}
-          </h2>
-          <p className="text-lg">{detail.commonMistakes}</p>
-        </section>
-      ) : null}
-
-      {detail.equipment ? (
-        <section aria-labelledby="equipment-heading" className="flex flex-col gap-2">
-          <h2 id="equipment-heading" className="text-xl font-bold">
-            {t.equipment}
-          </h2>
-          <p className="text-lg">{detail.equipment}</p>
-        </section>
-      ) : null}
-
-      <section aria-labelledby="log-heading" className="flex flex-col gap-3">
+      <section aria-labelledby="log-heading" className="flex flex-col gap-3 border-t pt-5">
         <h2 id="log-heading" className="text-xl font-bold">
           {t.documentHeading}
         </h2>
         {detail.dueToday && (detail.plannedToday > 1 || detail.weeklyProgress) ? (
-          <Card>
-            <CardContent className="p-5" role="status">
-              <p className="text-lg font-bold">
-                {detail.weeklyProgress
-                  ? de.patient.today.progressWeek(
-                      detail.weeklyProgress.documented,
-                      detail.weeklyProgress.target
-                    )
-                  : de.patient.today.progressToday(
-                      detail.documentedToday,
-                      detail.plannedToday
-                    )}
-              </p>
-            </CardContent>
-          </Card>
+          <p className="text-lg font-bold" role="status">
+            {detail.weeklyProgress
+              ? de.patient.today.progressWeek(
+                  detail.weeklyProgress.documented,
+                  detail.weeklyProgress.target
+                )
+              : de.patient.today.progressToday(
+                  detail.documentedToday,
+                  detail.plannedToday
+                )}
+          </p>
         ) : null}
         {detail.fullyDocumentedToday ? (
-          <Card>
-            <CardContent className="flex items-start gap-4 p-5">
-              <span className={`flex size-10 shrink-0 items-center justify-center rounded-full ${detail.fullyCompletedToday ? "bg-success text-success-foreground" : "border-2 border-warning bg-warning/15"}`}>
-                <HugeiconsIcon icon={Tick02Icon} strokeWidth={2.5} className="size-6" aria-hidden />
-              </span>
-              <div>
-                <p className="text-lg font-bold">{t.alreadyLoggedTitle}</p>
-                <p className="text-base text-muted-foreground">
-                  {t.alreadyLoggedBody}
+          <div className="flex items-start gap-4 rounded-2xl bg-muted/40 p-5">
+            <span
+              className={`flex size-10 shrink-0 items-center justify-center rounded-full ${detail.fullyCompletedToday ? "bg-success text-success-foreground" : "border-2 border-warning bg-warning/15"}`}
+            >
+              <HugeiconsIcon icon={Tick02Icon} strokeWidth={2.5} className="size-6" aria-hidden />
+            </span>
+            <div>
+              <p className="text-lg font-bold">{t.alreadyLoggedTitle}</p>
+              <p className="text-base text-muted-foreground">{t.alreadyLoggedBody}</p>
+              {!detail.fullyCompletedToday ? (
+                <p className="mt-2 text-base text-muted-foreground">
+                  {t.documentedNotCompleted}
                 </p>
-                {!detail.fullyCompletedToday ? (
-                  <p className="mt-2 text-base text-muted-foreground">
-                    {t.documentedNotCompleted}
-                  </p>
-                ) : null}
-              </div>
-            </CardContent>
-          </Card>
+              ) : null}
+            </div>
+          </div>
         ) : detail.canDocument && detail.nextOccurrenceIndex ? (
           <ExerciseLogForm
             planItemId={detail.planItemId}
@@ -216,11 +84,9 @@ export default async function ExerciseDetailPage({
             plannedOccurrences={detail.plannedToday}
           />
         ) : (
-          <Card>
-            <CardContent className="p-5 text-lg text-muted-foreground">
-              {t.errorNotDueToday}
-            </CardContent>
-          </Card>
+          <div className="rounded-2xl bg-muted/40 p-5 text-lg text-muted-foreground">
+            {t.errorNotDueToday}
+          </div>
         )}
       </section>
     </div>
