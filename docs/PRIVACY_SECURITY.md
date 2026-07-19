@@ -1,5 +1,13 @@
 # PhysioCheck – Datenschutz und Sicherheit
 
+## Ergänzung 2026-07-19: Patienten-Profilbilder
+
+- Profilbilder sind personenbezogene Daten und liegen ausschließlich im privaten Bucket `patient-avatars`; es gibt keine öffentliche URL. Auslieferung nur über kurzlebige signierte URLs, die erst nach serverseitiger Autorisierung (eigene Session bzw. aktive Praxisverbindung) und Pfadprüfung entstehen.
+- Sichtbar ist das Bild nur für den Patienten selbst und aktive Mitglieder der aktuell verbundenen Praxis; andere Patienten, fremde Praxen, ehemalige Praxen (nach Praxiswechsel) und nicht angemeldete Personen sind per Storage-RLS und serverseitiger Prüfung ausgeschlossen (per RLS-Suite belegt).
+- Upload: freiwillig, max. 5 MB, nur JPEG/PNG/WebP; der MIME-Typ wird nicht allein geglaubt, die Dateisignatur wird serverseitig geprüft. Dateinamen sind zufällige UUIDs im eigenen Profilordner. Ersetzen löscht das alte Objekt (alte signierte URLs laufen zusätzlich zeitlich ab), Entfernen löscht Datei und Verweis; beides wird ohne Dateinamen auditiert.
+- Ohne Bild zeigt die App einen neutralen Initialen-Platzhalter, niemals ein fremdes Personenfoto. Ein Profilbild ist keine Nutzungsvoraussetzung. Seeds und Tests verwenden ausschließlich generierte 1×1-Pixel-Bilder.
+- Offen (wie bei allen Uploads): Malware-Scan mit Quarantäne vor einem echten Pilotbetrieb.
+
 ## Ergänzung Phase D/E: Planintegrität und Praxiswechsel
 
 - Pläne werden nur über atomare, serverseitig autorisierte Datenbankfunktionen veröffentlicht oder archiviert; halbfertige Versionen können nicht aktiv werden.

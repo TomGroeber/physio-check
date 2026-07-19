@@ -156,6 +156,18 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [x] Auf Toms Mac ausführen: `pnpm db:reset && pnpm seed && pnpm test:rls && pnpm e2e`; Mailpit-Links und Mobil-/Desktopdarstellung prüfen. (2026-07-19, siehe Auftrag unten)
 - [x] Merge nach `main` mit Toms Freigabe (2026-07-19): Fast-Forward `960c212..c0579ca`, gepusht.
 
+## Auftrag vom 19.07.2026 – Video-first-Übungsansicht und Profilbild (Branch `claude-patient-exercise-avatar-20260719`)
+
+- [x] Übungsdetailseite und geführter Modus auf gemeinsame Video-first-Ansicht umgestellt (`ExerciseView`): randloses 16:9-Video mit Poster/Untertiteln, Alternativbild, freundlicher Leerzustand; kompakte Vorgaben-Chips (Sätze, Wiederholungen, Halten, Pause, Hilfsmittel), Häufigkeit, Uhrzeiten und Praxisnotiz.
+- [x] Kurzbeschreibung, Ausgangsposition, Durchführungsschritte und häufige Fehler aus der Patientenansicht entfernt; Daten und Praxis-Bearbeitung unverändert (per E2E belegt), D-055.
+- [x] Migration `20260719100000_patient_avatars.sql`: `profiles.avatar_path` (Clients können die Spalte nicht schreiben), privater Bucket `patient-avatars` (5 MB, JPEG/PNG/WebP), Lese-Policy nur für den Patienten selbst und aktive Mitglieder der aktuell verbundenen Praxis; keine Client-Schreib-Policies (D-054).
+- [x] Avatar-Service/-Actions nach dem Ticket-Muster der Übungsmedien: zufälliger Pfad im eigenen Profilordner, serverseitige Größen- und Magic-Byte-Prüfung (inkl. WebP), Ersetzen löscht das alte Objekt, Entfernen löscht Datei und Verweis, Audit ohne Dateinamen; Auslieferung nur über kurzlebige signierte URLs nach Pfadprüfung.
+- [x] Profilseite mit Auswahl/Vorschau/Hochladen/Ersetzen/Entfernen; runder Avatar mit Initialen-Platzhalter und automatischem Fallback bei Ladefehlern in Patienten-Kopfzeile, Profil, Praxis-Patientenliste und -detailseite.
+- [x] Tests: 9 neue Unit-/Komponententests (Video-vor-Vorgaben, ausgeblendete Langtexte, Leerzustand, WebP-/Pfad-Prüfungen), 10 neue RLS-Proben (inkl. Ex-Praxis nach Praxiswechsel, Spalten- und Bucket-Schreibschutz), 6 neue E2E-Fälle (Upload/Ablehnungen/Ersetzen/Entfernen/Praxisansicht, video-first-Seite).
+- [x] Vollständig lokal ausgeführt: db:reset (21 Migrationen), Seed, Typecheck, Lint, 114 Tests, 88 RLS-Proben, E2E Exit 0 (43 bestanden/16 planmäßig übersprungen), Build, mobiler Browserlauf (iPhone-Viewport, kein horizontales Scrollen, Video volle Breite).
+- [x] Teststabilität: Playwright auf 4 Worker begrenzt, Expect-Timeout 15 s, Hydrations-Klickverluste in drei Spezifikationen behoben.
+- [ ] Merge nach `main` erst nach Toms Freigabe.
+
 ## Auftrag vom 19.07.2026 – Lokale Prüfungen und Fehlerbehebung (Branch `claude-patient-ui-20260718`)
 
 - [x] `supabase start`, `pnpm db:reset` (20 Migrationen), `pnpm seed`, Typecheck, Lint, 105 Unit-Tests grün.

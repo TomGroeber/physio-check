@@ -2,6 +2,12 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-07-19 – Video-first-Übungsansicht und Profilbilder
+
+**D-055 · Patientenansicht zeigt keine beschreibenden Langtexte mehr.** Kurzbeschreibung, Ausgangsposition, Durchführungsschritte und häufige Fehler bleiben vollständig in der Datenbank und in der Übungsbibliothek der Praxis bearbeitbar, erscheinen aber nicht mehr auf der Patienten-Übungsseite und im geführten Modus. Dort stehen Video (16:9, auf Mobilgeräten randlos) und kompakte Vorgaben (Dosierungs-Chips, Häufigkeit, Uhrzeiten, Hilfsmittel, Praxisnotiz) im Vordergrund – gemeinsame Komponente `ExerciseView`, damit beide Ansichten identisch bleiben. Historische Daten und Snapshots sind unberührt.
+
+**D-054 · Profilbild als serververwalteter Pfad + privater Bucket.** `profiles.avatar_path` zeigt auf genau ein Objekt in `patient-avatars` (`<profile_id>/<uuid>.<ext>`, kein Name/keine E-Mail im Pfad). Die Spalte ist für Clients nicht beschreibbar (Spaltenrechte wie bei `calendar_color`, D-033); alle Schreibwege laufen über das bewährte Ticket-Muster der Übungsmedien (D-034) mit serverseitiger Größen- und Magic-Byte-Prüfung (inkl. WebP). Die einzige Storage-Policy erlaubt Lesen dem Patienten selbst und aktiven Mitgliedern der AKTUELL verbundenen Praxis (`member_can_view_patient`); eine ehemalige Praxis verliert den Zugriff mit dem Praxiswechsel automatisch. Auslieferung ausschließlich über kurzlebige signierte URLs nach Pfadprüfung; Ersetzen und Entfernen löschen das alte Objekt und werden ohne Dateinamen auditiert. Bewusst keine eigene Avatar-Tabelle: ein einzelnes aktuelles Bild ohne Historie braucht keinen zweiten Mandantenpfad.
+
 ## 2026-07-19 – Lokale Verifikation der Patientenoberfläche
 
 **D-053 · Patientenbestätigungen per Redirect, nicht per Rückgabezustand.** Server-Actions, die nach Erfolg `revalidatePath` aufrufen und einen Zustand zurückgeben, erreichen den Client unter Next 16 nachweislich unzuverlässig (Formular bleibt „Wird geladen …“ oder die Aktualisierung wird verworfen; lokal reproduziert bei Terminabsage und E-Mail-Änderung). Patientenkritische Bestätigungen folgen deshalb dem bestehenden Muster der Übungsdokumentation: Redirect mit Query-Parameter (`/appointments?cancellation_requested=1`, `/profile?email_change_requested=1`), die Zielseite zeigt die Bestätigung. Fehlerfälle geben weiterhin direkt einen Zustand zurück (kein `revalidatePath` → zuverlässig). Praxisformulare bleiben vorerst unverändert; die Beobachtung ist in `docs/AI_HANDOFF.md` festgehalten.

@@ -1,8 +1,22 @@
 # PhysioCheck – AI Handoff
 
-> Stand: 2026-07-19 · Arbeitszweig: `claude-patient-ui-20260718` · GitHub-Remote: `TomGroeber/physio-check` (öffentlich; keine Secrets/echten Daten)
+> Stand: 2026-07-19 (zweiter Auftrag) · Arbeitszweig: `claude-patient-exercise-avatar-20260719` (Basis: `main@4723363`) · GitHub-Remote: `TomGroeber/physio-check` (öffentlich; keine Secrets/echten Daten)
 
-## Letzter Auftrag (19.07.2026): Lokale Prüfungen und Fehlerbehebung auf Toms Mac
+## Letzter Auftrag (19.07.2026, zweiter): Video-first-Übungsansicht und Patienten-Profilbild
+
+Fünf Commits auf `claude-patient-exercise-avatar-20260719`, alle gepusht; Merge nach `main` wartet auf Toms Freigabe.
+
+**Übungsansicht (D-055):** Neue gemeinsame Komponente `src/components/patient/exercise-view.tsx` für `/exercises/[planItemId]` und `/session`: randloses 16:9-Video (Container `aspect-video`, auf Mobil `-mx-4`), Poster, WebVTT-Untertitel, nie Autoplay; ohne Video Alternativbild, sonst freundlicher Leerzustand. Darunter eine Vorgabenfläche mit Dosierungs-Chips (inkl. Hilfsmittel), Schedule-Zeile, Uhrzeiten und hervorgehobener Praxisnotiz. Beschreibung/Ausgangsposition/Schritte/häufige Fehler werden Patienten nicht mehr gezeigt – Daten, Praxis-Formular (`exercise-form.tsx`) und Snapshots unverändert. Komponententests in `exercise-view.test.tsx`.
+
+**Profilbild (D-054):** Migration `20260719100000_patient_avatars.sql` (21. Migration): `profiles.avatar_path` + enge Spaltenrechte (`grant update (full_name, phone, locale)`), privater Bucket `patient-avatars` (5 MB, JPEG/PNG/WebP), einzige Storage-Policy = Lesen für sich selbst oder `member_can_view_patient` (Ex-Praxis verliert Zugriff automatisch). Neuer Service `src/server/services/patient-avatar.ts` + Actions `src/server/actions/avatar.ts` nach dem Ticket-Muster (zufälliger Pfad `<profile_id>/<uuid>.<ext>`, Größen-/Magic-Byte-Prüfung inkl. neuer WebP-Signatur in `src/config/media.ts`, Ersetzen/Entfernen löschen Objekte, Audit ohne Dateinamen). UI: `avatar-upload.tsx` (Vorschau, Fortschritt, bestätigtes Entfernen; Finalize-Action gibt die frische signierte URL zurück → deterministische Anzeige) und gemeinsames `src/components/patient-avatar.tsx` (rund, feste Größe, Initialen-Platzhalter, onError-Fallback) in Patienten-Kopfzeile, Profil, Praxis-Patientenliste und -detail (`listPatients`/`getPatientDetail` signieren nach Scope- und Pfadprüfung).
+
+**Tests:** RLS-Sektion E mit 10 Proben (eigener/fremder Patient, aktuelle/fremde/ehemalige Praxis, anonym, direkter Upload/Delete gesperrt, Spalte nicht beschreibbar) → 88 Proben gesamt. Neues `e2e/patient-avatar.spec.ts` (4 serielle Strecken) und zwei neue `demo-accounts`-Fälle (video-first-Seite ohne Langtexte + Bibliothek behält Felder) → 59 gelistete Fälle. Playwright: `workers: 4`, `expect.timeout: 15s`; drei Spezifikationen gegen Klickverlust vor der Hydration gehärtet (networkidle bzw. direkte Link-URL).
+
+**Prüfstand (alles lokal, 19.07.2026):** db:reset 21 Migrationen ✓ · Seed ✓ · Typecheck ✓ · Lint ✓ · 114 Unit-/Komponententests ✓ · 88 RLS-Proben ✓ · E2E Exit 0 (43 bestanden, 16 planmäßig übersprungene Mobile-Duplikate mutierender Strecken, vereinzelt bekannte Latenz-Flakes vom Retry gefangen) · Build ✓ · mobiler Browserlauf (iPhone 14: Video volle Breite 390 px, kein horizontales Scrollen, Avatar-Upload mobil, Kopfzeilen-Avatar, Praxisliste/-detail mit Bild) ✓.
+
+**Wichtig für Nachfolger:** `src/server/db/database.types.ts` wurde bewusst NUR um `avatar_path` von Hand ergänzt – ein voller `pnpm db:types`-Regen erzeugt striktere RPC-Argumenttypen, die bestehenden Code brechen (bei Gelegenheit gesammelt angehen). Vor `pnpm e2e` immer frisch seeden; `pnpm`-Befehle aus dem Repo-Root.
+
+## Vorheriger Auftrag (19.07.2026): Lokale Prüfungen und Fehlerbehebung auf Toms Mac
 
 Alle bisher offenen lokalen Prüfungen wurden ausgeführt und sind grün: `pnpm db:reset` (20 Migrationen), `pnpm seed` (jetzt deterministisch, auch direkt nach E2E), Typecheck, Lint, 105 Unit-Tests, `pnpm test:rls` (78 Proben), `pnpm e2e` (Exit 0: 35 bestanden, 12 planmäßig übersprungen, 1 bekannter Parallellast-Flake vom eingebauten Retry aufgefangen), `pnpm build`. Zusätzlich manuelle Playwright-Browser-Durchläufe der Patientenflüsse (Desktop + iPhone-14-Viewport) inklusive Mailpit.
 

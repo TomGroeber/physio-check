@@ -1,5 +1,11 @@
 # PhysioCheck – Datenmodell
 
+## Ergänzung 2026-07-19: Patienten-Profilbild
+
+- `profiles.avatar_path` (nullable) zeigt auf genau ein Objekt im privaten Bucket `patient-avatars` unter `<profile_id>/<uuid>.<ext>`. Kein Name, keine E-Mail im Pfad; kein Base64 in der Datenbank.
+- Die Spalte ist ausschließlich serverseitig beschreibbar: das Update-Recht von `authenticated` auf `profiles` ist auf `full_name`, `phone` und `locale` begrenzt (Muster von D-033).
+- Der Bucket hat 5 MB Limit (JPEG/PNG/WebP) und genau eine Storage-Policy: Lesen für den Patienten selbst oder `member_can_view_patient` (aktive Mitgliedschaft + aktiver Link → eine ehemalige Praxis verliert den Zugriff mit dem Praxiswechsel). Es gibt keine Client-Insert/-Delete-Policies; alle Schreibwege laufen über signierte Upload-Tickets und den Service-Client.
+
 ## Ergänzung Phase D/E: typisierte Planversionen
 
 - `exercise_plan_items.schedule` akzeptiert Legacy-Werte und für neue Versionen zwei typisierte Formen: feste ISO-Wochentage mit `times_per_day`/`preferred_times` oder ein flexibles `times_per_week`-Ziel.

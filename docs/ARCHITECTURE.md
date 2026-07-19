@@ -1,5 +1,11 @@
 # PhysioCheck – Architektur
 
+## Ergänzung 2026-07-19: Profilbild-Upload und Video-first-Übungsansicht
+
+Profilbilder verwenden dieselbe Ticket-Architektur wie die Übungsmedien: eine patientenscoped Server Action erzeugt nach Sessionprüfung einen zufälligen signierten Upload-Pfad im eigenen Profilordner, der Browser lädt direkt hoch, und erst die Finalisierung – nach Größen- und Magic-Byte-Prüfung – setzt `profiles.avatar_path` über den Service-Client (die Spalte ist für Clients gesperrt). Die Finalisierung gibt die frische kurzlebige URL direkt an den Client zurück, damit die Anzeige nicht vom gestreamten Re-Render abhängt (D-053-Begründung). Praxisseitig signieren `listPatients`/`getPatientDetail` Avatar-Pfade erst nach dem Mitgliedschafts-/Link-Scope der Abfrage und einer Pfadprüfung.
+
+Die Patienten-Übungsansicht ist in `ExerciseView` zentralisiert (Übungsseite + geführter Modus): Medien zuerst, kompakte Vorgaben danach; beschreibende Langtexte der Übung werden nur noch in der Praxis-Bibliothek gerendert (D-055).
+
 ## Ergänzung Phase D/E: Plan-Builder und Veröffentlichung
 
 Der Client hält nur den Entwurf. Die Server Action validiert den vollständigen Plan mit Zod und leitet die Praxis-ID ausschließlich aus der verifizierten Mitgliedschaft ab. `publish_exercise_plan` prüft den aktiven Patientenlink sowie jede aktive, nicht archivierte Übung erneut und veröffentlicht Version, Items, aktuellen Zeiger, datensparsame Notification und Audit atomar. Direkte Tabellenmutationen sind nicht freigegeben. Leser normalisieren historische Schedule-Formate zentral in `src/lib/plan-schedule.ts`.

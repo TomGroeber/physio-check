@@ -1,6 +1,35 @@
 # PhysioCheck – Testmatrix
 
-> Stand 19.07.2026. „Grün“ bedeutet tatsächlich lokal ausgeführt (Toms Mac, Supabase/Docker/Mailpit). Letzter vollständiger Lauf: 19.07.2026 auf Branch `claude-patient-ui-20260718`.
+> Stand 19.07.2026. „Grün“ bedeutet tatsächlich lokal ausgeführt (Toms Mac, Supabase/Docker/Mailpit). Letzter vollständiger Lauf: 19.07.2026 auf Branch `claude-patient-exercise-avatar-20260719`.
+
+## Video-first-Übungsansicht
+
+| Anforderung | Automatisierte Abdeckung | Status |
+|---|---|---|
+| Video steht vor den kompakten Vorgaben | `exercise-view.test.tsx` (DOM-Reihenfolge) | Grün |
+| Ausgangsposition/Schritte/Fehler/Beschreibung nicht in der Patientenansicht | `exercise-view.test.tsx` + `demo-accounts.spec.ts` | Grün (19.07.2026) |
+| Daten bleiben in der Praxis-Übungsverwaltung erhalten | `demo-accounts.spec.ts`: Bibliotheksformular zeigt Ausgangsposition/Schritte mit Seed-Werten | Grün (19.07.2026) |
+| Dosierung, Häufigkeit, Uhrzeiten, Hilfsmittel, Praxisnotiz sichtbar | `exercise-view.test.tsx` + E2E-Chips | Grün (19.07.2026) |
+| Video mit Untertiteln/Poster, kein Autoplay | `exercise-view.test.tsx`; realer Upload+Anzeige in `phase-j-exercise-management.spec.ts` | Grün (19.07.2026) |
+| Alternativbild und freundlicher Leerzustand | `exercise-view.test.tsx` + `demo-accounts.spec.ts` | Grün (19.07.2026) |
+| Alle Rückmeldestatus/mehrere Durchgänge unverändert | bestehende `core-flow`-/Occurrence-Tests | Grün (19.07.2026) |
+| Nur „erledigt“ erzeugt „Geschafft!“ | `success-celebration.test.tsx` + `core-flow.spec.ts` | Grün |
+| Mobil kein horizontales Scrollen | `demo-accounts.spec.ts` (auch Mobile-Projekt) + manueller iPhone-Lauf | Grün (19.07.2026) |
+
+## Patienten-Profilbild
+
+| Anforderung | Automatisierte Abdeckung | Status |
+|---|---|---|
+| Gültiges Bild hochladen (mit Vorschau), bleibt nach Neuladen | `patient-avatar.spec.ts` | Grün (19.07.2026) |
+| Ungültiger Typ / falsche Signatur / zu groß abgelehnt | `patient-avatar.spec.ts` + `media.test.ts` (WebP-/Mismatch-Signaturen, Limit) | Grün (19.07.2026) |
+| Ersetzen: alte signierte URL wird unbrauchbar | `patient-avatar.spec.ts` (altes Objekt gelöscht → Fehlerantwort) | Grün (19.07.2026) |
+| Entfernen: Datei und Verweis weg, Initialen-Platzhalter | `patient-avatar.spec.ts` | Grün (19.07.2026) |
+| Aktuell verbundene Praxis sieht das Bild (Liste + Detail) | `patient-avatar.spec.ts` + RLS-Probe | Grün (19.07.2026) |
+| Fremder Patient / fremde Praxis / anonym: kein Zugriff | RLS-Suite Sektion E | Grün (19.07.2026) |
+| Ehemalige Praxis nach Praxiswechsel: kein Zugriff | RLS-Suite (nach C2-Wechselablauf) | Grün (19.07.2026) |
+| Direkter Client-Upload/-Delete im Bucket gesperrt | RLS-Suite Sektion E | Grün (19.07.2026) |
+| `avatar_path` nicht direkt vom Client beschreibbar | RLS-Suite Sektion E (Spaltenrechte) | Grün (19.07.2026) |
+| Pfad-/Ordnerprüfung vor jeder Signierung | `media.test.ts` (`storagePathBelongsToProfile`) | Grün |
 
 ## Vereinfachte Patientenoberfläche und Kontosicherheit
 
@@ -69,15 +98,16 @@
 
 | Befehl | Ergebnis |
 |---|---|
-| `pnpm db:reset` | Grün: 20 Migrationen |
-| `pnpm seed` | Grün; jetzt deterministisch, auch direkt nach E2E-Läufen (D-051) |
+| `pnpm db:reset` | Grün: 21 Migrationen (inkl. `20260719100000_patient_avatars.sql`) |
+| `pnpm seed` | Grün; deterministisch auch direkt nach E2E-Läufen (D-051) |
 | `pnpm typecheck` | Grün |
 | `pnpm lint` | Grün, 0 Warnungen |
-| `pnpm test` | Grün: 21 Dateien, 105 Tests |
-| `pnpm test:rls` | Grün: 78 Proben |
-| `pnpm e2e` | Grün (Exit 0): 35 bestanden, 12 planmäßig übersprungen (Mobile-Skips mutierender Abläufe), 1 bekannter Parallellast-Flake vom Retry aufgefangen |
+| `pnpm test` | Grün: 22 Dateien, 114 Tests |
+| `pnpm test:rls` | Grün: 88 Proben |
+| `pnpm e2e` | Grün (Exit 0): 43 bestanden, 16 planmäßig übersprungen (Mobile-Skips mutierender Abläufe); vereinzelte bekannte Latenz-Flakes fängt der Retry |
 | `pnpm build` | Grün |
 | `pnpm docs:sync` | Grün (Obsidian-Vault auf Toms Mac) |
+| Mobiler Browserlauf (iPhone 14) | Grün: Video volle Breite (390/390 px), kein horizontales Scrollen, Avatar-Upload mobil, Kopfzeilen-Avatar, Praxisliste/-detail mit Bild |
 
 ## Bekannte Einschränkungen
 
