@@ -2,6 +2,18 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-07-19 – Mobile Patienten-App (Grundsatzentscheidungen)
+
+**D-058 · Expo-App im Monorepo statt zweitem Projekt.** Die Patienten-App entsteht als echte native Expo-/React-Native-App unter `apps/patient-mobile` im selben Repository (pnpm-Workspace), mit `packages/shared` für plattformneutrale Logik. Die Next.js-Website bleibt unangetastet an der Repo-Wurzel – ein Umzug nach `apps/web` wäre riskant und bringt für v1 nichts. Keine WebView-App, keine Kopie der Website: Patienten brauchen wenige, große, native Abläufe. Praxisrollen erhalten bewusst keinen mobilen Bereich (freundlicher Hinweis + Abmeldung).
+
+**D-059 · Datenzugriff dreistufig: RLS direkt → bestehende RPCs → wenige Bearer-Route-Handler.** Die App spricht Supabase direkt mit dem Publishable Key (RLS erzwingt Mandantentrennung – dieselben 94 geprüften Proben), nutzt die bestehenden SECURITY-DEFINER-RPCs für atomare Aktionen (Einladung, Durchgänge, Termine, Angebote) und ruft nur dort abgesicherte `/api/mobile/*`-Route-Handler der bestehenden Next-Anwendung (Bearer-JWT, serverseitige Autorisierung, bestehende Services), wo der Service-Key wirklich nötig ist: signierte Übungsmedien-URLs, Profilbild-Ticket-Upload, Kontolöschungsantrag. Keine direkte App↔Website-Kommunikation; die Handler sind Backend-Verlängerung, kein zweites Backend. Details: `docs/MOBILE_ARCHITECTURE.md`.
+
+**D-060 · Offline v1 = ehrlicher Leerlauf statt Sync-Illusion.** Laden beim Öffnen, Neuladen nach Mutation und beim Foreground, Pull-to-refresh, verständlicher Offline-Zustand. Keine lokale Persistenz von Gesundheitsdaten (nichts unverschlüsselt auf Platte), kein Realtime und keine angezeigte „Synchronisierung“, die es nicht gibt.
+
+**D-061 · Auth-Tokens nur im sicheren Gerätespeicher.** Supabase-Sessions liegen in expo-secure-store (Keychain/Keystore), nie in einfachem AsyncStorage. Deep Links über das Schema `physiocheck://`; Universal/App Links warten auf eine echte Domain (dokumentierter Blocker).
+
+**D-062 · Kontolöschung als auditierter Serverantrag.** Die App bietet Kontolöschung an (Store-Pflicht bei In-App-Registrierung), umgesetzt als klar erklärter, doppelt bestätigter Antrag über einen abgesicherten Serverpfad mit Audit-Ereignis. Ob und wann medizinische bzw. gesetzlich aufzubewahrende Praxisdaten in Luxemburg gelöscht werden dürfen, ist eine OFFENE rechtliche Frage – es wird nichts unkontrolliert gelöscht und keine rechtliche Sicherheit erfunden.
+
 ## 2026-07-19 – Kalenderfarben pro Patient
 
 **D-057 · Kalenderfarben gehören zum Patienten, nicht zum Praxismitglied.** Die Praxis vergibt pro Patient (und pro Praxis – nach einem Praxiswechsel behält jede Praxis ihr eigenes Schema) eine Farbe aus der bestehenden 8er-Palette; der Kalender färbt Termine danach, der Name steht immer zusätzlich dabei (WCAG 1.4.1). Neue Tabelle `patient_calendar_colors` nach dem Muster von `pinned_patients`: interne Organisationsdaten, bewusst KEINE Patienten-Policy (Patienten sehen ihre Zuordnung nie), Zuweisen/Ändern verlangt neben der Mitgliedschaft eine aktive Verbindung (`member_can_view_patient`). Das alte Feld `practice_members.calendar_color` samt Auswahl in den Einstellungen ist ersatzlos entfernt – zwei parallele Farbsysteme im selben Kalender wären mehrdeutig. „Keine Farbe“ ist der Normalzustand: Termine ohne Zuordnung bleiben neutral, die Legende zeigt nur zugeordnete Patienten im sichtbaren Zeitraum.
