@@ -25,6 +25,8 @@ export const de = {
     requiredField: "Bitte füllen Sie dieses Feld aus.",
     saved: "Gespeichert.",
     signOut: "Abmelden",
+    avatarAlt: (name: string) =>
+      name ? `Profilbild von ${name}` : "Profilbild",
   },
 
   landing: {
@@ -301,6 +303,27 @@ export const de = {
     profile: {
       title: "Profil",
       personalHeading: "Persönliche Daten",
+      avatar: {
+        heading: "Profilbild",
+        hint: (maxMb: number) =>
+          `Freiwillig. JPEG, PNG oder WebP, maximal ${maxMb} MB. Nur Sie und Ihre aktuell verbundene Praxis sehen das Bild.`,
+        choose: "Bild auswählen",
+        replace: "Anderes Bild wählen",
+        save: "Profilbild speichern",
+        cancel: "Auswahl verwerfen",
+        remove: "Profilbild entfernen",
+        removeConfirm:
+          "Möchten Sie Ihr Profilbild wirklich entfernen? Danach zeigt die App wieder Ihre Initialen.",
+        previewAlt: "Vorschau des neuen Profilbilds",
+        previewHint:
+          "Das ist eine Vorschau. Das Bild wird erst nach „Profilbild speichern“ übernommen.",
+        progress: (value: number) => `Upload: ${value} %`,
+        unsupportedType:
+          "Dieser Dateityp wird nicht unterstützt. Bitte wählen Sie ein Bild im Format JPEG, PNG oder WebP.",
+        tooLarge: (maxMb: number) =>
+          `Die Datei ist zu groß. Erlaubt sind höchstens ${maxMb} MB.`,
+        uploadFailed: "Der Upload hat nicht funktioniert. Bitte versuchen Sie es erneut.",
+      },
       securityHeading: "Sicherheit",
       remindersHeading: "Erinnerungen",
       practiceHeading: "Ihre Praxis",

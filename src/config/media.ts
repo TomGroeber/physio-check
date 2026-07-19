@@ -4,6 +4,33 @@
  */
 
 export const EXERCISE_MEDIA_BUCKET = "exercise-media";
+export const PATIENT_AVATAR_BUCKET = "patient-avatars";
+
+/** Maximale Profilbildgröße in Megabyte. */
+export const MAX_AVATAR_MB = 5;
+export const AVATAR_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+
+export function isAllowedAvatarSize(bytes: number): boolean {
+  return Number.isInteger(bytes) && bytes > 0 && bytes <= MAX_AVATAR_MB * 1024 * 1024;
+}
+
+/**
+ * Prüft, dass ein Avatar-Objektpfad exakt in den eigenen Profilordner
+ * zeigt (`<profile_id>/<datei>` ohne weitere Verzeichnisebenen).
+ */
+export function storagePathBelongsToProfile(
+  storagePath: string,
+  profileId: string
+): boolean {
+  const prefix = `${profileId}/`;
+  const fileName = storagePath.slice(prefix.length);
+  return (
+    storagePath.startsWith(prefix) &&
+    fileName.length > 0 &&
+    !fileName.includes("/") &&
+    !fileName.includes("\\")
+  );
+}
 
 /** Maximale Videogröße in Megabyte. */
 export const MAX_VIDEO_MB = 100;
@@ -48,6 +75,8 @@ export function extensionFor(mimeType: string): string {
       return "jpg";
     case "image/png":
       return "png";
+    case "image/webp":
+      return "webp";
     case "text/vtt":
       return "vtt";
     default:
@@ -73,6 +102,9 @@ export function signatureMatches(mimeType: string, bytes: Uint8Array): boolean {
       return startsWith([0xff, 0xd8, 0xff]);
     case "image/png":
       return startsWith([0x89, 0x50, 0x4e, 0x47]);
+    case "image/webp":
+      // RIFF-Container: "RIFF" ab Byte 0, "WEBP" ab Byte 8.
+      return startsWith([0x52, 0x49, 0x46, 0x46]) && startsWith([0x57, 0x45, 0x42, 0x50], 8);
     case "text/vtt": {
       const offset = startsWith([0xef, 0xbb, 0xbf]) ? 3 : 0;
       return startsWith([0x57, 0x45, 0x42, 0x56, 0x54, 0x54], offset);

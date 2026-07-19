@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  MAX_AVATAR_MB,
   allowedMimeTypes,
+  isAllowedAvatarSize,
   isAllowedMediaSize,
   maxBytes,
   signatureMatches,
   storagePathBelongsToExercise,
+  storagePathBelongsToProfile,
 } from "@/config/media";
 
 describe("exercise media configuration", () => {
@@ -47,5 +50,35 @@ describe("exercise media configuration", () => {
     expect(storagePathBelongsToExercise(`${practiceId}/${exerciseId}/file.mp4`, practiceId, exerciseId)).toBe(true);
     expect(storagePathBelongsToExercise(`${practiceId}/${exerciseId}/nested/file.mp4`, practiceId, exerciseId)).toBe(false);
     expect(storagePathBelongsToExercise(`other/${exerciseId}/file.mp4`, practiceId, exerciseId)).toBe(false);
+  });
+});
+
+describe("patient avatar configuration", () => {
+  it("enforces the avatar size limit", () => {
+    expect(isAllowedAvatarSize(1)).toBe(true);
+    expect(isAllowedAvatarSize(MAX_AVATAR_MB * 1024 * 1024)).toBe(true);
+    expect(isAllowedAvatarSize(MAX_AVATAR_MB * 1024 * 1024 + 1)).toBe(false);
+    expect(isAllowedAvatarSize(0)).toBe(false);
+    expect(isAllowedAvatarSize(-5)).toBe(false);
+  });
+
+  it("recognizes WebP magic bytes and rejects mismatches", () => {
+    const webp = new Uint8Array([
+      0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00,
+      0x57, 0x45, 0x42, 0x50, 0x56, 0x50, 0x38, 0x20,
+    ]);
+    expect(signatureMatches("image/webp", webp)).toBe(true);
+    expect(signatureMatches("image/webp", new Uint8Array([0xff, 0xd8, 0xff, 0x00]))).toBe(false);
+    // Getarnte Datei: deklariert JPEG, tatsächlich WebP-Container.
+    expect(signatureMatches("image/jpeg", webp)).toBe(false);
+  });
+
+  it("accepts only a direct file below the own profile folder", () => {
+    const profileId = "33333333-3333-4333-8333-333333333333";
+    expect(storagePathBelongsToProfile(`${profileId}/photo.jpg`, profileId)).toBe(true);
+    expect(storagePathBelongsToProfile(`${profileId}/a/photo.jpg`, profileId)).toBe(false);
+    expect(storagePathBelongsToProfile(`other/${profileId}.jpg`, profileId)).toBe(false);
+    expect(storagePathBelongsToProfile(`${profileId}/`, profileId)).toBe(false);
+    expect(storagePathBelongsToProfile(`${profileId}\\..\\x.jpg`, profileId)).toBe(false);
   });
 });

@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getSessionContext } from "@/server/services/session";
 import { getOwnAccountEmails, getOwnProfile } from "@/server/services/profile";
+import { getOwnAvatarUrl } from "@/server/services/patient-avatar";
 import { getPatientReminderPreferences } from "@/server/services/reminders";
 import { signOutAction } from "@/server/actions/auth";
+import { AvatarUpload } from "@/components/patient/avatar-upload";
 import { PhoneForm } from "@/components/patient/phone-form";
 import { ReminderPreferencesForm } from "@/components/patient/reminder-preferences-form";
 import { EmailChangeForm } from "@/components/patient/email-change-form";
@@ -23,10 +25,11 @@ export default async function ProfilePage({
   searchParams: Promise<{ email_confirmed?: string; email_change_requested?: string }>;
 }) {
   const session = (await getSessionContext())!;
-  const [profile, reminderPreferences, accountEmails, query] = await Promise.all([
+  const [profile, reminderPreferences, accountEmails, avatarUrl, query] = await Promise.all([
     getOwnProfile(session.userId),
     getPatientReminderPreferences(session.userId),
     getOwnAccountEmails(),
+    getOwnAvatarUrl(session.userId),
     searchParams,
   ]);
   const currentEmail = accountEmails.email ?? session.email ?? "–";
@@ -45,7 +48,8 @@ export default async function ProfilePage({
         </h2>
         <Card>
           <CardContent className="flex flex-col gap-4 p-5">
-            <div>
+            <AvatarUpload avatarUrl={avatarUrl} name={session.fullName} />
+            <div className="border-t pt-4">
               <p className="text-base text-muted-foreground">{t.name}</p>
               <p className="text-lg font-bold">{session.fullName || "–"}</p>
             </div>
