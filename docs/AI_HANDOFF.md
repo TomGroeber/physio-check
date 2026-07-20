@@ -1,6 +1,6 @@
 # PhysioCheck – AI Handoff
 
-> Stand: 2026-07-20 · Arbeitszweig: `claude-patient-mobile-ui-parity-20260719` (Basis: `main@16815b1`, welcher PR #2 `a776f23` enthält – alle bisherigen Aufträge inkl. mobiler App bereits gemergt) · GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
+> Stand: 2026-07-20 (nach Merge) · `main@342fba5` (PR #3) enthält ALLE bisherigen Aufträge inkl. der UI-Parität der nativen App · GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
 
 ## Letzter Auftrag (20.07.2026, sechster): UI-Parität der nativen App mit der Patienten-Weboberfläche
 
@@ -20,7 +20,9 @@
 
 **Bewusst verbliebene Lücke:** Formulareingaben (Tippen: Telefonnummer, Absagegrund, Bildauswahl-Dialog) und Übungsdetail/geführte-Sitzung-Screens wurden NICHT per echtem Tap im Simulator geprüft (Accessibility-Blocker), nur per Code-Review gegen die Web-Referenz und bestehende Komponententests. Wenn Tom die Bedienungshilfen-Berechtigung erteilt, kann ein Folgelauf das schließen.
 
-**Nächster konkreter Schritt:** (1) Tom entscheidet über den PR-Merge dieses Branches; (2) optional: Bedienungshilfen-Berechtigung erteilen (Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen) für einen vollständigen Tap-Durchlauf inkl. Formularen; (3) Android-Emulator-Lauf (Android Studio fehlt weiterhin); (4) danach Store-Checkliste. Startbefehle: `supabase start && pnpm db:reset && pnpm seed && pnpm build && pnpm start` (Backend) + `pnpm mobile:start` bzw. `expo start --tunnel` (App). Testbefehle: `pnpm mobile:test`, `pnpm test:rls`, `pnpm e2e` (vorher Metro/Simulator beenden, D-067).
+**Merge-Status:** PR #3 wurde mit Toms Freigabe gemergt (`342fba5`, 20.07.2026, regulärer Merge-Commit wie PR #2). `main` enthält damit die vollständige UI-Parität. Nach dem Merge erneut verifiziert: Web-Typecheck ✓, 115 Web-Tests ✓, Mobile-Typecheck ✓, 16 Mobile-Tests ✓.
+
+**Nächster konkreter Schritt:** (1) optional: Bedienungshilfen-Berechtigung erteilen (Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen) für einen vollständigen Tap-Durchlauf inkl. Formularen; (2) Android-Emulator-Lauf (Android Studio fehlt weiterhin); (3) danach Store-Checkliste. Startbefehle: `supabase start && pnpm db:reset && pnpm seed && pnpm build && pnpm start` (Backend) + `pnpm mobile:start` bzw. `expo start --tunnel` (App). Testbefehle: `pnpm mobile:test`, `pnpm test:rls`, `pnpm e2e` (vorher Metro/Simulator beenden, D-067).
 
 ## Vorheriger Auftrag (19.07.2026, fünfter): Native Patienten-App (Expo)
 
@@ -203,7 +205,7 @@ Demo-Logins stehen im README. Keine echten Patientendaten verwenden.
 
 Remote `origin` ist `https://github.com/TomGroeber/physio-check.git` (öffentlich, D-036 – deshalb erst recht: nie Secrets oder echte Daten). Vor jedem Push Status und Diff auf Secrets prüfen; `.env.local`, lokale Supabase-Daten und Patientendaten niemals pushen.
 
-## Gesamtstatus und nächste Schritte (20.07.2026, Stand nach UI-Paritäts-Auftrag)
+## Gesamtstatus und nächste Schritte (20.07.2026, Stand nach Merge `342fba5`)
 
 **1. Implementiert und getestet:** komplette Praxis-Website (Phasen A–J, Etappen 1–10, Kalenderfarben D-057), komplette Patienten-Weboberfläche inkl. Dunkelmodus, native Patienten-App mit visueller/struktureller Parität zur Web-Referenz (Auth/Code/Deep Links inkl. Kontoabschnitt+Abmelden, Heute, geführte Sitzung, Übung mit Video, Termine/Angebote, Einheiten, Profil/Bild/Erinnerungen/Darstellung, Kontolöschungsantrag), `/api/mobile`-Endpunkte, 24 Migrationen. Prüfstand: Web Typecheck/Lint/115 Tests/96 RLS-Proben/E2E 49:0/Build grün; Mobile Typecheck/Lint 0 Fehler/16 Jest-Tests/expo-doctor 20:20/iOS-JS-Bundle grün; Integrationsprobe 15:15 gegen lokale Supabase + Next; **echter Simulatorlauf** (iPhone 17 Pro, iOS 26.5) mit Login, Screenshot-Vergleich Heute/Termine/Profil hell+dunkel gegen die Web-Referenz; Obsidian-Sync grün.
 
@@ -213,4 +215,4 @@ Remote `origin` ist `https://github.com/TomGroeber/physio-check.git` (öffentlic
 
 **4. Offene Produktfunktionen:** Praxisentscheidung über Absageanfragen, Benachrichtigungszentrum, Virenscan vor Pilot, Terminvorschlags-Workflow nach Absage, `docs/CUSTOMIZATION_GUIDE.md`, konfigurierbare Medienformate, Toast-System für Praxisformulare (D-053-Beobachtung).
 
-**Nächster Schritt in Reihenfolge:** (1) Tom entscheidet über den PR-Merge des UI-Paritäts-Branches → (2) optional Bedienungshilfen-Berechtigung erteilen für vollständigen Tap-Durchlauf inkl. Formularen → (3) Android-Emulator-Lauf → (4) Store-Checkliste mit Toms Freigaben abarbeiten.
+**Nächster Schritt in Reihenfolge:** (1) optional Bedienungshilfen-Berechtigung erteilen für vollständigen Tap-Durchlauf inkl. Formularen → (2) Android-Emulator-Lauf → (3) Store-Checkliste mit Toms Freigaben abarbeiten.

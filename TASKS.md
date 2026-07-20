@@ -170,7 +170,7 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [x] Teststabilität: Playwright auf 4 Worker begrenzt, Expect-Timeout 15 s, Hydrations-Klickverluste in drei Spezifikationen behoben.
 - [x] Merge nach `main` mit Toms Freigabe (2026-07-19): Fast-Forward `4723363..91591df`, gepusht.
 
-## Auftrag vom 19.07.2026 – UI-Parität der nativen App mit der Patienten-Weboberfläche (Branch `claude-patient-mobile-ui-parity-20260719`)
+## Auftrag vom 19.–20.07.2026 – UI-Parität der nativen App mit der Patienten-Weboberfläche (mit Toms Freigabe per PR #3 `342fba5` in `main` gemergt)
 
 Erster echter Simulatorlauf (iPhone 17 Pro, iOS 26.5, Expo-Tunnel) zeigte: Tab-Bar unten beschnitten, Navigation schlecht sichtbar, Design weicht stark von der abgestimmten Patienten-Weboberfläche ab. Die Web-Patientenansicht ist die verbindliche Referenz.
 
