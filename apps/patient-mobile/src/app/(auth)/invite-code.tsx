@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
+import { Alert } from "react-native";
 import { formatDateLong, formatInviteCode } from "@physio-check/shared";
 import {
   AppButton,
@@ -8,7 +9,9 @@ import {
   Card,
   Field,
   Screen,
+  Section,
   SectionHeading,
+  TextLink,
 } from "@/components/ui";
 import { app, web } from "@/messages/de";
 import { checkInviteCode, redeemInvite, type InviteCheckResult } from "@/data/invite";
@@ -17,14 +20,16 @@ import { useSession } from "@/lib/session";
 const t = web.connect;
 
 /**
- * Code-Einstieg wie der Web-Verbindungsbereich (/connect): Code prüfen
- * → Praxis bestätigen → Konto erstellen/anmelden bzw. direkt verbinden;
- * Praxiswechsel mit Warnhinweis.
+ * Code-Einstieg. Deckt beide Web-Seiten desselben Ablaufs ab:
+ * - ohne Session: öffentliche Code-Eingabe (/invite)
+ * - mit Session, noch unverbunden oder Praxiswechsel: geschützter
+ *   Verbindungsbereich (/connect) inkl. Kontoabschnitt mit Abmeldung
+ *   und rechtlichem Hinweis – genau diese Sektion fehlte zuvor nativ.
  */
 export default function InviteCode() {
   const router = useRouter();
   const params = useLocalSearchParams<{ code?: string }>();
-  const { session, link, refreshContext } = useSession();
+  const { session, link, fullName, refreshContext, signOut } = useSession();
   const [code, setCode] = useState(params.code ?? "");
   const [checked, setChecked] = useState<Extract<InviteCheckResult, { ok: true }> | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -61,8 +66,14 @@ export default function InviteCode() {
 
   return (
     <Screen>
-      <SectionHeading>{t.title}</SectionHeading>
-      <Body muted>{t.intro}</Body>
+      <SectionHeading>{session ? t.hubTitle : t.title}</SectionHeading>
+      <Body muted>
+        {session
+          ? link
+            ? t.hubIntroConnected(link.practiceName)
+            : t.hubIntro
+          : t.intro}
+      </Body>
       {error ? <Banner kind="error">{error}</Banner> : null}
       <Field
         label={t.codeLabel}
@@ -92,9 +103,11 @@ export default function InviteCode() {
           </Body>
           {session ? (
             <>
-              {link ? <Banner kind="warning">{app.invite.switchWarning}</Banner> : null}
+              {link ? (
+                <Banner kind="warning">{t.changeWarning(link.practiceName)}</Banner>
+              ) : null}
               <AppButton
-                label={pending ? app.common.loading : t.submit}
+                label={pending ? app.common.loading : t.accept}
                 onPress={connect}
                 disabled={pending}
               />
@@ -123,6 +136,35 @@ export default function InviteCode() {
             </>
           )}
         </Card>
+      )}
+
+      {!session ? (
+        <TextLink label={web.landing.signIn} onPress={() => router.push("/(auth)/login")} />
+      ) : (
+        <Section heading={t.accountHeading}>
+          <Card>
+            <Body bold>{fullName || "–"}</Body>
+            <Body muted size="small">{session.user.email ?? "–"}</Body>
+            <AppButton
+              label={web.common.signOut}
+              variant="outline"
+              onPress={() =>
+                Alert.alert(t.signOutHint, undefined, [
+                  { text: web.common.cancel, style: "cancel" },
+                  {
+                    text: web.common.signOut,
+                    style: "destructive",
+                    onPress: async () => {
+                      await signOut();
+                      router.replace("/(auth)/welcome");
+                    },
+                  },
+                ])
+              }
+            />
+          </Card>
+          <Body muted size="small">{t.legalHint}</Body>
+        </Section>
       )}
     </Screen>
   );
