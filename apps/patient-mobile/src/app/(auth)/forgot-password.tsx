@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AppButton, Banner, Body, Field, Screen } from "@/components/ui";
-import { de } from "@/messages/de";
+import { app, web } from "@/messages/de";
 import { supabase } from "@/lib/supabase";
 
 export default function ForgotPassword() {
@@ -21,17 +21,17 @@ export default function ForgotPassword() {
 
   return (
     <Screen>
-      <Body muted>{de.profile.passwordResetInfo}</Body>
-      {sent ? <Banner kind="success">{de.auth.resetSent}</Banner> : null}
+      <Body muted>{web.patient.profile.security.changePasswordHint}</Body>
+      {sent ? <Banner kind="success">{app.auth.resetSent}</Banner> : null}
       <Field
-        label={de.auth.emailLabel}
+        label={app.auth.emailLabel}
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
       />
       <AppButton
-        label={pending ? de.common.loading : de.auth.resetSend}
+        label={pending ? app.common.loading : app.auth.resetSend}
         onPress={submit}
         disabled={pending || !email}
       />

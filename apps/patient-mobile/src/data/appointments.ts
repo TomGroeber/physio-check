@@ -62,7 +62,7 @@ export type OfferView = {
   endsAt: string;
   timezone: string;
   locationName: string;
-  practiceName: string;
+  therapistName: string;
 };
 
 export async function getOpenOffers(userId: string): Promise<OfferView[]> {
@@ -70,7 +70,7 @@ export async function getOpenOffers(userId: string): Promise<OfferView[]> {
     .from("appointment_offers")
     .select(
       `id, starts_at, ends_at, timezone, location_name, status,
-       practices ( name )`
+       therapist:practice_members!appointment_offers_therapist_member_id_fkey ( profiles ( full_name ) )`
     )
     .eq("patient_profile_id", userId)
     .eq("status", "offered")
@@ -78,14 +78,16 @@ export async function getOpenOffers(userId: string): Promise<OfferView[]> {
     .order("starts_at");
   if (error) throw new Error(error.message);
   return (data ?? []).map((offer) => {
-    const practice = offer.practices as unknown as { name: string } | null;
+    const therapist = offer.therapist as unknown as {
+      profiles: { full_name: string } | null;
+    } | null;
     return {
       id: offer.id,
       startsAt: offer.starts_at,
       endsAt: offer.ends_at,
       timezone: offer.timezone,
       locationName: offer.location_name,
-      practiceName: practice?.name ?? "Ihre Praxis",
+      therapistName: therapist?.profiles?.full_name ?? "",
     };
   });
 }

@@ -11,7 +11,7 @@ import {
   useTheme,
 } from "@/components/ui";
 import { spacing, touch } from "@/config/branding";
-import { de } from "@/messages/de";
+import { app, web } from "@/messages/de";
 import { requestAccountDeletion } from "@/data/profile";
 import { useSession } from "@/lib/session";
 
@@ -32,23 +32,23 @@ export default function DeleteAccount() {
 
   const submit = () => {
     Alert.alert(
-      de.profile.deleteAccount.doubleCheckTitle,
-      de.profile.deleteAccount.doubleCheckBody,
+      app.deleteAccount.doubleCheckTitle,
+      app.deleteAccount.doubleCheckBody,
       [
-        { text: de.common.cancel, style: "cancel" },
+        { text: web.common.cancel, style: "cancel" },
         {
-          text: de.profile.deleteAccount.submit,
+          text: app.deleteAccount.submit,
           style: "destructive",
           onPress: async () => {
             setPending(true);
             setError(null);
             try {
               await requestAccountDeletion();
-              Alert.alert(de.common.appName, de.profile.deleteAccount.done);
+              Alert.alert(app.common.appName, app.deleteAccount.done);
               await signOut();
               router.replace("/(auth)/welcome");
             } catch {
-              setError(de.common.error);
+              setError(web.common.error);
             } finally {
               setPending(false);
             }
@@ -60,9 +60,9 @@ export default function DeleteAccount() {
 
   return (
     <Screen>
-      <Title>{de.profile.deleteAccount.title}</Title>
+      <Title>{app.deleteAccount.title}</Title>
       <Card>
-        <Body>{de.profile.deleteAccount.body}</Body>
+        <Body>{app.deleteAccount.body}</Body>
       </Card>
       {error ? <Banner kind="error">{error}</Banner> : null}
       <View
@@ -74,23 +74,23 @@ export default function DeleteAccount() {
           gap: spacing.md,
         }}
       >
-        <Body>{de.profile.deleteAccount.confirmLabel}</Body>
+        <Body>{app.deleteAccount.confirmLabel}</Body>
         <Switch
           value={confirmed}
           onValueChange={setConfirmed}
-          accessibilityLabel={de.profile.deleteAccount.confirmLabel}
-          trackColor={{ true: theme.danger, false: theme.border }}
+          accessibilityLabel={app.deleteAccount.confirmLabel}
+          trackColor={{ true: theme.destructive, false: theme.border }}
         />
       </View>
       <AppButton
-        label={pending ? de.common.loading : de.profile.deleteAccount.submit}
+        label={pending ? app.common.loading : app.deleteAccount.submit}
         variant="danger"
         onPress={submit}
         disabled={!confirmed || pending}
       />
       <AppButton
-        label={de.common.cancel}
-        variant="secondary"
+        label={web.common.cancel}
+        variant="outline"
         onPress={() => router.back()}
       />
     </Screen>

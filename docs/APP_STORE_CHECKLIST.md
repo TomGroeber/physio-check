@@ -46,9 +46,12 @@
 - [ ] Store-Screenshots (iPhone 6,7"/6,1", Android Phone) – offene Aufgabe, erst mit finalem Design
 - [ ] Release-Notes deutsch pflegen
 
-## Technischer Stand (verifiziert am 19.07.2026)
+## Technischer Stand (zuletzt verifiziert am 20.07.2026)
 
 - [x] `eas.json` mit getrennten Profilen, ohne Zugangsdaten
 - [x] `expo-doctor` 20/20, Produktions-JS-Bundle baut (`expo export --platform ios`)
 - [x] Kein `service_role`-Schlüssel in der App; nur Publishable Key + RLS
-- [ ] Nativer iOS-/Android-Build ungetestet (Xcode/Android SDK fehlen auf Toms Mac – echter Umgebungs-Blocker)
+- [x] iOS-Simulatorlauf erfolgreich (iPhone 17 Pro, iOS 26.5, Xcode 26.6): Anmeldung mit Demo-Patientenkonto funktioniert, UI-Parität zur Web-Referenz visuell verifiziert (`docs/TEST_MATRIX.md`)
+- [ ] Echter EAS-Build (Preview/Production) noch nie ausgeführt – benötigt EAS-Konto (Toms Freigabe erforderlich)
+- [ ] Android-Emulator-Lauf ungetestet (Android Studio/SDK fehlt auf Toms Mac – echter Umgebungs-Blocker)
+- [ ] Vollständiger Tap-Durchlauf der Formulare im Simulator (Telefonnummer, Absage, Bildauswahl) noch offen – macOS-Bedienungshilfen-Berechtigung fehlt für Automatisierung (nur Formulareingabe betroffen, kein Codeproblem)

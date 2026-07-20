@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { AppButton, Banner, LoadingView, Screen } from "@/components/ui";
-import { de } from "@/messages/de";
+import { app, web } from "@/messages/de";
 import { useSession } from "@/lib/session";
 import { supabase } from "@/lib/supabase";
 
@@ -56,8 +56,8 @@ export default function AuthConfirm() {
       {state === "working" ? <LoadingView /> : null}
       {state === "failed" ? (
         <>
-          <Banner kind="error">{de.common.error}</Banner>
-          <AppButton label={de.common.back} onPress={() => router.replace("/")} />
+          <Banner kind="error">{web.common.error}</Banner>
+          <AppButton label={app.common.back} onPress={() => router.replace("/")} />
         </>
       ) : null}
     </Screen>

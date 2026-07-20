@@ -1,9 +1,12 @@
+import { DEFAULT_REMINDER_PREFERENCES } from "@physio-check/shared";
 import { apiFetch } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 
 export type ReminderPreferences = {
   exerciseRemindersEnabled: boolean;
   planUpdatesEnabled: boolean;
+  quietStart: string;
+  quietEnd: string;
 };
 
 export async function getReminderPreferences(
@@ -11,13 +14,16 @@ export async function getReminderPreferences(
 ): Promise<ReminderPreferences> {
   const { data, error } = await supabase
     .from("patient_reminder_preferences")
-    .select("exercise_reminders_enabled, plan_updates_enabled")
+    .select("exercise_reminders_enabled, plan_updates_enabled, quiet_start, quiet_end")
     .eq("profile_id", userId)
     .maybeSingle();
   if (error) throw new Error(error.message);
+  if (!data) return { ...DEFAULT_REMINDER_PREFERENCES };
   return {
-    exerciseRemindersEnabled: data?.exercise_reminders_enabled ?? true,
-    planUpdatesEnabled: data?.plan_updates_enabled ?? true,
+    exerciseRemindersEnabled: data.exercise_reminders_enabled,
+    planUpdatesEnabled: data.plan_updates_enabled,
+    quietStart: String(data.quiet_start).slice(0, 5),
+    quietEnd: String(data.quiet_end).slice(0, 5),
   };
 }
 
@@ -30,6 +36,8 @@ export async function saveReminderPreferences(
       profile_id: userId,
       exercise_reminders_enabled: preferences.exerciseRemindersEnabled,
       plan_updates_enabled: preferences.planUpdatesEnabled,
+      quiet_start: preferences.quietStart,
+      quiet_end: preferences.quietEnd,
     },
     { onConflict: "profile_id" }
   );

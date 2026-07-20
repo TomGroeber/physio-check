@@ -21,7 +21,10 @@ export type ExerciseDetail = TodayExercise & {
   exerciseId: string;
   restSeconds: number | null;
   equipment: string;
+  /** Normalisiertes Schedule (für den Häufigkeitstext wie im Web). */
+  schedule: ReturnType<typeof normalizePlanSchedule>;
   scheduleTimes: string[];
+  nextOccurrenceIndex: number | null;
   media: ExerciseMediaUrls;
   timezone: string;
 };
@@ -116,7 +119,9 @@ export async function getExerciseDetail(
     fullyDocumentedToday: progress.fullyDocumentedToday,
     fullyCompletedToday: progress.fullyCompletedToday,
     weeklyProgress: progress.weekly,
+    schedule,
     scheduleTimes,
+    nextOccurrenceIndex: progress.nextOccurrenceIndex,
     media,
     timezone,
   };

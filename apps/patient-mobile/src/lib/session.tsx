@@ -25,6 +25,8 @@ export type SessionState = {
   /** Aktive Praxisverbindung des Patienten, sonst null. */
   link: PracticeLink | null;
   fullName: string;
+  /** Kurzlebige signierte URL des eigenen Profilbilds (oder null). */
+  avatarUrl: string | null;
   /** Kontext (Rolle + Verbindung) neu laden, z. B. nach Code-Einlösung. */
   refreshContext: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -42,6 +44,7 @@ async function loadContext(userId: string): Promise<{
   isPracticeMember: boolean;
   link: PracticeLink | null;
   fullName: string;
+  avatarUrl: string | null;
 }> {
   const [memberResult, linkResult, profileResult] = await Promise.all([
     supabase
@@ -59,10 +62,21 @@ async function loadContext(userId: string): Promise<{
       .maybeSingle(),
     supabase
       .from("profiles")
-      .select("full_name")
+      .select("full_name, avatar_path")
       .eq("id", userId)
       .maybeSingle(),
   ]);
+
+  // Eigene Avatar-Anzeige: die Storage-Policy erlaubt dem Patienten das
+  // eigene Objekt, die signierte URL entsteht direkt (D-059).
+  const avatarPath = profileResult.data?.avatar_path as string | null | undefined;
+  let avatarUrl: string | null = null;
+  if (avatarPath) {
+    const { data: signed } = await supabase.storage
+      .from("patient-avatars")
+      .createSignedUrl(avatarPath, 600);
+    avatarUrl = signed?.signedUrl ?? null;
+  }
 
   const practices = linkResult.data?.practices as
     | { name: string; phone: string; timezone: string }
@@ -80,6 +94,7 @@ async function loadContext(userId: string): Promise<{
         }
       : null,
     fullName: profileResult.data?.full_name ?? "",
+    avatarUrl,
   };
 }
 
@@ -89,6 +104,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [isPracticeMember, setIsPracticeMember] = useState(false);
   const [link, setLink] = useState<PracticeLink | null>(null);
   const [fullName, setFullName] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const refreshContext = useCallback(async () => {
     const { data } = await supabase.auth.getSession();
@@ -99,10 +115,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       setIsPracticeMember(context.isPracticeMember);
       setLink(context.link);
       setFullName(context.fullName);
+      setAvatarUrl(context.avatarUrl);
     } else {
       setIsPracticeMember(false);
       setLink(null);
       setFullName("");
+      setAvatarUrl(null);
     }
   }, []);
 
@@ -117,10 +135,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         setIsPracticeMember(context.isPracticeMember);
         setLink(context.link);
         setFullName(context.fullName);
+        setAvatarUrl(context.avatarUrl);
       } else {
         setIsPracticeMember(false);
         setLink(null);
         setFullName("");
+        setAvatarUrl(null);
       }
       setInitializing(false);
     };
@@ -147,10 +167,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       isPracticeMember,
       link,
       fullName,
+      avatarUrl,
       refreshContext,
       signOut,
     }),
-    [initializing, session, isPracticeMember, link, fullName, refreshContext, signOut]
+    [initializing, session, isPracticeMember, link, fullName, avatarUrl, refreshContext, signOut]
   );
 
   return (

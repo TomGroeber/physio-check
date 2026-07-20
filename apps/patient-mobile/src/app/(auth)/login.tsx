@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { AppButton, Banner, Field, Screen } from "@/components/ui";
-import { de } from "@/messages/de";
+import { app } from "@/messages/de";
 import { useSession } from "@/lib/session";
 import { supabase } from "@/lib/supabase";
 
@@ -24,8 +24,8 @@ export default function Login() {
       setPending(false);
       setError(
         /confirm/i.test(authError.message)
-          ? de.auth.emailNotConfirmed
-          : de.auth.loginFailed
+          ? app.auth.emailNotConfirmed
+          : app.auth.loginFailed
       );
       return;
     }
@@ -38,7 +38,7 @@ export default function Login() {
     <Screen>
       {error ? <Banner kind="error">{error}</Banner> : null}
       <Field
-        label={de.auth.emailLabel}
+        label={app.auth.emailLabel}
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
@@ -47,20 +47,20 @@ export default function Login() {
         textContentType="emailAddress"
       />
       <Field
-        label={de.auth.passwordLabel}
+        label={app.auth.passwordLabel}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
         textContentType="password"
       />
       <AppButton
-        label={pending ? de.common.loading : de.auth.login}
+        label={pending ? app.common.loading : app.auth.login}
         onPress={submit}
         disabled={pending || !email || !password}
       />
       <AppButton
-        label={de.auth.forgotPassword}
-        variant="secondary"
+        label={app.auth.forgotPassword}
+        variant="outline"
         onPress={() => router.push("/(auth)/forgot-password")}
       />
     </Screen>
