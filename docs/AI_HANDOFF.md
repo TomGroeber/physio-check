@@ -1,8 +1,28 @@
 # PhysioCheck – AI Handoff
 
-> Stand: 2026-07-19 (nach Merge) · `main@a776f23` (PR #2) enthält ALLE bisherigen Aufträge: Patienten-UI, Video-first-Übungsansicht + Profilbild, Dunkelmodus, Kalenderfarben pro Patient und die mobile Patienten-App · GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
+> Stand: 2026-07-20 · Arbeitszweig: `claude-patient-mobile-ui-parity-20260719` (Basis: `main@16815b1`, welcher PR #2 `a776f23` enthält – alle bisherigen Aufträge inkl. mobiler App bereits gemergt) · GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
 
-## Letzter Auftrag (19.07.2026, fünfter): Native Patienten-App (Expo)
+## Letzter Auftrag (20.07.2026, sechster): UI-Parität der nativen App mit der Patienten-Weboberfläche
+
+**Ausgangslage:** Erster echter Test der Expo-App im iPhone-17-Pro-Simulator (iOS 26.5) zeigte drei Probleme: abgeschnittene untere Navigation, schlecht sichtbare Tab-Beschriftungen, und ein Design, das deutlich von der bereits abgestimmten Patienten-Weboberfläche abwich. **Der Xcode-/Simulator-Blocker früherer Sitzungen ist damit überholt** – Xcode 26.6 ist installiert, der Simulator läuft, die Anmeldung mit dem Demo-Patientenkonto funktioniert.
+
+**Root Cause des Croppings:** `(tabs)/_layout.tsx` setzte `tabBarStyle.height` fest auf 64 pt (ignorierte den Home-Indicator-Inset) und lieferte keine Icons (`tabBarIcon: () => null`). Behoben durch eine neue `PatientTabBar`-Komponente, die ihre Höhe aus Inhalt + `useSafeAreaInsets().bottom` berechnet (D-063).
+
+**Umgesetzt:** Vollständige visuelle und strukturelle Neuausrichtung an der Patienten-Weboberfläche (D-064): Design-Tokens 1:1 aus `globals.css` (OKLCH→Hex) in `branding.ts`, App-Header mit Logo+Avatar, alle 13 Patientenstrecken (Willkommen/Code/Registrierung/Login, Verbindung+Aussperrung, Heute, geführte Sitzung, Übungsdetail+Video, Termine/Absage/Angebote, Verordnung, Profilbild, Telefon/Erinnerungen, Darstellung, E-Mail/Passwort, Abmelden/Kontolöschung) nach Web-Vorbild neu gebaut. Deutsche Texte, Erinnerungslogik und Dokumentationsvalidierung liegen jetzt gemeinsam in `packages/shared` (D-065) – App und Website verwenden wortgleiche Texte. Dark Mode folgt dem Systemschema mit persistenter Gerätewahl wie im Web (D-066).
+
+**Echter Funktionslücken-Fund beim Simulatortest:** Der native Code-/Verbindungsbildschirm hatte keinen Kontoabschnitt (Name/E-Mail/„Abmelden“) wie der Web-Verbindungsbereich (`/connect`) – ohne ihn gab es keinen Ausweg, wenn die Sitzung nach einem `pnpm seed`-Reset ungültig wurde. Ergänzt: Kontoabschnitt mit Abmelden + rechtlichem Hinweis, plus die korrekten Hub-Texte (verbunden/unverbunden), identisch zum Web.
+
+**Simulator-Verifikation ohne Tap-Automatisierung:** `xcrun simctl` bietet keine Tap-/Texteingabe-APIs. `cliclick` wurde installiert (lokal, kostenlos, reversibel), scheiterte aber an fehlender macOS-Bedienungshilfen-Berechtigung, die nur Tom manuell in den Systemeinstellungen erteilen kann (echtes Hindernis, kein Codefehler). Alternative, tap-freie Verifikation: Expo-Deep-Links (`exp://127.0.0.1:8081/--/<route>`) zum Navigieren, `xcrun simctl ui booted appearance dark|light` zum Hell/Dunkel-Wechsel, ein temporärer Test-Login-Screen (`_dev-login.tsx`, signiert mit Demo-Patientin und leitet weiter) – **vor dem Commit gelöscht, nie im Git-Index** (`git status` bestätigt). Ergebnis: Tab-Bar vollständig sichtbar, Heute/Termine/Profil stimmen strukturell und textlich mit der Web-Referenz überein (Screenshots im Sitzungs-Scratchpad, nicht im Repo), Dunkelmodus exakt wie Web-Tokens.
+
+**Nebenfund:** Die zwei bereits dokumentierten, gelegentlich flakenden Mobile-E2E-Fälle scheiterten zweimal in Folge trotz `rm -rf .next`. Root-Cause-Analyse (drittes Scheitern hätte laut Debugging-Regel eine Architekturfrage ausgelöst) ergab eine konkrete Mitursache: der parallel laufende Metro-Bundler + gebooteter Simulator konkurrierten um lokale Ressourcen mit dem Next-Dev-Server. Nach deren Beenden lief die Suite sofort grün (D-067).
+
+**Prüfstand:** Mobile Typecheck/Lint (0 Fehler)/16 Tests (5 Dateien, neu `tab-bar.test.tsx` + erweiterte `today.test.tsx`)/expo-doctor 20:20/iOS-Export ✓. Web nach Umbau (geteilte Texte/Reminder/Validierung verschoben) komplett grün: Typecheck, Lint, 115 Tests, 96 RLS-Proben, E2E 49 bestanden/0 fehlgeschlagen, Build, shared:typecheck.
+
+**Bewusst verbliebene Lücke:** Formulareingaben (Tippen: Telefonnummer, Absagegrund, Bildauswahl-Dialog) und Übungsdetail/geführte-Sitzung-Screens wurden NICHT per echtem Tap im Simulator geprüft (Accessibility-Blocker), nur per Code-Review gegen die Web-Referenz und bestehende Komponententests. Wenn Tom die Bedienungshilfen-Berechtigung erteilt, kann ein Folgelauf das schließen.
+
+**Nächster konkreter Schritt:** (1) Tom entscheidet über den PR-Merge dieses Branches; (2) optional: Bedienungshilfen-Berechtigung erteilen (Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen) für einen vollständigen Tap-Durchlauf inkl. Formularen; (3) Android-Emulator-Lauf (Android Studio fehlt weiterhin); (4) danach Store-Checkliste. Startbefehle: `supabase start && pnpm db:reset && pnpm seed && pnpm build && pnpm start` (Backend) + `pnpm mobile:start` bzw. `expo start --tunnel` (App). Testbefehle: `pnpm mobile:test`, `pnpm test:rls`, `pnpm e2e` (vorher Metro/Simulator beenden, D-067).
+
+## Vorheriger Auftrag (19.07.2026, fünfter): Native Patienten-App (Expo)
 
 **Merge-Status:** Die Branch-Kette Dark Mode (`52e6c47`) → Kalenderfarben (`28ee792`) → Mobile (`389c53c`) wurde mit Toms Freigabe über **PR #2 vollständig nach `main` gemergt (`a776f23`, 19.07.2026)**. Es warten keine Feature-Branches mehr auf einen Merge.
 
@@ -183,14 +203,14 @@ Demo-Logins stehen im README. Keine echten Patientendaten verwenden.
 
 Remote `origin` ist `https://github.com/TomGroeber/physio-check.git` (öffentlich, D-036 – deshalb erst recht: nie Secrets oder echte Daten). Vor jedem Push Status und Diff auf Secrets prüfen; `.env.local`, lokale Supabase-Daten und Patientendaten niemals pushen.
 
-## Gesamtstatus und nächste Schritte (19.07.2026, nach Merge a776f23)
+## Gesamtstatus und nächste Schritte (20.07.2026, Stand nach UI-Paritäts-Auftrag)
 
-**1. Implementiert und getestet:** komplette Praxis-Website (Phasen A–J, Etappen 1–10, Kalenderfarben D-057), komplette Patienten-Weboberfläche inkl. Dunkelmodus, native Patienten-App (Auth/Code/Deep Links, Heute, Übung mit Video, Termine/Angebote, Einheiten, Profil/Bild/Erinnerungen, Kontolöschungsantrag), `/api/mobile`-Endpunkte, 24 Migrationen. Prüfstand: Web Typecheck/Lint/115 Tests/96 RLS-Proben/E2E 49:0/Build grün; Mobile Typecheck/Lint 0 Fehler/10 Jest-Tests/expo-doctor 20:20/iOS-JS-Bundle grün; Integrationsprobe 15:15 gegen lokale Supabase + Next; Obsidian-Sync grün.
+**1. Implementiert und getestet:** komplette Praxis-Website (Phasen A–J, Etappen 1–10, Kalenderfarben D-057), komplette Patienten-Weboberfläche inkl. Dunkelmodus, native Patienten-App mit visueller/struktureller Parität zur Web-Referenz (Auth/Code/Deep Links inkl. Kontoabschnitt+Abmelden, Heute, geführte Sitzung, Übung mit Video, Termine/Angebote, Einheiten, Profil/Bild/Erinnerungen/Darstellung, Kontolöschungsantrag), `/api/mobile`-Endpunkte, 24 Migrationen. Prüfstand: Web Typecheck/Lint/115 Tests/96 RLS-Proben/E2E 49:0/Build grün; Mobile Typecheck/Lint 0 Fehler/16 Jest-Tests/expo-doctor 20:20/iOS-JS-Bundle grün; Integrationsprobe 15:15 gegen lokale Supabase + Next; **echter Simulatorlauf** (iPhone 17 Pro, iOS 26.5) mit Login, Screenshot-Vergleich Heute/Termine/Profil hell+dunkel gegen die Web-Referenz; Obsidian-Sync grün.
 
 **2. Nur als Konzept vorbereitet:** Push-Benachrichtigungen (Architektur + datensparsame Inhalte definiert, kein Versand), Universal/App Links (Schema läuft, Domain-Verifikation dokumentiert), EAS-Build-Profile (Konfiguration liegt, nie gebaut).
 
-**3. Durch externe Konten/Hardware blockiert:** iOS-Simulator/nativer Build (kein Xcode, nur CommandLineTools), Android-Emulator (kein SDK), EAS-/Apple-/Google-Konten, APNs-/FCM-Credentials, Universal-Link-Domain, Datenschutzerklärungs-URL, Rechtsfrage Aufbewahrung Luxemburg (D-062).
+**3. Durch externe Konten/Hardware/Berechtigungen blockiert:** Android-Emulator (kein SDK/Android Studio), EAS-/Apple-/Google-Konten, APNs-/FCM-Credentials, Universal-Link-Domain, Datenschutzerklärungs-URL, Rechtsfrage Aufbewahrung Luxemburg (D-062), **macOS-Bedienungshilfen-Berechtigung für Tap-Automatisierung im iOS-Simulator** (neu erkannt 20.07.2026 – nur Formulareingaben/Taps betroffen, kein Blocker für Codequalität oder Kernfunktionen). iOS-Simulator selbst ist seit dieser Sitzung **kein Blocker mehr** (Xcode installiert, verifiziert).
 
 **4. Offene Produktfunktionen:** Praxisentscheidung über Absageanfragen, Benachrichtigungszentrum, Virenscan vor Pilot, Terminvorschlags-Workflow nach Absage, `docs/CUSTOMIZATION_GUIDE.md`, konfigurierbare Medienformate, Toast-System für Praxisformulare (D-053-Beobachtung).
 
-**Nächster Schritt in Reihenfolge:** (1) Xcode installieren → (2) `pnpm mobile:ios` → (3) vollständiger Simulator-Durchlauf aller Patientenflüsse → (4) Store-Checkliste mit Toms Freigaben abarbeiten.
+**Nächster Schritt in Reihenfolge:** (1) Tom entscheidet über den PR-Merge des UI-Paritäts-Branches → (2) optional Bedienungshilfen-Berechtigung erteilen für vollständigen Tap-Durchlauf inkl. Formularen → (3) Android-Emulator-Lauf → (4) Store-Checkliste mit Toms Freigaben abarbeiten.

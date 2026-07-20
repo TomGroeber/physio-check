@@ -109,17 +109,32 @@
 |---|---|---|
 | Auth-Session sicher gespeichert (AES + SecureStore-Schlüssel) | Implementierung `secure-session-storage.ts`; Roundtrip implizit über Integrationsprobe (Login/Session) | Grün (19.07.2026) |
 | Code vor Konto, gültiger/ungültiger Code | Jest (`invite.test.ts`, lokale Formatprüfung ohne Netz) + Integrationsprobe gegen `/api/mobile/invite/check` (200/404) | Grün (19.07.2026) |
-| Einladung atomar annehmen, Praxiswechsel | bestehende RPC `redeem_patient_invite` (RLS-Suite deckt Zustände ab); App-Fluss implementiert | RPC grün; UI-Fluss auf Gerät offen (kein Simulator) |
+| Einladung atomar annehmen, Praxiswechsel | bestehende RPC `redeem_patient_invite` (RLS-Suite deckt Zustände ab); App-Fluss im Simulator bis zur Codeprüfung/Anmeldung durchlaufen | Grün (20.07.2026, s. u.) |
 | Praxisrollen-Aussperrung | Integrationsprobe (Mitgliedszeile via RLS erkannt) + `practice-blocked`-Screen | Grün (19.07.2026) |
-| Heute: dokumentiert ≠ erledigt, Erfolg NUR bei completed | Jest `today.test.tsx` (3 Fälle inkl. Leerzustand) | Grün (19.07.2026) |
+| Heute: dokumentiert ≠ erledigt, Erfolg NUR bei completed | Jest `today.test.tsx` (4 Fälle inkl. Leerzustand und Web-Textparität) | Grün (20.07.2026) |
 | Durchgangs-Dokumentation (alle Status, Mehrfach-Durchgänge) | Integrationsprobe (`record_exercise_occurrence` echt) + bestehende RLS-Proben (Duplikat/Fremdzugriff) | Grün (19.07.2026) |
 | Video/signierte URLs nur für eigenen aktuellen Plan | Integrationsprobe: Medien-Endpunkt 200 mit Feldern, 401 ohne Token; Route prüft current_version + Besitzer | Grün (19.07.2026) |
-| Profilbild Upload/Ersetzen/Entfernen (Ticket, Magic Bytes) | bestehende Avatar-Services + RLS-Sektion E (10 Proben); mobile Endpunkte 401-geprüft | Grün serverseitig; UI-Fluss auf Gerät offen |
+| Profilbild Upload/Ersetzen/Entfernen (Ticket, Magic Bytes) | bestehende Avatar-Services + RLS-Sektion E (10 Proben); mobile Endpunkte 401-geprüft; Profil-Screen im Simulator mit Initialen-Platzhalter verifiziert | Grün serverseitig + Anzeige verifiziert (20.07.2026); Upload-Tap-Interaktion s. Einschränkungen |
 | Kontolöschungsantrag (Audit, Zugangssperre, keine Client-Schreibrechte) | RLS-Proben (0 Zeilen lesbar, Insert abgelehnt) + Endpunkt 401-geprüft | Grün (19.07.2026) |
-| Barrierefreiheit: beschriftete Buttons, Live-Regionen, Label↔Eingabe | Jest `ui.test.tsx` | Grün (19.07.2026) |
-| Sprachhygiene der App-Texte | Jest `de.test.ts` | Grün (19.07.2026) |
-| Offline-/Lade-/Fehlerzustände | `useLoad` + ErrorView implementiert; Gerätetest offen | Implementiert; Gerätetest offen (kein Simulator) |
-| Großschrift/Screenreader/kleine+große Viewports auf echtem Gerät | – | OFFEN: erst mit Xcode/Simulator bzw. Gerät möglich (dokumentierter Blocker) |
+| Barrierefreiheit: beschriftete Buttons, Live-Regionen, Label↔Eingabe, Touch ≥ 48pt | Jest `ui.test.tsx`, `tab-bar.test.tsx` (3 Ziele, aktiver Zustand, Unterseiten-Zuordnung) | Grün (20.07.2026) |
+| Sprachhygiene der App-Texte + Web-Textidentität | Jest `de.test.ts` (inkl. Stichproben-Vergleich gegen `@physio-check/shared/messages-de`) | Grün (20.07.2026) |
+| Offline-/Lade-/Fehlerzustände | `useLoad` + ErrorView implementiert | Implementiert; Fehlerzustand im Simulator nicht separat provoziert |
+| Untere Navigation vollständig sichtbar (Safe Area, Home Indicator) | `tab-bar.test.tsx` + Simulator-Screenshot iPhone 17 Pro | Grün (20.07.2026) – siehe UI-Parität unten |
+| Großschrift/Screenreader auf echtem Gerät | – | Simulator-Screenshots bestätigen Struktur/Kontrast; echtes Gerät weiterhin offen |
+
+## UI-Parität native App ↔ Patienten-Weboberfläche (20.07.2026)
+
+Erster echter Simulatorlauf (iPhone 17 Pro, iOS 26.5, Metro über `exp://`-Tunnel/lokal) deckte eine abgeschnittene Tab-Bar und starke Designabweichungen auf. Ursache und Korrektur: `DECISIONS.md` D-063–D-067.
+
+| Anforderung | Verifikation | Status |
+|---|---|---|
+| Tab-Bar-Cropping behoben, 3 beschriftete Ziele, aktiver Zustand | Simulator-Screenshots (Heute/Termine/Profil, hell) + `tab-bar.test.tsx` (4 Tests) | Grün |
+| Design-Tokens identisch zur Web-Referenz (hell + dunkel) | Simulator-Screenshots hell/dunkel für „Heute“ und Code-Screen, Pixel-Vergleich der Farbwerte (OKLCH→Hex-Umrechnung geprüft) | Grün |
+| Heute-Ansicht: Begrüßung, Fortschrittskarte, Balken, Checkliste, Chips-Format | Simulator-Screenshot mit echten Demo-Daten (3 Übungen, „0 von 3 eingetragen“) | Grün |
+| Termine: Icon-Zeilen, Karten-Link, Absage-Collapsible, „N vergangene Termine“ | Simulator-Screenshot mit echtem Demo-Termin | Grün |
+| Profil: Avatar-Platzhalter, Feldbeschriftungen, Hinweistexte wortgleich zum Web | Simulator-Screenshot | Grün |
+| Verbindungsbereich: Kontoabschnitt mit Abmelden + rechtlicher Hinweis (echter Funktionslücken-Fund) | Simulator-Screenshot nach Fix; vorher fehlte der Abschnitt vollständig | Behoben und verifiziert |
+| Gesamte Mobile+Web-Prüfkette nach dem Umbau | s. „Ausgeführte Gesamtprüfungen“ unten | Grün |
 
 ## Kalenderfarben pro Patient (D-057)
 
@@ -134,30 +149,31 @@
 | Speicherbestätigung per Redirect (D-053) | E2E (`?calendar_color_saved=1`) + Browser-Treiberlauf gegen `pnpm start` | Grün (19.07.2026) |
 | iPhone-Viewport: kein horizontales Scrollen, Farboptionen ≥ 48 px | Browser-Treiberlauf (390 px) | Grün (19.07.2026) |
 
-## Ausgeführte Gesamtprüfungen (19.07.2026, Endstand = heutiger main `a776f23`, Toms Mac)
+## Ausgeführte Gesamtprüfungen (20.07.2026, Branch `claude-patient-mobile-ui-parity-20260719`, Toms Mac)
 
 | Befehl | Ergebnis |
 |---|---|
-| `pnpm db:reset` | Grün: 24 Migrationen (zuletzt `20260719120000_patient_calendar_colors.sql`, `20260719140000_account_deletion_requests.sql`) |
+| `pnpm db:reset` | Grün: 24 Migrationen |
 | `pnpm seed` | Grün; deterministisch auch direkt nach E2E-Läufen (D-051) |
 | `pnpm typecheck` | Grün |
 | `pnpm lint` | Grün, 0 Warnungen |
 | `pnpm test` | Grün: 23 Dateien, 115 Tests |
 | `pnpm test:rls` | Grün: 96 Proben |
-| `pnpm e2e` | Grün (Exit 0): 49 bestanden, 17 planmäßig übersprungen, 49 s – nach `rm -rf .next` (verkeilter Turbopack-Cache, siehe Einschränkungen) |
+| `pnpm e2e` | Grün (Exit 0): 49 bestanden, 0 fehlgeschlagen, 17 planmäßig übersprungen – nach `rm -rf .next` UND Beenden des parallel laufenden Metro-Bundlers/Simulators (echte Mitursache der Flakes, D-067) |
 | `pnpm build` | Grün |
-| `pnpm docs:sync` | Grün (Obsidian-Vault auf Toms Mac) |
-| Browser-Treiberlauf (Desktop 1440 px + iPhone 390 px, gegen `pnpm build && pnpm start`) | Grün: 12 Prüfungen (Farbwahl, Redirect-Bestätigung, Kalender Monat/Liste, Legende, „Keine Farbe“ neutral, Einstellungen ohne Mitgliedsfarbe, kein horizontales Scrollen, Touch-Ziele ≥ 48 px) |
+| `pnpm shared:typecheck` | Grün |
 | `pnpm mobile:typecheck` | Grün |
 | `pnpm mobile:lint` | Grün, 0 Fehler |
-| `pnpm mobile:test` | Grün: 4 Dateien, 10 Tests |
+| `pnpm mobile:test` | Grün: 5 Dateien, 16 Tests (neu: `tab-bar.test.tsx`, erweiterte `today.test.tsx`) |
 | `npx expo-doctor` | Grün: 20/20 Checks |
-| `npx expo export --platform ios` | Grün: Hermes-Produktions-Bundle (3,7 MB) |
-| Mobile Integrationsprobe (lokale Supabase + `pnpm start`) | Grün: 15/15 (Login, Rollen-/Link-Erkennung, Heute-Berechnung, `record_exercise_occurrence`, signierte Medien, 401-Grenzen, Code gültig/ungültig, Aussperrung) |
+| `npx expo export --platform ios` | Grün: Hermes-Produktions-Bundle |
+| **Simulatorlauf (iPhone 17 Pro, iOS 26.5, Metro über `exp://127.0.0.1:8081`)** | Login mit Demo-Patientin, Code-/Verbindungsbereich (inkl. neuem Kontoabschnitt), Heute, Termine, Profil – hell und dunkel; Tab-Bar vollständig sichtbar; s. „UI-Parität“ oben |
+| `pnpm docs:sync` | Grün (Obsidian-Vault auf Toms Mac) |
 
 ## Bekannte Einschränkungen
 
-- Nach wiederholten `db:reset`/Seed-Zyklen kann sich der Turbopack-Dev-Cache verkeilen: E2E-Navigationen hängen dann dauerhaft und der WebServer loggt ChunkLoadErrors. Abhilfe: `rm -rf .next` vor dem Lauf (19.07.2026 verifiziert; Suite danach vollständig grün in 49 s). Nicht mit echten Latenz-Flakes verwechseln.
+- **GUI-Tap-Automatisierung im Simulator ist ohne manuelle macOS-Accessibility-Freigabe blockiert.** `cliclick`/`osascript System Events` scheitern mit „Accessibility privileges not enabled“ – das erfordert einen physischen Klick in Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen, den nur Tom ausführen kann (kein Code-Defekt). Verifikation erfolgte stattdessen über Expo-Deep-Links (`exp://127.0.0.1:8081/--/<route>`), `xcrun simctl ui booted appearance dark/light` (tap-frei) und einen temporären, **nie committeten** Test-Login-Screen (`_dev-login.tsx`, vor jedem Commit gelöscht, `git status` bestätigt keinen Rest). Formulareingaben (Telefonnummer ändern, Bild auswählen, Absage-Text) und Übungsdetail/geführte Sitzung wurden dadurch NICHT per Tap im Simulator geprüft, nur per Code-Review und den bestehenden Komponententests. Wenn Tom die Berechtigung erteilt, kann ein Folgelauf diese Lücke schließen.
+- Nach wiederholten `db:reset`/Seed-Zyklen kann sich der Turbopack-Dev-Cache verkeilen: E2E-Navigationen hängen dann dauerhaft und der WebServer loggt ChunkLoadErrors. Abhilfe: `rm -rf .next` vor dem Lauf. **Neu (20.07.2026):** Ein zusätzlicher, bisher unbekannter Auslöser sind parallel laufende Mobile-Entwicklungsprozesse (Metro-Bundler + gebooteter Simulator) – sie konkurrieren mit dem Next-Dev-Server um lokale Ressourcen und lösten in dieser Sitzung zwei aufeinanderfolgende Fehlschläge trotz Cache-Löschung aus. Vor `pnpm e2e` immer `pnpm mobile:start` beenden und den Simulator herunterfahren.
 - Ein einzelner Server-Action-Roundtrip kann unter voller E2E-Parallellast selten >10 s dauern (Einladungscode-Erzeugung); der konfigurierte Retry mit Trace fängt das auf.
 - Formulare mit `state`+`revalidatePath` (Praxisbereich, Telefonnummer, Erinnerungen) sind vom intermittierenden Roundtrip-Problem grundsätzlich weiter betroffen (im Test 5×/5 stabil); patientenkritische Bestätigungen nutzen deshalb das Redirect-Muster (D-053).
 - Browser-Tests der E-Mail-Änderung hinterlassen ein umbenanntes Demo-Konto; vor `pnpm test:rls` neu seeden bzw. Reste löschen.
