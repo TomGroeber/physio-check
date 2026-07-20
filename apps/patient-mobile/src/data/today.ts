@@ -1,8 +1,11 @@
 import {
+  DEFAULT_REMINDER_PREFERENCES,
   calculateOccurrenceProgress,
   isDueOn,
   isoWeekRange,
   isoWeekdayInTimeZone,
+  shouldShowExerciseReminder,
+  timeValueInTimeZone,
   todayInTimeZone,
 } from "@physio-check/shared";
 import { branding } from "@/config/branding";
@@ -161,4 +164,81 @@ export async function getNextAppointment(
     therapistName: member?.profiles?.full_name ?? null,
     status: data.status,
   };
+}
+
+// ---------- Erinnerungen und Planänderungen (Parität zur Web-Heute-Seite) ----------
+
+export type PlanUpdate = {
+  id: string;
+  title: string;
+  body: string;
+  createdAt: string;
+};
+
+export type ReminderData = {
+  showExerciseReminder: boolean;
+  planUpdates: PlanUpdate[];
+};
+
+/**
+ * Spiegel von getPatientReminderData der Website: freiwilliger Hinweis
+ * auf offene Durchgänge (mit Ruhezeit) und ungelesene Planänderungen.
+ */
+export async function getReminderData(
+  userId: string,
+  timezone: string,
+  remainingOccurrences: number
+): Promise<ReminderData> {
+  const { data: preferenceRow, error: preferenceError } = await supabase
+    .from("patient_reminder_preferences")
+    .select("exercise_reminders_enabled, plan_updates_enabled, quiet_start, quiet_end")
+    .eq("profile_id", userId)
+    .maybeSingle();
+  if (preferenceError) throw new Error(preferenceError.message);
+
+  const preferences = preferenceRow
+    ? {
+        exerciseRemindersEnabled: preferenceRow.exercise_reminders_enabled,
+        planUpdatesEnabled: preferenceRow.plan_updates_enabled,
+        quietStart: String(preferenceRow.quiet_start).slice(0, 5),
+        quietEnd: String(preferenceRow.quiet_end).slice(0, 5),
+      }
+    : { ...DEFAULT_REMINDER_PREFERENCES };
+
+  const showExerciseReminder = shouldShowExerciseReminder({
+    enabled: preferences.exerciseRemindersEnabled,
+    remainingOccurrences,
+    localTime: timeValueInTimeZone(new Date(), timezone),
+    quietStart: preferences.quietStart,
+    quietEnd: preferences.quietEnd,
+  });
+
+  let planUpdates: PlanUpdate[] = [];
+  if (preferences.planUpdatesEnabled) {
+    const { data, error } = await supabase
+      .from("notifications")
+      .select("id, title, body, created_at")
+      .eq("recipient_profile_id", userId)
+      .in("type", ["exercise_plan_published", "exercise_plan_archived"])
+      .is("read_at", null)
+      .order("created_at", { ascending: false })
+      .limit(5);
+    if (error) throw new Error(error.message);
+    planUpdates = (data ?? []).map((notification) => ({
+      id: notification.id,
+      title: notification.title,
+      body: notification.body,
+      createdAt: notification.created_at,
+    }));
+  }
+
+  return { showExerciseReminder, planUpdates };
+}
+
+/** Planhinweis als gelesen markieren (bestehende eng begrenzte RPC). */
+export async function markNotificationRead(notificationId: string): Promise<void> {
+  const { error } = await supabase.rpc("mark_notification_read", {
+    p_notification_id: notificationId,
+  });
+  if (error) throw new Error(error.message);
 }

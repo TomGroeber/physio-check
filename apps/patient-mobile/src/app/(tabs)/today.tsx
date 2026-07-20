@@ -1,159 +1,270 @@
-import { useRouter } from "expo-router";
-import { View } from "react-native";
-import { formatDateLong, formatTime } from "@physio-check/shared";
+import { HugeiconsIcon } from "@hugeicons/react-native";
+import { ArrowRight02Icon } from "@hugeicons/core-free-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Pressable, View } from "react-native";
+import { AppointmentCard } from "@/components/appointment-card";
+import { SuccessCelebration } from "@/components/success-celebration";
+import { TAB_BAR_CONTENT_HEIGHT } from "@/components/tab-bar";
 import {
   AppButton,
   Banner,
   Body,
   Card,
+  Collapsible,
   ErrorView,
+  ExerciseMark,
   LoadingView,
+  PageHeading,
+  ProgressBar,
   Screen,
-  Subtitle,
-  Title,
+  Section,
+  SuccessCircle,
+  TextLink,
+  useTheme,
 } from "@/components/ui";
 import { spacing } from "@/config/branding";
-import { de } from "@/messages/de";
-import { getTodayData } from "@/data/today";
+import { web } from "@/messages/de";
+import {
+  getReminderData,
+  getTodayData,
+  markNotificationRead,
+} from "@/data/today";
+import { getUnitSummary } from "@/data/appointments";
+import { prescriptionSummary, progressLine } from "@/lib/format";
 import { useSession } from "@/lib/session";
 import { useLoad } from "@/lib/use-load";
 
-/**
- * Heute (Teil I1): kompakte Checkliste, dokumentiert ≠ erledigt klar
- * getrennt („eingetragen" zählt Selbstauskünfte), positive Rückmeldung
- * nur wenn wirklich alles erledigt (completed) ist.
- */
+const t = web.patient.today;
+
+/** Heute-Ansicht: identische Informationsarchitektur wie today/page.tsx der Website. */
 export default function Today() {
   const router = useRouter();
-  const { session } = useSession();
+  const theme = useTheme();
+  const { session, fullName } = useSession();
+  const params = useLocalSearchParams<{ logged?: string; painhint?: string }>();
   const userId = session?.user.id ?? "";
-  const state = useLoad(() => getTodayData(userId), [userId]);
+
+  const state = useLoad(async () => {
+    const today = await getTodayData(userId);
+    const planned = today.exercises.reduce((sum, e) => sum + e.plannedToday, 0);
+    const documented = today.exercises.reduce((sum, e) => sum + e.documentedToday, 0);
+    const [reminders, authorization] = await Promise.all([
+      getReminderData(userId, today.timezone, Math.max(0, planned - documented)),
+      getUnitSummary(userId),
+    ]);
+    return { today, reminders, authorization };
+  }, [userId]);
 
   if (state.loading && !state.data)
     return (
-      <Screen>
+      <Screen bottomInset={TAB_BAR_CONTENT_HEIGHT}>
         <LoadingView />
       </Screen>
     );
-
   const data = state.data;
   if (!data)
     return (
-      <Screen refreshing={state.refreshing} onRefresh={state.refresh}>
+      <Screen
+        bottomInset={TAB_BAR_CONTENT_HEIGHT}
+        refreshing={state.refreshing}
+        onRefresh={state.refresh}
+      >
         <ErrorView onRetry={state.reload} />
       </Screen>
     );
 
-  const planned = data.exercises.reduce((sum, e) => sum + e.plannedToday, 0);
-  const documented = data.exercises.reduce(
-    (sum, e) => sum + Math.min(e.documentedToday, e.plannedToday),
-    0
+  const { exercises, hasPlan, nextAppointment } = data.today;
+  const plannedCount = exercises.reduce((sum, e) => sum + e.plannedToday, 0);
+  const documentedCount = exercises.reduce((sum, e) => sum + e.documentedToday, 0);
+  const completedCount = exercises.reduce((sum, e) => sum + e.completedToday, 0);
+  const remaining = Math.max(0, plannedCount - documentedCount);
+  const allDone = plannedCount > 0 && remaining === 0;
+  const allCompleted = plannedCount > 0 && completedCount >= plannedCount;
+  const firstName = fullName.split(" ")[0] || fullName;
+  const orderedExercises = [...exercises].sort(
+    (a, b) =>
+      Number(a.fullyDocumentedToday) - Number(b.fullyDocumentedToday) ||
+      a.sortOrder - b.sortOrder
   );
-  const allDocumented = planned > 0 && documented >= planned;
-  const allCompleted =
-    planned > 0 && data.exercises.every((e) => e.fullyCompletedToday);
-  const next = data.exercises.find((e) => e.canDocument);
 
   return (
-    <Screen refreshing={state.refreshing} onRefresh={state.refresh}>
-      <Title>{de.today.title}</Title>
+    <Screen
+      bottomInset={TAB_BAR_CONTENT_HEIGHT}
+      refreshing={state.refreshing}
+      onRefresh={state.refresh}
+    >
+      <PageHeading>
+        {t.greeting}
+        {firstName ? `, ${firstName}` : ""}!
+      </PageHeading>
 
-      {state.error ? <ErrorView onRetry={state.refresh} /> : null}
+      <SuccessCelebration
+        loggedStatus={params.logged}
+        allDocumented={allDone}
+        allCompleted={allCompleted}
+      />
+      {params.painhint ? <Banner kind="warning">{t.painHint}</Banner> : null}
 
-      {!data.hasPlan ? (
+      {hasPlan && plannedCount > 0 ? (
         <Card>
-          <Body>{de.today.noPlan}</Body>
-        </Card>
-      ) : data.exercises.length === 0 ? (
-        <Card>
-          <Body>{de.today.empty}</Body>
-        </Card>
-      ) : (
-        <>
-          <Body muted>{de.today.progress(documented, planned)}</Body>
-          {allCompleted ? (
-            <Banner kind="success">{de.today.celebrate}</Banner>
-          ) : allDocumented ? (
-            <Banner kind="success">{de.today.allDone}</Banner>
-          ) : null}
-
-          {next ? (
-            <Card>
-              <Body muted>{de.today.nextUp}</Body>
-              <Subtitle>{next.title}</Subtitle>
-              {next.plannedToday > 1 ? (
-                <Body muted>
-                  {de.today.occurrence(
-                    Math.min(next.documentedToday + 1, next.plannedToday),
-                    next.plannedToday
-                  )}
+          {allDone ? (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.md }}>
+              <SuccessCircle size={48} />
+              <View style={{ flex: 1 }}>
+                <Body bold size="lg">
+                  {allCompleted ? t.allDoneTitle : t.allReportedTitle}
                 </Body>
-              ) : null}
-              <AppButton
-                label={de.today.start}
-                onPress={() => router.push(`/exercise/${next.planItemId}`)}
-              />
-            </Card>
-          ) : null}
-
-          {data.exercises.map((exercise) => (
-            <Card key={exercise.planItemId}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: spacing.sm,
-                }}
-              >
-                <View style={{ flex: 1, gap: spacing.xs }}>
-                  <Body>{exercise.title}</Body>
-                  {exercise.weeklyProgress ? (
-                    <Body muted>
-                      {de.today.weekly(
-                        exercise.weeklyProgress.documented,
-                        exercise.weeklyProgress.target
-                      )}
-                    </Body>
-                  ) : null}
-                </View>
-                {exercise.fullyDocumentedToday ? (
-                  <Body muted>{de.today.documented}</Body>
-                ) : null}
+                <Body muted size="small">
+                  {allCompleted ? t.allDoneBody : t.allReportedBody}
+                </Body>
               </View>
-              {exercise.canDocument ? (
-                <AppButton
-                  label={de.today.start}
-                  variant="secondary"
-                  onPress={() => router.push(`/exercise/${exercise.planItemId}`)}
-                />
-              ) : null}
-            </Card>
-          ))}
-        </>
-      )}
-
-      {data.nextAppointment ? (
-        <Card>
-          <Subtitle>{de.today.nextAppointment}</Subtitle>
-          <Body>
-            {formatDateLong(
-              new Date(data.nextAppointment.startsAt),
-              data.nextAppointment.timezone
-            )}
-            {", "}
-            {formatTime(
-              new Date(data.nextAppointment.startsAt),
-              data.nextAppointment.timezone
-            )}
-          </Body>
-          {data.nextAppointment.therapistName ? (
-            <Body muted>
-              {de.appointments.with(data.nextAppointment.therapistName)}
+            </View>
+          ) : (
+            <Body bold size="lg">
+              {t.progressShort(documentedCount, plannedCount)}
+            </Body>
+          )}
+          <ProgressBar
+            value={documentedCount}
+            max={plannedCount}
+            label={t.progressBarLabel(documentedCount, plannedCount)}
+          />
+          {!allDone && data.reminders.showExerciseReminder ? (
+            <Body muted size="small">
+              {web.patient.reminders.dueBody(remaining)}
             </Body>
           ) : null}
-          <Body muted>{data.nextAppointment.locationName}</Body>
+          <AppButton
+            label={
+              allDone
+                ? web.patient.session.viewSummary
+                : documentedCount > 0
+                  ? web.patient.session.resume
+                  : web.patient.session.start
+            }
+            variant={allDone ? "outlinePrimary" : "primary"}
+            onPress={() => router.push("/(tabs)/session")}
+          />
         </Card>
       ) : null}
+
+      {data.reminders.planUpdates.length > 0 ? (
+        <Section heading={web.patient.reminders.planUpdatesHeading}>
+          {data.reminders.planUpdates.map((notification) => (
+            <Card key={notification.id}>
+              <Body bold>{notification.title}</Body>
+              <Body size="small">{notification.body}</Body>
+              <TextLink
+                label={web.patient.reminders.markRead}
+                onPress={async () => {
+                  await markNotificationRead(notification.id).catch(() => {});
+                  state.refresh();
+                }}
+              />
+            </Card>
+          ))}
+        </Section>
+      ) : null}
+
+      <Section heading={t.exercisesHeading}>
+        {!hasPlan ? (
+          <Card>
+            <Body muted>{t.noPlanYet}</Body>
+          </Card>
+        ) : exercises.length === 0 ? (
+          <Card>
+            <Body muted>{t.noExercisesToday}</Body>
+          </Card>
+        ) : (
+          orderedExercises.map((exercise) => (
+            <Pressable
+              key={exercise.planItemId}
+              accessibilityRole="button"
+              accessibilityLabel={t.openExercise(exercise.title)}
+              onPress={() => router.push(`/(tabs)/exercise/${exercise.planItemId}`)}
+              style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+            >
+              <Card muted={exercise.fullyDocumentedToday}>
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: spacing.md }}
+                >
+                  <ExerciseMark
+                    documented={exercise.fullyDocumentedToday}
+                    completed={exercise.fullyCompletedToday}
+                    progressText={
+                      exercise.plannedToday > 1
+                        ? `${exercise.documentedToday}/${exercise.plannedToday}`
+                        : undefined
+                    }
+                  />
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <Body bold>{exercise.title}</Body>
+                    {prescriptionSummary(exercise) ? (
+                      <Body muted size="small">
+                        {prescriptionSummary(exercise)}
+                      </Body>
+                    ) : null}
+                    {exercise.fullyDocumentedToday ? (
+                      <Body
+                        bold
+                        size="small"
+                        color={exercise.fullyCompletedToday ? theme.success : theme.foreground}
+                      >
+                        {exercise.fullyCompletedToday ? t.doneBadge : t.documentedBadge}
+                      </Body>
+                    ) : progressLine(exercise) ? (
+                      <Body bold size="small">
+                        {progressLine(exercise)}
+                      </Body>
+                    ) : null}
+                  </View>
+                  <HugeiconsIcon
+                    icon={ArrowRight02Icon}
+                    size={24}
+                    color={theme.mutedForeground}
+                  />
+                </View>
+              </Card>
+            </Pressable>
+          ))
+        )}
+      </Section>
+
+      <Section heading={t.nextAppointment}>
+        {nextAppointment ? (
+          <AppointmentCard
+            appointment={nextAppointment}
+            onCancellationRequested={state.refresh}
+          />
+        ) : (
+          <Card>
+            <Body muted>{t.noAppointment}</Body>
+          </Card>
+        )}
+      </Section>
+
+      <Section heading={web.patient.authorization.title}>
+        <Card>
+          {data.authorization ? (
+            <>
+              <Body bold size="lg">
+                {web.patient.authorization.remaining(
+                  data.authorization.remaining,
+                  data.authorization.adjustedTotal
+                )}
+              </Body>
+              <Body bold size="small">{data.authorization.title}</Body>
+              <Collapsible summary={web.patient.authorization.coverageHintTitle}>
+                <Body muted size="small">
+                  {web.patient.authorization.coverageHint}
+                </Body>
+              </Collapsible>
+            </>
+          ) : (
+            <Body muted size="small">{web.patient.authorization.empty}</Body>
+          )}
+        </Card>
+      </Section>
     </Screen>
   );
 }

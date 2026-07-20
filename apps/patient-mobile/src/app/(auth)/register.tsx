@@ -1,15 +1,13 @@
 import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { AppButton, Banner, Body, Field, Screen } from "@/components/ui";
-import { de } from "@/messages/de";
+import { AppButton, Banner, Body, Field, Screen, SectionHeading } from "@/components/ui";
+import { app, web } from "@/messages/de";
 import { supabase } from "@/lib/supabase";
 
 /**
- * Kontoerstellung nach geprüftem Code (Teil H): Das Konto gehört dem
- * Patienten (eigene E-Mail + Passwort); der vorbereitete Datensatz der
- * Praxis ist KEIN Konto. Nach der E-Mail-Bestätigung meldet sich die
- * Person an und löst den Code ein (der Code bleibt bis zur endgültigen
- * Verbindung gültig – identisch zum Web-Fluss).
+ * Kontoerstellung nach geprüftem Code: Das Konto gehört dem Patienten
+ * (eigene E-Mail + Passwort); der Code bleibt bis zur endgültigen
+ * Verbindung gültig – identisch zum Web-Fluss.
  */
 export default function Register() {
   const params = useLocalSearchParams<{
@@ -39,8 +37,8 @@ export default function Register() {
     if (signUpError) {
       setError(
         /password/i.test(signUpError.message)
-          ? de.auth.passwordHint
-          : de.common.error
+          ? app.auth.passwordHint
+          : web.common.error
       );
       return;
     }
@@ -49,23 +47,23 @@ export default function Register() {
 
   return (
     <Screen>
+      <SectionHeading>{web.connect.createAccount}</SectionHeading>
       {params.practiceName ? (
-        <Body muted>{de.invite.confirmBody(params.practiceName)}</Body>
+        <Body muted>{web.connect.fromPractice(params.practiceName)}</Body>
       ) : null}
-      <Body muted>{de.invite.registerHint}</Body>
       {error ? <Banner kind="error">{error}</Banner> : null}
       {done ? (
-        <Banner kind="success">{de.invite.registerDone}</Banner>
+        <Banner kind="success">{app.invite.registerDone}</Banner>
       ) : (
         <>
           <Field
-            label={de.auth.nameLabel}
+            label={app.auth.nameLabel}
             value={fullName}
             onChangeText={setFullName}
             autoComplete="name"
           />
           <Field
-            label={de.auth.emailLabel}
+            label={app.auth.emailLabel}
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -73,15 +71,15 @@ export default function Register() {
             autoComplete="email"
           />
           <Field
-            label={de.auth.passwordLabel}
+            label={app.auth.passwordLabel}
+            hint={app.auth.passwordHint}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
             textContentType="newPassword"
           />
-          <Body muted>{de.auth.passwordHint}</Body>
           <AppButton
-            label={pending ? de.common.loading : de.invite.createAccount}
+            label={pending ? app.common.loading : web.connect.createAccount}
             onPress={submit}
             disabled={pending || !fullName || !email || password.length < 10}
           />

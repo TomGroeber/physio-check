@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { AppButton, Banner, Body, Field, Screen } from "@/components/ui";
-import { de } from "@/messages/de";
+import { app, web } from "@/messages/de";
 import { supabase } from "@/lib/supabase";
 
 /**
@@ -47,7 +47,7 @@ export default function ResetPassword() {
     const { error: updateError } = await supabase.auth.updateUser({ password });
     setPending(false);
     if (updateError) {
-      setError(de.common.error);
+      setError(web.common.error);
       return;
     }
     await supabase.auth.signOut();
@@ -56,19 +56,19 @@ export default function ResetPassword() {
 
   return (
     <Screen>
-      <Body muted>{de.auth.newPasswordTitle}</Body>
+      <Body muted>{app.auth.newPasswordTitle}</Body>
       {error ? <Banner kind="error">{error}</Banner> : null}
       <Field
-        label={de.auth.newPasswordLabel}
+        label={app.auth.newPasswordLabel}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
         textContentType="newPassword"
         editable={ready}
       />
-      <Body muted>{de.auth.passwordHint}</Body>
+      <Body muted>{app.auth.passwordHint}</Body>
       <AppButton
-        label={pending ? de.common.loading : de.common.save}
+        label={pending ? app.common.loading : web.common.save}
         onPress={submit}
         disabled={pending || !ready || password.length < 10}
       />

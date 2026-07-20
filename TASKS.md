@@ -170,6 +170,27 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [x] Teststabilität: Playwright auf 4 Worker begrenzt, Expect-Timeout 15 s, Hydrations-Klickverluste in drei Spezifikationen behoben.
 - [x] Merge nach `main` mit Toms Freigabe (2026-07-19): Fast-Forward `4723363..91591df`, gepusht.
 
+## Auftrag vom 19.07.2026 – UI-Parität der nativen App mit der Patienten-Weboberfläche (Branch `claude-patient-mobile-ui-parity-20260719`)
+
+Erster echter Simulatorlauf (iPhone 17 Pro, iOS 26.5, Expo-Tunnel) zeigte: Tab-Bar unten beschnitten, Navigation schlecht sichtbar, Design weicht stark von der abgestimmten Patienten-Weboberfläche ab. Die Web-Patientenansicht ist die verbindliche Referenz.
+
+**Paritätsmatrix (Web → nativ → Abweichung → Korrektur):**
+
+| Web-Referenz | Nativ (vorher) | Abweichung | Korrektur |
+|---|---|---|---|
+| `(patient)/layout.tsx`: Header (Logo + PhysioCheck + Avatar), max-w-lg, warmes Beige/Navy/Teal | Standard-Stack-Header, generische Blau-/Teal-Palette | Farbwelt, Header-Identität, Inhaltsbreite fehlen | Web-Farbtokens (OKLCH→Hex) in `branding.ts`, eigener `AppHeader`, Inhaltsbreite 512 pt |
+| `bottom-nav.tsx`: 3 Ziele, Icon in Akzent-Pille + Label, min-h-18, safe-area-bottom | `(tabs)/_layout.tsx` feste Höhe 64, `tabBarIcon: () => null` | **Ursache Cropping:** feste Höhe ignoriert Home-Indicator-Inset; keine Icons | Eigene Tab-Bar: Höhe 72 + `insets.bottom`, Hugeicons wie Web, Akzent-Pille aktiv |
+| `today/page.tsx`: Begrüßung, Fortschrittskarte + Balken + Session-CTA, Checklistenkreise, Terminkarte, Verordnungskarte, Planänderungs-/Erinnerungshinweise | Einfache Liste ohne Fortschrittsbalken/Kreise/CTA; Verordnung unter „Termine“ | Struktur und Hierarchie abweichend | Heute 1:1 nach Web-IA inkl. Kreis-/Haken-Marken, Balken, CTA, Verordnung auf „Heute“ |
+| `session/page.tsx`: geführter Modus mit „Speichern und weiter“ + Zusammenfassung | fehlt nativ | Funktionslücke | Neue Route `session.tsx` |
+| `exercises/[id]` + `exercise-view.tsx` + `exercise-log-form.tsx`: Zurück-Link, randloses 16:9-Video, Chips, Schedule/Uhrzeiten, Praxisnotiz, Status-Radios, einklappbare optionale Angaben, Selbstauskunfts-Hinweis, Schmerzhinweis (`painAfter ≥ 7`) | Eigenlayout mit Buttons statt Radios, ohne Schedule-Text/Collapsible/Hinweise | Layout + fehlende Elemente | Exakt nach Web-Struktur inkl. `de.patient.exercise`-Texten |
+| `appointments/page.tsx` + `appointment-card.tsx` + `offer-response.tsx`: Terminkarten mit Icons, Karten-Link, Absage-Collapsible, „Vergangene (n)“ | Karten ohne Icons/Karten-Link, Einheiten hier statt auf „Heute“ | Struktur | Web-Struktur; Einheiten zurück auf „Heute“ |
+| `profile/page.tsx`: Persönlich/Sicherheit/Darstellung/Erinnerungen/Praxis/Abmelden; Hell-Dunkel-Umschalter | Andere Reihenfolge, kein Darstellungs-Umschalter | Struktur + fehlender Dunkelmodus-Schalter | Web-Sektionen + persistenter Hell/Dunkel-Schalter (lokal, wie Web-Cookie) |
+| Texte `de.patient.*`/`de.units` | eigene, teils abweichende Texte | Textdrift | `src/messages/de.ts` nach `packages/shared` verschoben (Re-Export wie D-059); App nutzt DIESELBEN Texte |
+
+- [ ] Phase B: Safe Area/Tab-Bar (Ursache: feste Höhe) reparieren
+- [ ] Phase C/D: Parität aller 13 Patientenstrecken + Token-Konsolidierung
+- [ ] Phase E: Simulator-Verifikation + Prüfkette
+
 ## Auftrag vom 19.07.2026 – Mobile Patienten-App (Branch `claude-patient-mobile-20260719`, Basis `28ee792`)
 
 - [x] Architektur dokumentiert (`docs/MOBILE_ARCHITECTURE.md`) und Entscheidungen D-058–D-062 festgehalten, BEVOR implementiert wurde.
