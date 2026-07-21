@@ -180,7 +180,8 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [ ] Phase 2: erweiterte iOS-Simulator-Matrix, Android-Emulator-Ersteinrichtung
 - [x] Phase 4 (Teil 1): echte Kontolöschung statt reiner Sperre (Migration `20260721100000_real_account_deletion.sql`, Web-Weg im Profil, Reauthentifizierung per Passwort, öffentliche Info-Seite `/account-deletion`).
 - [x] Phase 4 (Teil 2): Malware-Scan für Uploads (`src/server/services/malware-scan.ts`, ClamAV, fail-closed, hinter `MALWARE_SCAN_ENABLED`); lokal per E2E mit echtem ClamAV + eigener Testsignatur verifiziert (EICAR erkennt ClamAV nur am Dateianfang, siehe `docs/PRIVACY_SECURITY.md`); CI installiert ClamAV real und muss nach diesem Push noch grün bestätigt werden.
-- [ ] Phase 4 (Teil 3): technische Dateninventur für Store-Mappings, konsolidierte Datenschutzerklärungs-Vorlage.
+- [x] Phase 4 (Teil 3): technische Dateninventur erweitert (Profilbild, Telefonnummer, Erinnerungen ergänzt) und um Store-Mapping-Tabelle (Apple App Privacy / Google Data Safety / Health-Declaration) ergänzt – `docs/PRIVACY_SECURITY.md` Abschnitt 1a; gegen tatsächlichen Code geprüft (keine Tracking-/Analytics-/Crash-SDKs).
+- [ ] Phase 4 (Teil 4): konsolidierte Datenschutzerklärungs-Vorlage (Fließtext für Endnutzer).
 - [x] Phase 5 (Teil 1): App-Icon/Splash/Adaptive-Icon aus `logo.svg` gerendert statt Expo-Standard (`icon.png`, `favicon.png`, `splash-icon.png`, Android-Ebenen); `app.json`-Hintergrundfarben auf Marken-Navy vereinheitlicht; iOS-Fotozugriffstext (Deutsch) gesetzt, Kamera/Mikrofon explizit nicht deklariert. `expo-doctor` 20/20, iOS+Android-Export grün.
 - [ ] Phase 5 (Teil 2): iOS Privacy Manifest/Required-Reason-API, finale App-Identität (Toms Entscheidung, siehe A5)
 - [ ] Phase 6–8: Store-Metadaten, signierte Builds (BLOCKIERT durch Konten), Release-Candidate-Report

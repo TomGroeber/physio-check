@@ -33,7 +33,7 @@ Zusätzliche, im Master-Prompt nicht explizit genannte, aber beim Audit gefunden
 - **Keine Security-Header** (CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy) in `next.config.ts` – `docs/PRIVACY_SECURITY.md` selbst vermerkt „CSP … teilweise".
 - **Kein `engines`/`packageManager`-Feld** in `package.json` – Node/pnpm-Version ist nirgendwo maschinenlesbar gepinnt (nur in Doku-Text).
 - ~~**Keine Malware-/Virenscan-Pipeline**~~ – behoben 2026-07-21, siehe A4.
-- **`docs/PRIVACY_SECURITY.md`** ist im Wesentlichen der Stand vom 11.07.2026 mit Ergänzungen; es fehlt eine konsolidierte, store-taugliche Datenschutzerklärungs-Vorlage sowie App-Privacy-/Data-Safety-/Health-Declaration-Mappings.
+- ~~**`docs/PRIVACY_SECURITY.md`** ... es fehlt ... App-Privacy-/Data-Safety-/Health-Declaration-Mappings~~ – Mapping-Tabelle ergänzt 2026-07-21, siehe A4/A6. Eine konsolidierte, store-taugliche **Datenschutzerklärungs-Vorlage** (Fließtext für Endnutzer, nicht das Mapping) fehlt weiterhin.
 
 ## A. Übersicht nach Bereich
 
@@ -82,14 +82,14 @@ Zusätzliche, im Master-Prompt nicht explizit genannte, aber beim Audit gefunden
 
 | Punkt | Status | Beleg | Nächster Schritt |
 |---|---|---|---|
-| Technische Dateninventur | TEILWEISE | `docs/PRIVACY_SECURITY.md` Abschnitt 1 existiert, aber nicht store-tauglich strukturiert (kein App-Privacy-/Data-Safety-Mapping) | Erweitern um Store-Mappings |
+| Technische Dateninventur inkl. Store-Mapping | ERLEDIGT UND VERIFIZIERT | `docs/PRIVACY_SECURITY.md` Abschnitt 1/1a: erweiterte Datentabelle + Apple-App-Privacy-/Google-Data-Safety-Mapping pro Datentyp (erhoben/verknüpft/Tracking), gegen tatsächlichen Code geprüft (keine Analytics-/Tracking-/Crash-SDKs in `package.json`) | Formulare erst nach Kontoerstellung tatsächlich ausfüllbar (BLOCKIERT DURCH TOM/KONTO) |
 | Echte Kontolöschung (nicht nur Sperre) | ERLEDIGT UND VERIFIZIERT | Migration `20260721100000_real_account_deletion.sql`, RPC `request_account_deletion`; 8 neue RLS-Proben (104 gesamt) + vollständiger Browser-Durchlauf mit Wegwerf-Konto (Login → Löschung → Redirect → gesperrter Zweitlogin, Praxisdaten bleiben erhalten) | – |
 | Web-Weg zur Kontolöschung (fehlte komplett, nur mobil vorhanden) | ERLEDIGT UND VERIFIZIERT | `src/server/actions/account-deletion.ts` + `delete-account-form.tsx` in `/profile`; Reauthentifizierung per Passwort vor jeder Löschung | – |
 | Konfigurierbare Aufbewahrungsregeln (ohne eigene Rechtsentscheidung) | ERLEDIGT UND VERIFIZIERT | `retained_data_note`-Spalte + Text dokumentieren pro Antrag, welche Daten aus welchem (offenen) Rechtsgrund bleiben | Endgültige Frist bleibt BLOCKIERT DURCH RECHTLICHE FREIGABE |
 | Malware-Scan für Uploads | ERLEDIGT – LOKAL VERIFIZIERT, CI-LAUF AUSSTEHEND | `src/server/services/malware-scan.ts` (ClamAV `clamscan`, fail-closed); in `finalizeAvatarUpload`/`finalizeUpload` eingebaut hinter `MALWARE_SCAN_ENABLED`; lokal per Playwright mit echtem ClamAV + eigener Testsignatur (`e2e/fixtures/clamav-test-signature.ndb`, da die eingebaute EICAR-Datei nachweislich nur am Dateianfang erkannt wird) verifiziert: beide betroffenen Uploads (Avatar, Übungsvideo) korrekt abgelehnt, normaler Upload-Pfad ohne Scan unverändert grün (104 RLS + 47/49 E2E, 2 bekannte unabhängige Flakes erholt) | Nach Push echten CI-Lauf prüfen (`web-database`-Job installiert ClamAV + Testsignatur, setzt `MALWARE_SCAN_ENABLED=true` für den E2E-Schritt); Produktions-Dauerlösung (`clamd`-Daemon oder Cloud-AV) bleibt an Toms Hosting-Wahl gebunden (siehe A3) |
 | Öffentliche Datenschutz-/Support-/Löschseite | ERLEDIGT UND VERIFIZIERT (Löschseite) | `src/app/account-deletion/page.tsx`, ohne Login erreichbar (HTTP 200 verifiziert); nennt Support-E-Mail-Platzhalter | Datenschutzerklärung als eigene Seite bleibt offen (s. A6); Support-E-Mail ist Platzhalter (`branding.supportEmail`) bis Toms Entscheidung (A5) |
 | Rechtliche Freigabe Aufbewahrungsfristen Luxemburg | BLOCKIERT DURCH RECHTLICHE FREIGABE | Offen seit D-062 | Bleibt offen; nur konfigurierbare Regel + Platzhalter, keine eigene Entscheidung |
-| Apple/Google Health-Declaration, Data-Safety-Mapping | IMPLEMENTIERBAR – JETZT AUSFÜHREN | Nicht vorhanden | Aus Dateninventur ableiten |
+| Apple/Google Health-Declaration, Data-Safety-Mapping | ERLEDIGT UND VERIFIZIERT | Siehe `docs/PRIVACY_SECURITY.md` Abschnitt 1a (inkl. expliziter Klarstellung: kein HealthKit) | Inhaltlich fertig; Übertragung in App Store Connect/Play Console braucht Toms Konto |
 
 ### A5. App-Identität und native Konfiguration (Phase 5)
 
@@ -108,7 +108,7 @@ Zusätzliche, im Master-Prompt nicht explizit genannte, aber beim Audit gefunden
 | Punkt | Status | Beleg | Nächster Schritt |
 |---|---|---|---|
 | Store-Texte (Titel/Beschreibung/Keywords/Kategorie) | IMPLEMENTIERBAR – JETZT AUSFÜHREN | `docs/APP_STORE_CHECKLIST.md` hat nur Grobstruktur | Texte ausformulieren (Deutsch, ehrlich) |
-| Altersfreigabe-Fragebogen, App-Privacy/Data-Safety/Health-Antworten | IMPLEMENTIERBAR – JETZT AUSFÜHREN | Nicht vorbereitet | Aus Dateninventur (A4) ableiten |
+| Altersfreigabe-Fragebogen, App-Privacy/Data-Safety/Health-Antworten | ERLEDIGT UND VERIFIZIERT (inhaltlich) | Mapping in `docs/PRIVACY_SECURITY.md` Abschnitt 1a (A4) | Übertragung in die Store-Formulare braucht Toms Konto |
 | Support-/Privacy-/Deletion-URLs | BLOCKIERT DURCH TOM (Domain) | Keine Domain | Nach Domain-Entscheidung deployen |
 | Screenshots (alle Pflichtgrößen) | BLOCKIERT (setzt signierten Build + Gerät/Simulator-Matrix voraus) | Nur einzelne Verifikations-Screenshots im Scratchpad, nicht store-konform erzeugt | Nach A2 + A7 systematisch erzeugen |
 | Review-Demokonto | IMPLEMENTIERBAR – JETZT AUSFÜHREN | Demo-Konten existieren nur lokal (Seed) | Für Staging vorbereiten, sobald A3 steht |
@@ -137,7 +137,8 @@ Zusätzliche, im Master-Prompt nicht explizit genannte, aber beim Audit gefunden
 
 - **ERLEDIGT UND VERIFIZIERT:** Web-Kernqualität (Typecheck/Lint/Test/RLS/E2E/Build), Mobile-Kernqualität (Typecheck/Lint/Test/expo-doctor/JS-Export), Rollenbegrenzung App↔Praxis, lokale migrationsbasierte DB, deutsche Lokalisierung ehrlich dokumentiert.
 - **ERLEDIGT, CI-LAUF NACH DIESEM PUSH ZU BESTÄTIGEN:** Malware-Scan-Pipeline für Uploads (ClamAV, lokal vollständig verifiziert inkl. echter Ablehnung; CI installiert ClamAV neu und muss real grün laufen, bevor dies als „verifiziert" gilt).
-- **IMPLEMENTIERBAR – JETZT AUSFÜHREN (kein Blocker):** CI-Workflow, Engines-Pinning, Security-Header, echte Kontolöschung, App-Icon/Splash aus eigener Marke, Privacy-Dateninventur/Store-Mappings, Deployment-Vorbereitung (Skripte/Variablenlisten ohne Secrets), Android-Emulator-Ersteinrichtung, erweiterte iOS-Simulator-Matrix.
+- **ERLEDIGT UND VERIFIZIERT (Ergänzung):** Privacy-Dateninventur inkl. Apple-App-Privacy-/Google-Data-Safety-/Health-Mapping (`docs/PRIVACY_SECURITY.md` Abschnitt 1a), App-Icon/Splash aus eigener Marke, iOS-Fotozugriffstext.
+- **IMPLEMENTIERBAR – JETZT AUSFÜHREN (kein Blocker):** Store-Texte (Titel/Beschreibung/Keywords), konsolidierte Datenschutzerklärungs-Vorlage (Fließtext), Deployment-Vorbereitung (Skripte/Variablenlisten ohne Secrets), Android-Emulator-Ersteinrichtung, erweiterte iOS-Simulator-Matrix, iOS Privacy Manifest.
 - **BLOCKIERT DURCH TOM/KONTO/2FA/ZAHLUNG:** gehostetes Supabase-Projekt, Domain/Hosting, SMTP-Anbieter, Apple Developer, Google Play Console, EAS-Login, alle signierten Builds/TestFlight/Play-Internal-Uploads, finale App-Identität (Name/Bundle-ID/Package/Publisher/Support-E-Mail).
 - **BLOCKIERT DURCH RECHTLICHE FREIGABE:** endgültige Aufbewahrungsfrist für Luxemburger Patientendaten, jede Aussage zu „vollständiger DSGVO-Konformität" oder Medizinprodukt-Einstufung.
 - **OPTIONAL NACH V1:** weitere Lokalisierungen, Push-Benachrichtigungen (Versand), Universal/App Links (Domain-abhängig ohnehin blockiert), Realtime-Sync.

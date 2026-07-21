@@ -68,14 +68,39 @@
 
 | Kategorie | Beispiele | Sensibilität |
 |---|---|---|
-| Kontodaten | E-Mail, Name, Passwort-Hash (bei Supabase Auth) | mittel |
+| Kontodaten | E-Mail, Name, Passwort-Hash (bei Supabase Auth), Telefonnummer (optional) | mittel |
+| Profilbild | Vom Patienten freiwillig hochgeladenes Foto | mittel (Bilddaten, freiwillig) |
 | Praxisverknüpfung | wer ist Patient welcher Praxis | hoch (lässt Behandlung erkennen) |
 | Übungspläne | verordnete Übungen, Dosierung | hoch (Gesundheitsbezug) |
 | Durchführungsprotokolle | Selbstauskunft, Schmerzangaben 0–10, Notizen | **hoch (Gesundheitsdaten)** |
 | Termine | Zeit, Ort, behandelnde Person | hoch |
+| Erinnerungseinstellungen | freiwillige In-App-Hinweiszeiten (kein Push/E-Mail-Versand implementiert) | niedrig |
 | Audit-Ereignisse | wer hat wann was geändert (ohne Gesundheitsdetails) | mittel |
 
-Grundsatz **Datenminimierung**: Patientendatensätze starten mit einem Anzeigenamen; keine Geburtsdaten, Adressen oder Diagnosen im MVP.
+Grundsatz **Datenminimierung**: Patientendatensätze starten mit einem Anzeigenamen; keine Geburtsdaten, Adressen oder Diagnosen im MVP. **Keine** Analyse-/Tracking-/Werbe-SDKs, keine Crash-Reporting-Bibliothek, keine Werbekennungen (verifiziert: kein entsprechendes Paket in `package.json` von Web oder App) – vereinfacht die Store-Angaben unten erheblich, weil ganze Kategorien (Tracking, Nutzungsdaten für Werbung, Diagnosedaten) ehrlich mit „nein" beantwortet werden können.
+
+## 1a. Store-Datenschutz-Mappings (Apple App Privacy / Google Play Data Safety)
+
+Abgeleitet aus der Tabelle oben und dem tatsächlichen Code (nicht angenommen: siehe fehlende Tracking-/Analytics-Pakete). Gilt für die native Patienten-App; die Praxis-Weboberfläche hat kein Store-Privacy-Label. Beide Store-Formulare fragen im Kern dieselben drei Dinge pro Datentyp: **erhoben? mit der Identität verknüpft? zum Tracking über andere Apps/Websites hinweg genutzt?** – Letzteres ist bei PhysioCheck durchgehend **Nein**, weil es keine Tracking-/Werbe-SDKs gibt.
+
+| Datentyp (Apple-Kategorie / Google-Kategorie) | Erhoben? | Mit Nutzeridentität verknüpft? | Zum Tracking genutzt? | Zweck |
+|---|---|---|---|---|
+| Kontaktinfo – Name, E-Mail (Apple: Contact Info · Google: Personal info) | Ja | Ja | Nein | Kontofunktion, Authentifizierung |
+| Kontaktinfo – Telefonnummer (Apple: Contact Info · Google: Personal info) | Ja, optional | Ja | Nein | Freiwillige Angabe der Patientin/des Patienten |
+| Fotos (Apple: User Content – Photos or Videos · Google: Photos and videos) | Ja, optional | Ja | Nein | Freiwilliges Profilbild |
+| Gesundheit und Fitness (Apple: Health & Fitness · Google: Health and fitness) | Ja | Ja | Nein | Übungsdokumentation, Schmerzangaben als Selbstauskunft (keine Diagnose, kein automatisiertes Therapie-Feedback) |
+| Terminplanung (Apple: User Content/Other Data · Google: App activity) | Ja | Ja | Nein | Termine mit der Praxis |
+| Kennungen – Nutzer-ID (Apple: Identifiers · Google: Device or other IDs) | Ja | Ja | Nein | Supabase-Auth-Sitzung (kein Werbekennung, keine Geräte-ID) |
+| Nutzungsdaten (Apple: Usage Data · Google: App activity – App interactions) | Nein | – | – | Keine Analytics-/Produktnutzungs-SDKs eingebunden |
+| Diagnosedaten (Apple: Diagnostics · Google: App info and performance) | Nein | – | – | Kein Crash-/Absturzberichts-SDK eingebunden |
+| Standort (Apple: Location · Google: Location) | Nein | – | – | Nicht erhoben; Praxisadresse ist Praxisdatum, keine Nutzerstandortermittlung |
+| Finanzdaten (Apple: Financial Info · Google: Financial info) | Nein | – | – | Keine Zahlungsabwicklung in der App |
+
+**Apple-spezifisch:** Der „Health & Fitness"-Eintrag im App-Privacy-Formular ist unabhängig von HealthKit zu setzen – die App nutzt **keine** HealthKit-API (keine `expo-health`/`react-native-health`-Abhängigkeit), sondern speichert Schmerzangaben/Durchführungen ausschließlich in der eigenen Datenbank. Falls ein Prüfer nach HealthKit fragt: nicht verwendet.
+
+**Google-spezifisch (Data Safety):** „Data is encrypted in transit" = Ja (TLS/HTTPS, Supabase-Standard). „Users can request data deletion" = Ja (Kontolöschung, siehe D-070) – Google verlangt hierfür einen Deep Link ODER eine Web-URL; `/account-deletion` (öffentlich erreichbar, siehe A4) erfüllt das.
+
+**Noch offen, unabhängig vom Mapping selbst:** Die endgültigen Formulartexte müssen direkt in App Store Connect / Play Console ausgefüllt werden (kein API-Zugriff ohne Entwicklerkonto) – dieses Mapping ist die inhaltliche Vorlage dafür, ersetzt aber nicht das eigentliche Ausfüllen nach Kontoerstellung (BLOCKIERT DURCH TOM/KONTO).
 
 ## 2. Datenfluss (lokal / später Produktion)
 
@@ -121,11 +146,11 @@ Supabase (PostgreSQL + Auth + Storage)
 - [ ] ⚖️ Rechtsgrundlage der Verarbeitung (Art. 9 DSGVO – Gesundheitsdaten) und Einwilligungstexte
 - [ ] ⚖️ Auftragsverarbeitungsvertrag (AVV) mit Supabase bzw. Hosting-Anbieter; EU-/EWR-Region verbindlich wählen (z. B. Frankfurt)
 - [ ] ⚖️ Datenschutzerklärung + Impressum in der App (versioniert über `consent_records`)
-- [ ] ⚖️ Aufbewahrungs- und Löschfristen festlegen (Kontolöschung, Datenexport sind im Datenmodell vorgesehen, aber noch nicht umgesetzt)
+- [x] Kontolöschung ist umgesetzt (sofortige Sperre + Löschung patienteneigener Daten, siehe Ergänzung D-070); ⚖️ **offen bleibt** die endgültige Aufbewahrungsfrist für praxisbezogene Behandlungsdaten (Luxemburg, D-062) – das ist eine Rechtsfrage, keine technische Lücke. Datenexport nicht umgesetzt.
 - [ ] ⚖️ Prüfung, ob die App im Zielmarkt als Medizinprodukt gelten könnte (sie trifft bewusst keine Diagnosen/Therapieentscheidungen)
 - [ ] Rate Limiting produktionsreif (Code-Einlösung, Login) und getestet
-- [ ] Content-Security-Policy und Security-Header (Phase 4)
-- [ ] RLS-Testsuite deckt alle Tabellen ab (Phase 2/4)
+- [x] Content-Security-Policy und Security-Header (nonce-basierte CSP, HSTS, X-Frame-Options u. a. in `src/proxy.ts`, siehe D-069)
+- [x] RLS-Testsuite deckt alle Tabellen ab (104 Proben, lokal verifiziert)
 - [ ] Fehlerüberwachung datensparsam konfigurieren (ohne Patientendaten), falls eingesetzt
 - [ ] Backups/Restore-Prozess des Hosting-Anbieters dokumentieren
 - [ ] TLS erzwungen, HSTS (Deployment)
