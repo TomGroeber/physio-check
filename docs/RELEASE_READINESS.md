@@ -107,7 +107,7 @@ Zusätzliche, im Master-Prompt nicht explizit genannte, aber beim Audit gefunden
 
 | Punkt | Status | Beleg | Nächster Schritt |
 |---|---|---|---|
-| Store-Texte (Titel/Beschreibung/Keywords/Kategorie) | IMPLEMENTIERBAR – JETZT AUSFÜHREN | `docs/APP_STORE_CHECKLIST.md` hat nur Grobstruktur | Texte ausformulieren (Deutsch, ehrlich) |
+| Store-Texte (Titel/Beschreibung/Keywords/Kategorie) | ERLEDIGT – TOM-GEGENLESEN AUSSTEHEND | Vollständiger deutscher Entwurf in `docs/APP_STORE_CHECKLIST.md` (Beschreibung, Keywords, Kategorie „Gesundheit und Fitness" statt „Medizin", Alterseinstufung, Reviewhinweis) | Von Tom vor Einreichung gegenlesen lassen |
 | Altersfreigabe-Fragebogen, App-Privacy/Data-Safety/Health-Antworten | ERLEDIGT UND VERIFIZIERT (inhaltlich) | Mapping in `docs/PRIVACY_SECURITY.md` Abschnitt 1a (A4) | Übertragung in die Store-Formulare braucht Toms Konto |
 | Support-/Privacy-/Deletion-URLs | BLOCKIERT DURCH TOM (Domain) | Keine Domain | Nach Domain-Entscheidung deployen |
 | Screenshots (alle Pflichtgrößen) | BLOCKIERT (setzt signierten Build + Gerät/Simulator-Matrix voraus) | Nur einzelne Verifikations-Screenshots im Scratchpad, nicht store-konform erzeugt | Nach A2 + A7 systematisch erzeugen |
