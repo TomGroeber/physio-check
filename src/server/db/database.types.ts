@@ -1229,6 +1229,7 @@ export type Database = {
           processed_at: string | null
           profile_id: string
           requested_at: string
+          retained_data_note: string
           status: string
         }
         Insert: {
@@ -1236,6 +1237,7 @@ export type Database = {
           processed_at?: string | null
           profile_id: string
           requested_at?: string
+          retained_data_note?: string
           status?: string
         }
         Update: {
@@ -1243,6 +1245,7 @@ export type Database = {
           processed_at?: string | null
           profile_id?: string
           requested_at?: string
+          retained_data_note?: string
           status?: string
         }
         Relationships: [
@@ -1630,6 +1633,10 @@ export type Database = {
       renew_patient_invite: {
         Args: { p_code_hash: string; p_expires_at: string; p_invite_id: string }
         Returns: string
+      }
+      request_account_deletion: {
+        Args: { p_profile_id: string }
+        Returns: { avatar_path: string | null }[]
       }
       request_appointment_cancellation: {
         Args: { p_appointment_id: string; p_reason?: string }

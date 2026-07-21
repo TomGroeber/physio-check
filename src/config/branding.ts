@@ -25,6 +25,13 @@ export const branding = {
   defaultTimeZone: "Europe/Luxembourg",
   /** Standard-Sprache der Oberfläche */
   defaultLocale: "de",
+  /**
+   * PLATZHALTER – noch keine endgültige Entscheidung. Wird für Support-
+   * Seite, Kontolöschungs-Info und Store-Metadaten verwendet. Vor einer
+   * Store-Einreichung durch eine echte, erreichbare Adresse ersetzen
+   * (siehe docs/RELEASE_READINESS.md, Bereich A5/A6).
+   */
+  supportEmail: "support@physiocheck.example",
 } as const;
 
 export type Branding = typeof branding;

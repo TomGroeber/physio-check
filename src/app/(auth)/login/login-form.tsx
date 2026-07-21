@@ -11,7 +11,13 @@ import { FormMessage } from "@/components/auth/form-message";
 
 const t = de.auth.login;
 
-export function LoginForm({ hasPendingInvite = false }: { hasPendingInvite?: boolean }) {
+export function LoginForm({
+  hasPendingInvite = false,
+  accountDeleted = false,
+}: {
+  hasPendingInvite?: boolean;
+  accountDeleted?: boolean;
+}) {
   const [state, formAction, isPending] = useActionState<AuthFormState, FormData>(
     loginAction,
     {}
@@ -22,6 +28,9 @@ export function LoginForm({ hasPendingInvite = false }: { hasPendingInvite?: boo
       <h1 className="text-2xl font-bold">{t.title}</h1>
       {hasPendingInvite ? (
         <p className="text-base text-muted-foreground">{t.inviteIntro}</p>
+      ) : null}
+      {accountDeleted ? (
+        <FormMessage success={de.patient.profile.deleteAccount.success} />
       ) : null}
       <FormMessage error={state.error} />
       <div className="flex flex-col gap-2">
