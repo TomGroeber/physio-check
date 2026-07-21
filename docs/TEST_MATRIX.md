@@ -114,6 +114,7 @@
 | Malware-Scan lehnt in einer sonst gültigen Datei versteckte Signatur ab | E2E mit echtem ClamAV + projekteigener Testsignatur (`e2e/fixtures/clamav-test-signature.ndb`), CI installiert ClamAV real; EICAR ungeeignet (nur Dateianfang erkannt, empirisch geprüft) | Lokal grün (21.07.2026); CI-Bestätigung nach Timeout-Fix ausstehend |
 | App-Icon/Splash aus der Marke statt Expo-Standard | `expo-doctor` 20/20, iOS+Android-Export grün nach Asset-Austausch | Grün (21.07.2026) |
 | iOS-Fotozugriffstext gesetzt, keine unnötigen Berechtigungen | `expo config --type introspect` bestätigt Text + fehlende Kamera-/Mikrofon-Deklaration | Grün (21.07.2026) |
+| Health-Check-Route liefert echten DB-Status ohne Zeileninhalte | `GET /api/health` gegen laufenden Produktions-Build geprüft (`curl`, HTTP 200, `{"status":"ok"}`) | Grün (21.07.2026) |
 
 ## Mobile Patienten-App (Teile H–M, 19.07.2026)
 

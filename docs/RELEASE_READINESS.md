@@ -75,8 +75,8 @@ Zusätzliche, im Master-Prompt nicht explizit genannte, aber beim Audit gefunden
 | Produktiver SMTP-Versand | BLOCKIERT DURCH TOM/KONTO | Aktuell nur Mailpit lokal | Tom: SMTP-Anbieter wählen (z. B. Postmark/Resend), Zugangsdaten hinterlegen |
 | TLS/Redirect-Allowlist | BLOCKIERT DURCH TOM/KONTO (Domain-abhängig) | `supabase/config.toml` hat nur `localhost`-Redirects | Nach Domain-Entscheidung produktiv konfigurieren |
 | Backups/Restore-Probe | BLOCKIERT DURCH TOM/KONTO | Setzt gehostetes Projekt voraus | Nach Projektanlage: Backup-Einstellungen prüfen, Restore einmal testen |
-| Monitoring/Error-Tracking/Alarmierung | IMPLEMENTIERBAR – JETZT AUSFÜHREN (Konzept), BLOCKIERT (Betrieb) | Nicht vorhanden | Anbieter-neutrales Konzept + Health-Check-Route jetzt vorbereiten; scharf schalten erst mit Hosting |
-| Deployment-Skripte/Variablenliste als Vorbereitung | IMPLEMENTIERBAR – JETZT AUSFÜHREN | Nicht vorhanden | Jetzt erstellen, damit Tom nur noch Konto+Variablen einträgt |
+| Monitoring/Error-Tracking/Alarmierung | ERLEDIGT (Konzept), BLOCKIERT (Betrieb) | `GET /api/health` (`src/app/api/health/route.ts`) implementiert und lokal verifiziert (echte DB-Erreichbarkeitsprüfung, keine Zeileninhalte); anbieterneutrales Konzept in `docs/DEPLOYMENT.md` Abschnitt 4 | Scharf schalten (Uptime-Monitor koppeln) erst mit echtem Hosting |
+| Deployment-Skripte/Variablenliste als Vorbereitung | ERLEDIGT | `docs/DEPLOYMENT.md`: vollständige Env-Var-Liste, Rollout-Schritte, was Tom entscheiden muss vs. was schon vorbereitet ist | Tom trägt nach Kontoerstellung nur noch Werte ein |
 
 ### A4. Datenschutz, Gesundheitsdaten, Kontolöschung (Phase 4)
 
@@ -136,7 +136,7 @@ Zusätzliche, im Master-Prompt nicht explizit genannte, aber beim Audit gefunden
 ## B. Zusammenfassung nach Zustand (Kurzform für den Abschlussbericht)
 
 - **ERLEDIGT UND VERIFIZIERT:** Web-Kernqualität (Typecheck/Lint/Test/RLS/E2E/Build), Mobile-Kernqualität (Typecheck/Lint/Test/expo-doctor/JS-Export), Rollenbegrenzung App↔Praxis, lokale migrationsbasierte DB, deutsche Lokalisierung ehrlich dokumentiert.
-- **ERLEDIGT UND VERIFIZIERT (Ergänzung):** Malware-Scan-Pipeline für Uploads (ClamAV, real in CI installiert und grün – `gh run view 29854798546`), Privacy-Dateninventur inkl. Apple-App-Privacy-/Google-Data-Safety-/Health-Mapping (`docs/PRIVACY_SECURITY.md` Abschnitt 1a), App-Icon/Splash aus eigener Marke, iOS-Fotozugriffstext, Store-Texte (Entwurf).
+- **ERLEDIGT UND VERIFIZIERT (Ergänzung):** Malware-Scan-Pipeline für Uploads (ClamAV, real in CI installiert und grün – `gh run view 29854798546`), Privacy-Dateninventur inkl. Apple-App-Privacy-/Google-Data-Safety-/Health-Mapping (`docs/PRIVACY_SECURITY.md` Abschnitt 1a), App-Icon/Splash aus eigener Marke, iOS-Fotozugriffstext, Store-Texte (Entwurf), Health-Check-Route + Deployment-Vorbereitung (`docs/DEPLOYMENT.md`).
 - **IMPLEMENTIERBAR – JETZT AUSFÜHREN (kein Blocker):** Store-Texte (Titel/Beschreibung/Keywords), konsolidierte Datenschutzerklärungs-Vorlage (Fließtext), Deployment-Vorbereitung (Skripte/Variablenlisten ohne Secrets), Android-Emulator-Ersteinrichtung, erweiterte iOS-Simulator-Matrix, iOS Privacy Manifest.
 - **BLOCKIERT DURCH TOM/KONTO/2FA/ZAHLUNG:** gehostetes Supabase-Projekt, Domain/Hosting, SMTP-Anbieter, Apple Developer, Google Play Console, EAS-Login, alle signierten Builds/TestFlight/Play-Internal-Uploads, finale App-Identität (Name/Bundle-ID/Package/Publisher/Support-E-Mail).
 - **BLOCKIERT DURCH RECHTLICHE FREIGABE:** endgültige Aufbewahrungsfrist für Luxemburger Patientendaten, jede Aussage zu „vollständiger DSGVO-Konformität" oder Medizinprodukt-Einstufung.
