@@ -80,7 +80,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Playwright-Browser installieren
-        run: pnpm exec playwright install --with-deps chromium
+        # Kein Browser-Filter: das "mobile"-Projekt (iPhone-14-Profil)
+        # nutzt WebKit, nicht Chromium – ein auf "chromium" verengter
+        # Install ließ 17 Mobile-Fälle mit "Executable doesn't exist"
+        # scheitern (erster echter CI-Lauf, per gh run view gefunden).
+        run: pnpm exec playwright install --with-deps
       - uses: supabase/setup-cli@v1
         with:
           version: latest
