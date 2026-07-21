@@ -170,6 +170,18 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [x] Teststabilität: Playwright auf 4 Worker begrenzt, Expect-Timeout 15 s, Hydrations-Klickverluste in drei Spezifikationen behoben.
 - [x] Merge nach `main` mit Toms Freigabe (2026-07-19): Fast-Forward `4723363..91591df`, gepusht.
 
+## Auftrag vom 21.07.2026 – Produktions- und Store-Reife (Branch `claude/store-release-readiness-20260721`)
+
+- [x] Phase 0: Repository-Zustand verifiziert (nicht auf frühere Berichte verlassen) – `main@9415660`, Working Tree sauber, `origin/main` identisch.
+- [x] Alle acht im Auftrag genannten Verdachtsstellen geprüft und bestätigt (veralteter Commit in `docs/AI_HANDOFF.md`, Platzhalter-Version/Bundle-ID, Expo-Standard-Icon statt Marke, leere `eas.json`-Submit-Konfiguration, kein gehosteter Backendstand, keine GitHub Actions, Kontolöschung sperrt nur statt zu löschen, kein Android-Emulator/kein signierter Build je erstellt).
+- [x] Zusätzliche Funde: fehlende Security-Header, fehlendes `engines`/`packageManager`-Pinning, keine Malware-Scan-Pipeline.
+- [x] Vollständige, belegte Release-Gap-Matrix erstellt: `docs/RELEASE_READINESS.md` (5 Zustände, 8 Bereiche A1–A8).
+- [ ] Phase 1: CI-Workflow, Engines-Pinning, Security-Header, Dependency-Audit
+- [ ] Phase 2: erweiterte iOS-Simulator-Matrix, Android-Emulator-Ersteinrichtung
+- [ ] Phase 4: echte Kontolöschung/Anonymisierung, Malware-Scan (ClamAV), Datenschutz-/Support-/Löschseiten
+- [ ] Phase 5: App-Icon/Splash aus eigener Marke, native Konfigurationshärtung (Identität selbst bleibt Toms Entscheidung)
+- [ ] Phase 6–8: Store-Metadaten, signierte Builds (BLOCKIERT durch Konten), Release-Candidate-Report
+
 ## Auftrag vom 19.–20.07.2026 – UI-Parität der nativen App mit der Patienten-Weboberfläche (mit Toms Freigabe per PR #3 `342fba5` in `main` gemergt)
 
 Erster echter Simulatorlauf (iPhone 17 Pro, iOS 26.5, Expo-Tunnel) zeigte: Tab-Bar unten beschnitten, Navigation schlecht sichtbar, Design weicht stark von der abgestimmten Patienten-Weboberfläche ab. Die Web-Patientenansicht ist die verbindliche Referenz.

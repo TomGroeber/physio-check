@@ -1,6 +1,10 @@
 # PhysioCheck – AI Handoff
 
-> Stand: 2026-07-20 (nach Merge) · `main@342fba5` (PR #3) enthält ALLE bisherigen Aufträge inkl. der UI-Parität der nativen App · GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
+> Stand: 2026-07-21 · `main@9415660` (PR #3 gemergt als `342fba5`, danach Doku-Korrektur `9415660`) enthält ALLE bisherigen Aufträge inkl. der UI-Parität der nativen App · Arbeitszweig für die Store-Release-Vorbereitung: `claude/store-release-readiness-20260721` · GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
+
+## Aktueller Auftrag (21.07.2026, siebter): Produktions- und Store-Reife
+
+Vollständiger Audit gegen den tatsächlichen Repository-Zustand (nicht gegen frühere Berichte) durchgeführt – alle acht im Auftrag genannten Verdachtsstellen bestätigt plus zusätzliche Funde (fehlende Security-Header, fehlendes Engines-Pinning, keine Malware-Scan-Pipeline). Vollständige, belegte Matrix: `docs/RELEASE_READINESS.md`. Diese Sitzung arbeitet die dort als „IMPLEMENTIERBAR – JETZT AUSFÜHREN" markierten Punkte ab und dokumentiert alle Konto-/Zahlungs-/Rechtsblocker exakt, ohne sie zu erfinden oder zu umgehen.
 
 ## Letzter Auftrag (20.07.2026, sechster): UI-Parität der nativen App mit der Patienten-Weboberfläche
 
