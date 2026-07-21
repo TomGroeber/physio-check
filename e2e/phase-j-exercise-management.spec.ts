@@ -56,16 +56,24 @@ test("Praxis legt eine Übung an, bearbeitet, dupliziert und archiviert sie", as
   await expect(page.getByText(`${editedTitle} (Kopie)`, { exact: true })).toHaveCount(0);
 });
 
-test("Video wird geprüft, privat ausgeliefert und beim Ersetzen entfernt", async ({
-  page,
-  request,
-}) => {
+// Aufgeteilt in drei Tests statt einem (frühere Fassung): jeder Test
+// löst bei aktiviertem Malware-Scan höchstens EINEN echten `clamscan`-
+// Aufruf aus. Ein einzelner Test mit drei aufeinanderfolgenden Scans
+// überschritt unter paralleler CI-Worker-Last wiederholt selbst ein auf
+// 150s angehobenes Testzeitlimit (siehe D-072-Ergänzung) – das war ein
+// Lastproblem, keine fehlerhafte Erkennung, aber die richtige Antwort
+// darauf ist weniger Scans pro Test, nicht ein noch größeres Zeitlimit.
+function videoCardOf(page: Page) {
+  const videoHeading = page.getByRole("heading", { name: "Übungsvideo" });
+  return videoHeading.locator("..").locator("..");
+}
+
+test("Getarnte und mit Test-Signatur markierte Videos werden abgelehnt", async ({ page }) => {
   await login(page, "therapeutin@demo.physiocheck.test");
   await page.goto("/practice/exercises");
   await page.getByText("Brücke (Beckenheben)", { exact: true }).click();
 
-  const videoHeading = page.getByRole("heading", { name: "Übungsvideo" });
-  const videoCard = videoHeading.locator("..").locator("..");
+  const videoCard = videoCardOf(page);
   const fileInput = videoCard.getByLabel("Datei auswählen");
 
   // Deklarierter MP4-Typ mit falschem Inhalt darf nie registriert werden.
@@ -77,10 +85,6 @@ test("Video wird geprüft, privat ausgeliefert und beim Ersetzen entfernt", asyn
   await videoCard.getByRole("button", { name: "Hochladen" }).click();
   await expect(videoCard.getByText(/Dateiinhalt und Dateityp/)).toBeVisible();
 
-  const validMp4HeaderForScanTest = Buffer.from([
-    0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70,
-    0x69, 0x73, 0x6f, 0x6d, 0x00, 0x00, 0x00, 0x00,
-  ]);
   // Mit eingebetteter Test-Signatur (siehe e2e/fixtures/clamav-test-signature.ndb,
   // kein echter Schadcode) – nur geprüft, wenn der Malware-Scan in dieser
   // Umgebung aktiviert ist (siehe docs/RELEASE_READINESS.md, Bereich A4).
@@ -92,6 +96,10 @@ test("Video wird geprüft, privat ausgeliefert und beim Ersetzen entfernt", asyn
   // Größen-/Signaturprüfung lässt die Datei durch, erst der volle
   // Inhalts-Scan lehnt sie ab.
   if (process.env.MALWARE_SCAN_ENABLED === "true") {
+    const validMp4HeaderForScanTest = Buffer.from([
+      0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70,
+      0x69, 0x73, 0x6f, 0x6d, 0x00, 0x00, 0x00, 0x00,
+    ]);
     await fileInput.setInputFiles({
       name: "infiziert.mp4",
       mimeType: "video/mp4",
@@ -105,23 +113,56 @@ test("Video wird geprüft, privat ausgeliefert und beim Ersetzen entfernt", asyn
       videoCard.getByText("Die Datei konnte nicht sicher gespeichert werden.")
     ).toBeVisible(SCAN_AWARE_TIMEOUT);
   }
+});
 
-  const validMp4Header = Buffer.from([
-    0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70,
-    0x69, 0x73, 0x6f, 0x6d, 0x00, 0x00, 0x00, 0x00,
-  ]);
-  await fileInput.setInputFiles({
+test("Gültiges Video wird geprüft und privat ausgeliefert", async ({ page }) => {
+  await login(page, "therapeutin@demo.physiocheck.test");
+  await page.goto("/practice/exercises");
+  await page.getByText("Brücke (Beckenheben)", { exact: true }).click();
+
+  const videoCard = videoCardOf(page);
+  await videoCard.getByLabel("Datei auswählen").setInputFiles({
     name: "exercise-v1.mp4",
     mimeType: "video/mp4",
-    buffer: validMp4Header,
+    buffer: Buffer.from([
+      0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70,
+      0x69, 0x73, 0x6f, 0x6d, 0x00, 0x00, 0x00, 0x00,
+    ]),
   });
   await videoCard.getByRole("button", { name: "Hochladen" }).click();
   await expect(videoCard.getByText("Das Medium wurde sicher gespeichert.")).toBeVisible(
     SCAN_AWARE_TIMEOUT
   );
+  await expect(videoCard.locator("video source")).toHaveAttribute(
+    "src",
+    /\/storage\/v1\/object\/sign\/exercise-media\//
+  );
+
+  // Brücke ist der Demo-Patientin zugewiesen: nur die autorisierte
+  // Patientenseite erhält eine kurzlebige URL, nie der direkte Bucket.
+  await page.context().clearCookies();
+  await login(page, "patientin@demo.physiocheck.test");
+  await page.getByRole("link", { name: /Übung „Brücke \(Beckenheben\)“ öffnen/ }).click();
+  await expect(page.locator("video")).toBeVisible();
+  await expect(page.locator("video source")).toHaveAttribute(
+    "src",
+    /\/storage\/v1\/object\/sign\/exercise-media\//
+  );
+});
+
+test("Ersetzen entfernt die alte Videodatei", async ({ page, request }) => {
+  await login(page, "therapeutin@demo.physiocheck.test");
+  await page.goto("/practice/exercises");
+  await page.getByText("Brücke (Beckenheben)", { exact: true }).click();
+
+  const videoCard = videoCardOf(page);
   const firstUrl = await videoCard.locator("video source").getAttribute("src");
   expect(firstUrl).toBeTruthy();
 
+  const validMp4Header = Buffer.from([
+    0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70,
+    0x69, 0x73, 0x6f, 0x6d, 0x00, 0x00, 0x00, 0x00,
+  ]);
   await videoCard.getByLabel("Neue Datei zum Ersetzen auswählen").setInputFiles({
     name: "exercise-v2.mp4",
     mimeType: "video/mp4",
@@ -141,13 +182,5 @@ test("Video wird geprüft, privat ausgeliefert und beim Ersetzen entfernt", asyn
 
   const oldObjectResponse = await request.get(firstUrl!);
   expect(oldObjectResponse.ok()).toBe(false);
-
-  // Brücke ist der Demo-Patientin zugewiesen: nur die autorisierte
-  // Patientenseite erhält eine neue kurzlebige URL, nie der direkte Bucket.
-  await page.context().clearCookies();
-  await login(page, "patientin@demo.physiocheck.test");
-  await page.getByRole("link", { name: /Übung „Brücke \(Beckenheben\)“ öffnen/ }).click();
-  await expect(page.locator("video")).toBeVisible();
-  await expect(page.locator("video source")).toHaveAttribute("src", /\/storage\/v1\/object\/sign\/exercise-media\//);
 });
 
