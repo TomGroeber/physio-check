@@ -1,0 +1,173 @@
+name: CI
+
+# Reproduzierbare Prüfstrecke für Web und native Patienten-App.
+# Läuft auf Pull Requests gegen main und auf main selbst.
+#
+# Sicherheitsentscheidungen:
+# - `permissions: contents: read` global; Jobs, die mehr brauchen,
+#   erhalten es explizit und minimal.
+# - Keine Secrets werden verwendet – alle Werte hier sind die
+#   öffentlich bekannten Standardwerte der lokalen Supabase-CLI
+#   (JWT_SECRET etc. sind Entwickler-Defaults, keine echten Geheimnisse)
+#   oder Platzhalter für den Build-Schritt ohne Datenbank.
+# - PRs aus Forks bekommen dieselben (Nicht-)Secrets wie jeder andere
+#   Lauf – es gibt nichts Sensibles freizugeben.
+# - Drittanbieter-Actions sind auf Major-Version-Tags verifizierter
+#   Publisher gepinnt (actions/*, pnpm/*, supabase/*).
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "22.12.0"
+  PNPM_VERSION: "11.11.0"
+  # Platzhalter für den Build-Schritt ohne laufende Datenbank – kein
+  # echtes Geheimnis, nur ein syntaktisch gültiger Wert.
+  BUILD_PLACEHOLDER_SUPABASE_URL: "http://127.0.0.1:54321"
+  BUILD_PLACEHOLDER_SUPABASE_ANON_KEY: "build-time-placeholder-anon-key"
+  BUILD_PLACEHOLDER_APP_URL: "http://localhost:3000"
+
+jobs:
+  web-quality:
+    name: Web · Typecheck, Lint, Unit-Tests, Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm shared:typecheck
+      - name: Build (Platzhalter-Umgebung, keine Datenbank nötig)
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ env.BUILD_PLACEHOLDER_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ env.BUILD_PLACEHOLDER_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_APP_URL: ${{ env.BUILD_PLACEHOLDER_APP_URL }}
+
+  web-database:
+    name: Web · RLS + E2E (lokale Supabase)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Playwright-Browser installieren
+        run: pnpm exec playwright install --with-deps chromium
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Lokale Supabase starten
+        run: supabase start
+      - name: Lokale Supabase-Werte als .env.local ablegen
+        run: |
+          supabase status -o env \
+            --override-name api.url=NEXT_PUBLIC_SUPABASE_URL \
+            --override-name auth.anon_key=NEXT_PUBLIC_SUPABASE_ANON_KEY \
+            --override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY \
+            > .env.local
+          echo "NEXT_PUBLIC_APP_URL=http://localhost:3000" >> .env.local
+      - name: Datenbank zurücksetzen (Migrationen) und Demo-Daten säen
+        run: |
+          pnpm db:reset
+          pnpm seed
+      - name: RLS-Testsuite
+        run: pnpm test:rls
+      - name: E2E-Testsuite (Playwright)
+        run: pnpm e2e
+      - name: Playwright-Bericht bei Fehlschlag hochladen
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  mobile-quality:
+    name: Mobile · Typecheck, Lint, Unit-Tests, expo-doctor, Export
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/patient-mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        working-directory: .
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - name: expo-doctor
+        run: npx expo-doctor
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: ${{ env.BUILD_PLACEHOLDER_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_KEY: build-time-placeholder-publishable-key
+          EXPO_PUBLIC_API_BASE_URL: ${{ env.BUILD_PLACEHOLDER_APP_URL }}
+      - name: Produktions-JS-Bundle exportieren (iOS)
+        run: npx expo export --platform ios
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: ${{ env.BUILD_PLACEHOLDER_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_KEY: build-time-placeholder-publishable-key
+          EXPO_PUBLIC_API_BASE_URL: ${{ env.BUILD_PLACEHOLDER_APP_URL }}
+      - name: Produktions-JS-Bundle exportieren (Android)
+        run: npx expo export --platform android
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: ${{ env.BUILD_PLACEHOLDER_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_KEY: build-time-placeholder-publishable-key
+          EXPO_PUBLIC_API_BASE_URL: ${{ env.BUILD_PLACEHOLDER_APP_URL }}
+
+  security-and-dependencies:
+    name: Sicherheit · Secret-Scan + Dependency-Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # voller Verlauf für den Secret-Scan
+      - name: Secret-Scan (Git-Verlauf + Working Tree)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Dependency-Audit (informativ, bricht bei „critical" ab)
+        run: pnpm audit --audit-level critical
