@@ -14,6 +14,12 @@ const PNG = Buffer.from(
   "base64"
 );
 
+// Uploads, die (bei aktiviertem MALWARE_SCAN_ENABLED) durch `clamscan`
+// laufen, brauchen mehr als das globale 15s-Zeitlimit: unter paralleler
+// CI-Last (mehrere Worker, gleichzeitig scannend) dauert ein kalter Scan
+// deutlich länger als lokal isoliert gemessen (~4,6s).
+const SCAN_AWARE_TIMEOUT = { timeout: 30_000 };
+
 test.beforeEach(async ({}, testInfo) => {
   test.skip(testInfo.project.name !== "chromium", "Mutierender Ablauf läuft nur einmal.");
 });
@@ -46,7 +52,9 @@ test("Patientin lädt ein gültiges Bild hoch; es bleibt nach Neuladen erhalten"
   });
   await expect(page.getByText(/Das ist eine Vorschau/)).toBeVisible();
   await page.getByRole("button", { name: "Profilbild speichern" }).click();
-  await expect(page.getByText("Ihr Profilbild wurde gespeichert.")).toBeVisible();
+  await expect(page.getByText("Ihr Profilbild wurde gespeichert.")).toBeVisible(
+    SCAN_AWARE_TIMEOUT
+  );
   // Sofortige Anzeige ohne Neuladen …
   await expect(mainAvatar(page, "Petra Beispielfrau").locator("img")).toHaveAttribute(
     "src",
@@ -118,7 +126,7 @@ test("ungültiger Dateityp, getarnte Datei und zu große Datei werden abgelehnt"
     await page.getByRole("button", { name: "Profilbild speichern" }).click();
     await expect(
       page.getByText("Die Datei konnte nicht sicher gespeichert werden.")
-    ).toBeVisible();
+    ).toBeVisible(SCAN_AWARE_TIMEOUT);
   }
 });
 
@@ -140,7 +148,9 @@ test("Ersetzen entwertet die alte URL; die Praxis sieht das aktuelle Bild", asyn
     buffer: PNG,
   });
   await page.getByRole("button", { name: "Profilbild speichern" }).click();
-  await expect(page.getByText("Ihr Profilbild wurde gespeichert.")).toBeVisible();
+  await expect(page.getByText("Ihr Profilbild wurde gespeichert.")).toBeVisible(
+    SCAN_AWARE_TIMEOUT
+  );
   await expect
     .poll(async () =>
       mainAvatar(page, "Petra Beispielfrau").locator("img").getAttribute("src")

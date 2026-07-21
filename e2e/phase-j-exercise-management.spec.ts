@@ -11,6 +11,12 @@ const suffix = Date.now().toString(36);
 const originalTitle = `E2E Mobilisation ${suffix}`;
 const editedTitle = `${originalTitle} bearbeitet`;
 
+// Uploads, die (bei aktiviertem MALWARE_SCAN_ENABLED) durch `clamscan`
+// laufen, brauchen mehr als das globale 15s-Zeitlimit: unter paralleler
+// CI-Last (mehrere Worker, gleichzeitig scannend) dauert ein kalter Scan
+// deutlich länger als lokal isoliert gemessen (~4,6s).
+const SCAN_AWARE_TIMEOUT = { timeout: 30_000 };
+
 test.beforeEach(async ({}, testInfo) => {
   test.skip(testInfo.project.name !== "chromium", "Mutierender Ablauf läuft nur einmal.");
 });
@@ -97,7 +103,7 @@ test("Video wird geprüft, privat ausgeliefert und beim Ersetzen entfernt", asyn
     await videoCard.getByRole("button", { name: "Hochladen" }).click();
     await expect(
       videoCard.getByText("Die Datei konnte nicht sicher gespeichert werden.")
-    ).toBeVisible();
+    ).toBeVisible(SCAN_AWARE_TIMEOUT);
   }
 
   const validMp4Header = Buffer.from([
@@ -110,7 +116,9 @@ test("Video wird geprüft, privat ausgeliefert und beim Ersetzen entfernt", asyn
     buffer: validMp4Header,
   });
   await videoCard.getByRole("button", { name: "Hochladen" }).click();
-  await expect(videoCard.getByText("Das Medium wurde sicher gespeichert.")).toBeVisible();
+  await expect(videoCard.getByText("Das Medium wurde sicher gespeichert.")).toBeVisible(
+    SCAN_AWARE_TIMEOUT
+  );
   const firstUrl = await videoCard.locator("video source").getAttribute("src");
   expect(firstUrl).toBeTruthy();
 
@@ -120,7 +128,9 @@ test("Video wird geprüft, privat ausgeliefert und beim Ersetzen entfernt", asyn
     buffer: Buffer.concat([validMp4Header, Buffer.from([0x01])]),
   });
   await videoCard.getByRole("button", { name: "Datei ersetzen" }).click();
-  await expect(videoCard.getByText("Das Medium wurde sicher gespeichert.")).toBeVisible();
+  await expect(videoCard.getByText("Das Medium wurde sicher gespeichert.")).toBeVisible(
+    SCAN_AWARE_TIMEOUT
+  );
   // router.refresh() lädt die Karte asynchron neu – erst auf die neue
   // signierte URL warten, sonst wird noch die alte Quelle gelesen.
   await expect
