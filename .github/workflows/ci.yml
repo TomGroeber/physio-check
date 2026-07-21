@@ -28,7 +28,10 @@ permissions:
   contents: read
 
 env:
-  NODE_VERSION: "22.12.0"
+  # Muss >=22.13.0 sein: pnpm 11.11.0 verlangt das (22.12.0 schlägt in CI
+  # fehl, auch wenn es lokal wegen einer neueren installierten Node-
+  # Version nie auffällt) – 22.23.1 spiegelt Toms lokale Version.
+  NODE_VERSION: "22.23.1"
   PNPM_VERSION: "11.11.0"
   # Platzhalter für den Build-Schritt ohne laufende Datenbank – kein
   # echtes Geheimnis, nur ein syntaktisch gültiger Wert.
@@ -160,6 +163,10 @@ jobs:
       - name: Secret-Scan (Git-Verlauf + Working Tree)
         uses: gitleaks/gitleaks-action@v2
         env:
+          # Automatisch von GitHub bereitgestelltes, ablaufendes Token –
+          # kein selbst angelegtes Secret. Seit einem Breaking Change
+          # verlangt die Action dies explizit für PR-Läufe.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
       - uses: pnpm/action-setup@v4
         with:
