@@ -96,8 +96,8 @@ Zusätzliche, im Master-Prompt nicht explizit genannte, aber beim Audit gefunden
 | Punkt | Status | Beleg | Nächster Schritt |
 |---|---|---|---|
 | Finaler App-Name/Bundle-ID/Package/Domain/Publisher/Support-E-Mail | BLOCKIERT DURCH TOM (unwiderrufliche Registrierung) | Nur Platzhalter `test.physiocheck.patient`, `0.1.0` | Tom: EINE kompakte Entscheidung (siehe Abschlussbericht) |
-| Echtes App-Icon/Splash/Adaptive-Icon aus PhysioCheck-Marke | IMPLEMENTIERBAR – JETZT AUSFÜHREN | Bestätigt: aktuell Expo-Default-Icon | Aus vorhandenem `logo.svg` + Markenfarben generieren |
-| iOS Usage Descriptions nur für genutzte Berechtigungen | IMPLEMENTIERBAR – JETZT AUSFÜHREN | Bisher keine `NSPhotoLibraryUsageDescription` o. Ä. in `app.json` gepflegt, obwohl `expo-image-picker` verwendet wird | Ergänzen |
+| Echtes App-Icon/Splash/Adaptive-Icon aus PhysioCheck-Marke | ERLEDIGT UND VERIFIZIERT | Aus `logo.svg` per `rsvg-convert` neu gerendert (`icon.png`, `favicon.png`, `splash-icon.png`, Android-Adaptive-Icon-Ebenen); `app.json`-Hintergrundfarben auf Marken-Navy vereinheitlicht; `expo-doctor` 20/20, iOS+Android-Export grün (D-073) | – |
+| iOS Usage Descriptions nur für genutzte Berechtigungen | ERLEDIGT UND VERIFIZIERT | `expo-image-picker`-Plugin mit deutschem `photosPermission`-Text ergänzt, `cameraPermission`/`microphonePermission` explizit `false` (nur Fotobibliothek wird genutzt); per `expo config --type introspect` bestätigt (D-074) | – |
 | iOS Privacy Manifest / Required-Reason-API | IMPLEMENTIERBAR – JETZT AUSFÜHREN | Nicht geprüft | SDK-Liste durchgehen (Supabase, Expo-Module), `PrivacyInfo.xcprivacy` vorbereiten |
 | Android-Berechtigungen minimiert | ERLEDIGT UND VERIFIZIERT (Stichprobe) | Keine zusätzlichen Berechtigungen in `app.json` deklariert | Bei native Build-Config erneut prüfen |
 | Rollenbegrenzung (App nie Praxisoberfläche) | ERLEDIGT UND VERIFIZIERT | `practice-blocked.tsx` + Tests | – |

@@ -14,7 +14,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#243b60",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -31,9 +31,17 @@
       "expo-secure-store",
       "expo-video",
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "PhysioCheck benötigt Zugriff auf Ihre Fotos, um ein Profilbild auszuwählen.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      [
         "expo-splash-screen",
         {
-          "backgroundColor": "#0f766e",
+          "backgroundColor": "#243b60",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
@@ -43,7 +51,7 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
-    "primaryColor": "#0f766e",
+    "primaryColor": "#243b60",
     "locales": {
       "de": "./src/config/locale-de.json"
     }
