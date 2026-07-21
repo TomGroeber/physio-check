@@ -6,6 +6,15 @@
 
 Vollständiger Audit gegen den tatsächlichen Repository-Zustand (nicht gegen frühere Berichte) durchgeführt – alle acht im Auftrag genannten Verdachtsstellen bestätigt plus zusätzliche Funde (fehlende Security-Header, fehlendes Engines-Pinning, keine Malware-Scan-Pipeline). Vollständige, belegte Matrix: `docs/RELEASE_READINESS.md`. Diese Sitzung arbeitet die dort als „IMPLEMENTIERBAR – JETZT AUSFÜHREN" markierten Punkte ab und dokumentiert alle Konto-/Zahlungs-/Rechtsblocker exakt, ohne sie zu erfinden oder zu umgehen.
 
+**Bisher umgesetzt und real verifiziert (nicht nur „sollte funktionieren"):**
+
+- **CI-Pipeline** (`.github/workflows/ci.yml`, 4 Jobs) – über mehrere echte `gh run view --log`-Läufe verifiziert, drei reale Fehlerursachen dabei gefunden und behoben (Node-Version, Gitleaks-Token, WebKit für das „mobile"-Playwright-Projekt). `engines`/`packageManager` in `package.json` gepinnt (D-068).
+- **Security-Header/CSP** – nonce-basiert in `src/proxy.ts` (eine statische CSP hätte Next.js' eigene Inline-Skripte blockiert, per Playwright-Konsolencheck belegt); `img-src`/`media-src` erlauben zusätzlich die Supabase-Origin (sonst brechen signierte Avatar-/Videobilder, per E2E-Regression gefunden) (D-069).
+- **Echte Kontolöschung** statt reiner Zugangssperre, inkl. Web-Weg (fehlte vorher komplett) und öffentlicher Info-Seite `/account-deletion` – Migration `20260721100000_real_account_deletion.sql`, 104 RLS-Proben, vollständiger Browser-Durchlauf mit Wegwerf-Konto (D-070).
+- **Malware-Scan-Pipeline** für Übungsmedien und Profilbilder (`src/server/services/malware-scan.ts`, ClamAV, fail-closed) hinter `MALWARE_SCAN_ENABLED` (Standard aus, da lokale Entwicklung/bisherige CI keinen Scanner hatten) – lokal vollständig verifiziert inkl. echter Ablehnung; **CI-Bestätigung nach diesem Push noch ausstehend**, da der `web-database`-Job jetzt zusätzlich ClamAV installiert (D-071/D-072).
+
+**Offen für die nächste Etappe:** Push + `gh run view` zur CI-Bestätigung des Malware-Scans; danach Phase 4 Rest (Dateninventur/Store-Mappings), Phase 5 (App-Icon/Splash aus eigener Marke), Phase 2 (Android-Emulator), Phase 6–8.
+
 ## Letzter Auftrag (20.07.2026, sechster): UI-Parität der nativen App mit der Patienten-Weboberfläche
 
 **Ausgangslage:** Erster echter Test der Expo-App im iPhone-17-Pro-Simulator (iOS 26.5) zeigte drei Probleme: abgeschnittene untere Navigation, schlecht sichtbare Tab-Beschriftungen, und ein Design, das deutlich von der bereits abgestimmten Patienten-Weboberfläche abwich. **Der Xcode-/Simulator-Blocker früherer Sitzungen ist damit überholt** – Xcode 26.6 ist installiert, der Simulator läuft, die Anmeldung mit dem Demo-Patientenkonto funktioniert.

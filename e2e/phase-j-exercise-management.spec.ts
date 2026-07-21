@@ -71,6 +71,35 @@ test("Video wird geprüft, privat ausgeliefert und beim Ersetzen entfernt", asyn
   await videoCard.getByRole("button", { name: "Hochladen" }).click();
   await expect(videoCard.getByText(/Dateiinhalt und Dateityp/)).toBeVisible();
 
+  const validMp4HeaderForScanTest = Buffer.from([
+    0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70,
+    0x69, 0x73, 0x6f, 0x6d, 0x00, 0x00, 0x00, 0x00,
+  ]);
+  // Mit eingebetteter Test-Signatur (siehe e2e/fixtures/clamav-test-signature.ndb,
+  // kein echter Schadcode) – nur geprüft, wenn der Malware-Scan in dieser
+  // Umgebung aktiviert ist (siehe docs/RELEASE_READINESS.md, Bereich A4).
+  // Die eingebaute EICAR-Testdatei eignet sich hier NICHT: ClamAV erkennt
+  // sie nur exakt am Dateianfang (empirisch geprüft) – für eine in einer
+  // sonst gültigen Datei versteckte Signatur braucht es eine eigene
+  // Testsignatur, die wie echte Virensignaturen an beliebiger Stelle
+  // erkannt wird. Gültige MP4-Magic-Bytes am Anfang, Marker danach: die
+  // Größen-/Signaturprüfung lässt die Datei durch, erst der volle
+  // Inhalts-Scan lehnt sie ab.
+  if (process.env.MALWARE_SCAN_ENABLED === "true") {
+    await fileInput.setInputFiles({
+      name: "infiziert.mp4",
+      mimeType: "video/mp4",
+      buffer: Buffer.concat([
+        validMp4HeaderForScanTest,
+        Buffer.from("PHYSIOCHECK-E2E-TEST-MALWARE-MARKER-NOT-REAL-VIRUS"),
+      ]),
+    });
+    await videoCard.getByRole("button", { name: "Hochladen" }).click();
+    await expect(
+      videoCard.getByText("Die Datei konnte nicht sicher gespeichert werden.")
+    ).toBeVisible();
+  }
+
   const validMp4Header = Buffer.from([
     0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70,
     0x69, 0x73, 0x6f, 0x6d, 0x00, 0x00, 0x00, 0x00,

@@ -94,6 +94,32 @@ test("ungültiger Dateityp, getarnte Datei und zu große Datei werden abgelehnt"
   await expect(
     page.getByText("Dateiinhalt und Dateityp stimmen nicht überein.")
   ).toBeVisible();
+
+  // Mit eingebetteter Test-Signatur (siehe e2e/fixtures/clamav-test-signature.ndb,
+  // kein echter Schadcode) – nur geprüft, wenn der Malware-Scan in dieser
+  // Umgebung aktiviert ist (siehe docs/RELEASE_READINESS.md, Bereich A4).
+  // Die eingebaute EICAR-Testdatei eignet sich hier NICHT: ClamAV erkennt
+  // sie nur, wenn sie exakt am Dateianfang steht (empirisch geprüft, offset
+  // 0 erkannt, offset 1 bereits nicht mehr) – für eine in einer sonst
+  // gültigen Datei versteckte Signatur braucht es eine eigene Testsignatur,
+  // die (wie echte Virensignaturen) an beliebiger Stelle erkannt wird.
+  // Gültige PNG-Magic-Bytes am Anfang, Marker danach: die
+  // Größen-/Signaturprüfung lässt die Datei durch, erst der volle
+  // Inhalts-Scan lehnt sie ab.
+  if (process.env.MALWARE_SCAN_ENABLED === "true") {
+    await page.locator("#avatar-file").setInputFiles({
+      name: "infiziert.png",
+      mimeType: "image/png",
+      buffer: Buffer.concat([
+        PNG,
+        Buffer.from("PHYSIOCHECK-E2E-TEST-MALWARE-MARKER-NOT-REAL-VIRUS"),
+      ]),
+    });
+    await page.getByRole("button", { name: "Profilbild speichern" }).click();
+    await expect(
+      page.getByText("Die Datei konnte nicht sicher gespeichert werden.")
+    ).toBeVisible();
+  }
 });
 
 test("Ersetzen entwertet die alte URL; die Praxis sieht das aktuelle Bild", async ({

@@ -176,9 +176,11 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [x] Alle acht im Auftrag genannten Verdachtsstellen geprüft und bestätigt (veralteter Commit in `docs/AI_HANDOFF.md`, Platzhalter-Version/Bundle-ID, Expo-Standard-Icon statt Marke, leere `eas.json`-Submit-Konfiguration, kein gehosteter Backendstand, keine GitHub Actions, Kontolöschung sperrt nur statt zu löschen, kein Android-Emulator/kein signierter Build je erstellt).
 - [x] Zusätzliche Funde: fehlende Security-Header, fehlendes `engines`/`packageManager`-Pinning, keine Malware-Scan-Pipeline.
 - [x] Vollständige, belegte Release-Gap-Matrix erstellt: `docs/RELEASE_READINESS.md` (5 Zustände, 8 Bereiche A1–A8).
-- [ ] Phase 1: CI-Workflow, Engines-Pinning, Security-Header, Dependency-Audit
+- [x] Phase 1: CI-Workflow (`.github/workflows/ci.yml`, 4 Jobs, real per `gh run view` grün verifiziert), `engines`/`packageManager`-Pinning, Security-Header (nonce-basierte CSP in `src/proxy.ts`, HSTS/X-Frame-Options/etc.), Dependency-Audit (`pnpm audit`), Secret-Scan (Gitleaks).
 - [ ] Phase 2: erweiterte iOS-Simulator-Matrix, Android-Emulator-Ersteinrichtung
-- [ ] Phase 4: echte Kontolöschung/Anonymisierung, Malware-Scan (ClamAV), Datenschutz-/Support-/Löschseiten
+- [x] Phase 4 (Teil 1): echte Kontolöschung statt reiner Sperre (Migration `20260721100000_real_account_deletion.sql`, Web-Weg im Profil, Reauthentifizierung per Passwort, öffentliche Info-Seite `/account-deletion`).
+- [x] Phase 4 (Teil 2): Malware-Scan für Uploads (`src/server/services/malware-scan.ts`, ClamAV, fail-closed, hinter `MALWARE_SCAN_ENABLED`); lokal per E2E mit echtem ClamAV + eigener Testsignatur verifiziert (EICAR erkennt ClamAV nur am Dateianfang, siehe `docs/PRIVACY_SECURITY.md`); CI installiert ClamAV real und muss nach diesem Push noch grün bestätigt werden.
+- [ ] Phase 4 (Teil 3): technische Dateninventur für Store-Mappings, konsolidierte Datenschutzerklärungs-Vorlage.
 - [ ] Phase 5: App-Icon/Splash aus eigener Marke, native Konfigurationshärtung (Identität selbst bleibt Toms Entscheidung)
 - [ ] Phase 6–8: Store-Metadaten, signierte Builds (BLOCKIERT durch Konten), Release-Candidate-Report
 

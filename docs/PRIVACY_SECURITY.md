@@ -6,7 +6,18 @@
 - Sichtbar ist das Bild nur für den Patienten selbst und aktive Mitglieder der aktuell verbundenen Praxis; andere Patienten, fremde Praxen, ehemalige Praxen (nach Praxiswechsel) und nicht angemeldete Personen sind per Storage-RLS und serverseitiger Prüfung ausgeschlossen (per RLS-Suite belegt).
 - Upload: freiwillig, max. 5 MB, nur JPEG/PNG/WebP; der MIME-Typ wird nicht allein geglaubt, die Dateisignatur wird serverseitig geprüft. Dateinamen sind zufällige UUIDs im eigenen Profilordner. Ersetzen löscht das alte Objekt (alte signierte URLs laufen zusätzlich zeitlich ab), Entfernen löscht Datei und Verweis; beides wird ohne Dateinamen auditiert.
 - Ohne Bild zeigt die App einen neutralen Initialen-Platzhalter, niemals ein fremdes Personenfoto. Ein Profilbild ist keine Nutzungsvoraussetzung. Seeds und Tests verwenden ausschließlich generierte 1×1-Pixel-Bilder.
-- Offen (wie bei allen Uploads): Malware-Scan mit Quarantäne vor einem echten Pilotbetrieb.
+- Malware-Scan siehe Ergänzung 2026-07-21 unten.
+
+## Ergänzung 2026-07-21: Malware-Scan für Uploads
+
+- Implementiert in `src/server/services/malware-scan.ts`: scannt den vollständigen Dateiinhalt mit ClamAV (`clamscan`), bevor `finalizeAvatarUpload`/`finalizeUpload` die Datei registrieren. Schlägt bei jedem Fehler (Scanner fehlt, Timeout, unerwarteter Exit-Code) **geschlossen** fehl – eine nicht scannbare Datei gilt nie als sauber.
+- Schalter `MALWARE_SCAN_ENABLED` (Standard: aus). Grund: lokale Entwicklung und die aktuelle CI haben keinen dauerhaften `clamd`-Dienst; ein erzwungener Scan würde dort jeden Upload ablehnen. Das ist kein Platzhalter, der Erfolg vortäuscht – der Scan-Code ist echt und wird in CI real durchlaufen (`web-database`-Job installiert ClamAV und setzt `MALWARE_SCAN_ENABLED=true` für den E2E-Lauf).
+- **Produktionsarchitektur-Lücke, ehrlich benannt:** `clamscan` lädt bei jedem Aufruf die komplette Signaturdatenbank neu (lokal gemessen: ~4,6 s). Für eine Serverless-Produktionsumgebung (z. B. Vercel) ist das unpraktikabel. Zwei produktionsfähige Alternativen, beide mit derselben Schnittstelle (`scanBufferForMalware`) umsetzbar, ohne Aufrufer anzupassen:
+  1. Dauerhafter `clamd`-Daemon (eigener Host/Container) über Unix-Socket/TCP – `clamdscan` statt `clamscan`, Millisekunden statt Sekunden pro Scan.
+  2. Verwalteter Cloud-AV-Dienst (z. B. über eine Storage-Trigger-Funktion).
+  Diese Entscheidung braucht ein tatsächliches Hosting-Ziel (Phase 3) und ist daher nicht vor Tom entscheidbar ohne dessen Hosting-Wahl.
+- **Testbarkeits-Erkenntnis:** Die eingebaute EICAR-Testdatei erkennt ClamAV nachweislich nur, wenn sie exakt am Dateianfang steht (Offset 0 erkannt, Offset 1 bereits nicht mehr – empirisch mit `clamscan` geprüft, keine Annahme). Für einen echten Ende-zu-Ende-Test „Schadsoftware versteckt in einer sonst gültigen Datei" reicht EICAR daher nicht aus. Stattdessen definiert `e2e/fixtures/clamav-test-signature.ndb` eine harmlose, projekteigene Testsignatur, die – wie echte Virensignaturen – an beliebiger Stelle im Dateiinhalt erkannt wird. Die CI kopiert sie zusätzlich zur echten ClamAV-Datenbank in deren Datenbankverzeichnis; die Anwendung selbst kennt diese Datei nicht und lädt nie eine andere Datenbank als die ClamAV-Standarddatenbank.
+- E2E-Abdeckung: `e2e/patient-avatar.spec.ts` und `e2e/phase-j-exercise-management.spec.ts` laden je eine Datei mit gültigen Magic Bytes und eingebetteter Testsignatur hoch und erwarten Ablehnung – nur ausgeführt, wenn `MALWARE_SCAN_ENABLED=true` gesetzt ist (lokal per `test.skip` übersprungen, in CI real geprüft).
 
 ## Ergänzung Phase D/E: Planintegrität und Praxiswechsel
 
@@ -94,7 +105,7 @@ Supabase (PostgreSQL + Auth + Storage)
 | Videoabruf durch Unbefugte | privater Bucket, signierte URLs mit kurzer Laufzeit erst nach Prüfung des aktuellen Patientenplans | umgesetzt; erweiterte RLS-Proben lokal noch auszuführen |
 | XSS | React-Escaping, kein `dangerouslySetInnerHTML` mit Nutzerdaten; CSP in Phase 4 | teilweise |
 | CSRF | Next.js Server Actions mit Origin-Prüfung; Cookies SameSite (Supabase-Default) | umgesetzt |
-| Unsichere Uploads | eng begrenztes Upload-Ticket; zufälliger Pfad; Bucket-Limit; serverseitige Pfad-, Größen- und Magic-Byte-Prüfung vor Registrierung | technische Prüfung umgesetzt; Malware-Scan/Quarantäne vor Pilotbetrieb offen |
+| Unsichere Uploads | eng begrenztes Upload-Ticket; zufälliger Pfad; Bucket-Limit; serverseitige Pfad-, Größen- und Magic-Byte-Prüfung vor Registrierung; Malware-Scan (ClamAV) vor Registrierung, sofern `MALWARE_SCAN_ENABLED=true` | technische Prüfung umgesetzt; Scan-Pipeline implementiert und per E2E verifiziert; produktionsreife Dauerlösung (`clamd`/Cloud-AV) offen (siehe Ergänzung 2026-07-21) |
 | Datenabfluss über Logs | keine Gesundheitsdaten in Logs/Audit-Metadaten (Projektregel); Review in Phase 4 | Regel aktiv |
 
 ## 4. Technische Sicherheitsentscheidungen

@@ -12,6 +12,7 @@ import {
   storagePathBelongsToExercise,
   type UploadableMediaKind,
 } from "@/config/media";
+import { isMalwareScanEnabled, scanBufferForMalware } from "@/server/services/malware-scan";
 
 /**
  * Übungsmedien: Ticket-basierter Upload in den privaten Bucket
@@ -100,20 +101,33 @@ export async function finalizeUpload(
 
   const { data: signed } = await bucket.createSignedUrl(storagePath, 60);
   if (!signed) return { ok: false, error: "Die Datei konnte nicht geprüft werden." };
-  // Range begrenzt die Antwort auf die ersten 16 Bytes. Die Antwort wird
-  // vollständig gelesen: ein manuell abgebrochener Body-Reader kehrt im
-  // Next-Server-Kontext nie zurück und ließ die Finalisierung hängen.
-  const headResponse = await fetch(signed.signedUrl, {
-    headers: { Range: "bytes=0-15" },
-  });
+  const scanEnabled = isMalwareScanEnabled();
+  // Ohne Malware-Scan reicht ein Range auf die ersten 16 Bytes (schnell,
+  // wichtig bei bis zu 100-MB-Videos). Mit Scan wird die volle Datei
+  // gebraucht, da ClamAV den gesamten Inhalt prüfen muss. Die Antwort
+  // wird in beiden Fällen vollständig gelesen: ein manuell abgebrochener
+  // Body-Reader kehrt im Next-Server-Kontext nie zurück und ließ die
+  // Finalisierung hängen.
+  const headResponse = await fetch(
+    signed.signedUrl,
+    scanEnabled ? undefined : { headers: { Range: "bytes=0-15" } }
+  );
   if (!headResponse.ok) {
     await removeStorageObject(storagePath);
     return { ok: false, error: "Die Datei konnte nicht geprüft werden." };
   }
-  const header = new Uint8Array(await headResponse.arrayBuffer()).slice(0, 16);
+  const fullBody = new Uint8Array(await headResponse.arrayBuffer());
+  const header = fullBody.slice(0, 16);
   if (!signatureMatches(mimeType, header)) {
     await removeStorageObject(storagePath);
     return { ok: false, error: "Dateiinhalt und Dateityp stimmen nicht überein." };
+  }
+  if (scanEnabled) {
+    const scanResult = await scanBufferForMalware(fullBody);
+    if (!scanResult.clean) {
+      await removeStorageObject(storagePath);
+      return { ok: false, error: "Die Datei konnte nicht sicher gespeichert werden." };
+    }
   }
 
   const supabase = await createSupabaseServerClient();

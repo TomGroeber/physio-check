@@ -68,7 +68,9 @@ jobs:
   web-database:
     name: Web · RLS + E2E (lokale Supabase)
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    # 25 reichte ohne ClamAV-Installation/Signatur-Download; mit reeller
+    # Malware-Scan-Prüfung im E2E-Lauf mehr Puffer einplanen.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -104,8 +106,34 @@ jobs:
           pnpm seed
       - name: RLS-Testsuite
         run: pnpm test:rls
-      - name: E2E-Testsuite (Playwright)
+      - name: ClamAV installieren (Malware-Scan-Pipeline echt prüfen)
+        # Ohne diesen Schritt bliebe der Scan-Pfad in Upload-Finalisierung
+        # (finalizeAvatarUpload/finalizeUpload) ungetestet – hier wird er
+        # mit einer echten EICAR-Testsignatur durchlaufen, nicht nur
+        # behauptet. Produktions-Serverless braucht stattdessen einen
+        # dauerhaften clamd-Daemon oder Cloud-AV-Dienst (siehe
+        # docs/PRIVACY_SECURITY.md).
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clamav
+          # apt startet den freshclam-Systemdienst sofort im Hintergrund;
+          # ohne Stopp kollidiert der manuelle Lauf mit dessen Sperrdatei.
+          sudo systemctl stop clamav-freshclam
+          sudo freshclam
+          # Eigene, harmlose Testsignatur zusätzlich zur echten Virendatenbank
+          # ablegen (siehe e2e/fixtures/clamav-test-signature.ndb): die
+          # eingebaute EICAR-Testdatei erkennt ClamAV nur exakt am
+          # Dateianfang (lokal empirisch geprüft), nicht wenn sie – wie
+          # echte Schadsoftware – innerhalb einer sonst gültigen Datei
+          # versteckt ist. Die Testsignatur landet in derselben
+          # Datenbank, die `clamscan` ohnehin automatisch lädt.
+          sudo cp e2e/fixtures/clamav-test-signature.ndb \
+            /var/lib/clamav/physiocheck-test.ndb
+          sudo chmod 644 /var/lib/clamav/physiocheck-test.ndb
+      - name: E2E-Testsuite (Playwright, inkl. Malware-Scan)
         run: pnpm e2e
+        env:
+          MALWARE_SCAN_ENABLED: "true"
       - name: Playwright-Bericht bei Fehlschlag hochladen
         if: failure()
         uses: actions/upload-artifact@v4

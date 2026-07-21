@@ -32,7 +32,7 @@ Zusätzliche, im Master-Prompt nicht explizit genannte, aber beim Audit gefunden
 
 - **Keine Security-Header** (CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy) in `next.config.ts` – `docs/PRIVACY_SECURITY.md` selbst vermerkt „CSP … teilweise".
 - **Kein `engines`/`packageManager`-Feld** in `package.json` – Node/pnpm-Version ist nirgendwo maschinenlesbar gepinnt (nur in Doku-Text).
-- **Keine Malware-/Virenscan-Pipeline** – alle Upload-Pfade (Übungsmedien, Profilbilder) prüfen nur MIME-Typ, Größe und Magic Bytes; kein AV-Scan, keine Quarantäne. Dokumentiert als offen, aber technisch nicht existent.
+- ~~**Keine Malware-/Virenscan-Pipeline**~~ – behoben 2026-07-21, siehe A4.
 - **`docs/PRIVACY_SECURITY.md`** ist im Wesentlichen der Stand vom 11.07.2026 mit Ergänzungen; es fehlt eine konsolidierte, store-taugliche Datenschutzerklärungs-Vorlage sowie App-Privacy-/Data-Safety-/Health-Declaration-Mappings.
 
 ## A. Übersicht nach Bereich
@@ -41,17 +41,17 @@ Zusätzliche, im Master-Prompt nicht explizit genannte, aber beim Audit gefunden
 
 | Punkt | Status | Beleg | Nächster Schritt |
 |---|---|---|---|
-| Node/pnpm-Version nachvollziehbar gepinnt | IMPLEMENTIERBAR – JETZT AUSFÜHREN | `package.json` ohne `engines`/`packageManager` (verifiziert) | `engines.node`, `packageManager` (pnpm@11.11.0) ergänzen |
-| `pnpm install --frozen-lockfile` funktioniert reproduzierbar | IMPLEMENTIERBAR – JETZT AUSFÜHREN | noch nicht in CI geprüft | In neuem Workflow verifizieren |
-| Web: Typecheck/Lint/Test/Build | ERLEDIGT UND VERIFIZIERT | zuletzt 20./21.07.2026 grün (`docs/TEST_MATRIX.md`) | in CI automatisieren |
-| RLS-Suite | ERLEDIGT UND VERIFIZIERT | 96 Proben grün (`scripts/rls-tests.ts`) | in CI automatisieren (braucht lokale Supabase im Runner) |
-| E2E (Playwright) | ERLEDIGT UND VERIFIZIERT (lokal) | 49/0, bekannte Ursache für frühere Flakes behoben (D-067) | in CI automatisieren oder begründet auslagern |
-| Mobile Typecheck/Lint/Test/expo-doctor | ERLEDIGT UND VERIFIZIERT | 16 Tests, 20/20 Checks | in CI automatisieren |
-| Mobile Produktionsbundle-Export (JS) | ERLEDIGT UND VERIFIZIERT | `expo export --platform ios` grün | ersetzt keinen signierten nativen Build (s. A5) |
-| GitHub-Actions-Workflow | IMPLEMENTIERBAR – JETZT AUSFÜHREN | `.github/workflows/` existiert nicht | Workflow für PRs + main anlegen |
-| Secret-Scan (Git-Historie + Build-Output) | IMPLEMENTIERBAR – JETZT AUSFÜHREN | noch nicht automatisiert | in CI ergänzen (z. B. gitleaks) |
-| Dependency-/Lockfile-Audit | IMPLEMENTIERBAR – JETZT AUSFÜHREN | `pnpm audit` noch nicht dokumentiert ausgeführt | ausführen, Befunde bewerten, in CI aufnehmen |
-| Security-Header (CSP/HSTS/…) | IMPLEMENTIERBAR – JETZT AUSFÜHREN | `next.config.ts` ohne Header (verifiziert) | Header-Konfiguration ergänzen + Test |
+| Node/pnpm-Version nachvollziehbar gepinnt | ERLEDIGT UND VERIFIZIERT | `package.json`: `engines.node >=22.13.0 <23`, `packageManager: pnpm@11.11.0` | – |
+| `pnpm install --frozen-lockfile` funktioniert reproduzierbar | ERLEDIGT UND VERIFIZIERT | In allen 4 CI-Jobs grün, GitHub-Actions-Lauf [`29850086661`](https://github.com/TomGroeber/physio-check/actions/runs/29850086661) | – |
+| Web: Typecheck/Lint/Test/Build | ERLEDIGT UND VERIFIZIERT | Lokal UND in CI grün (`docs/TEST_MATRIX.md`) | – |
+| RLS-Suite | ERLEDIGT UND VERIFIZIERT | 104 Proben grün, lokal UND in CI (echte Supabase-Instanz im Runner) | – |
+| E2E (Playwright) | ERLEDIGT UND VERIFIZIERT | 49/0 lokal UND in CI (Chromium + WebKit für das „mobile"-Projekt) | – |
+| Mobile Typecheck/Lint/Test/expo-doctor | ERLEDIGT UND VERIFIZIERT | 16 Tests, 20/20 Checks, lokal UND in CI | – |
+| Mobile Produktionsbundle-Export (JS) | ERLEDIGT UND VERIFIZIERT | `expo export --platform ios` + `android` grün in CI | ersetzt keinen signierten nativen Build (s. A5) |
+| GitHub-Actions-Workflow | ERLEDIGT UND VERIFIZIERT | `.github/workflows/ci.yml`, 4 Jobs, echter grüner Lauf über `gh run view` bestätigt (nicht nur angenommen) | Branch-Protection „required checks" ist ein GitHub-Repo-Einstellungsschritt – Tom kann die 4 Jobs dort als Pflicht markieren |
+| Secret-Scan (Git-Historie + Build-Output) | ERLEDIGT UND VERIFIZIERT | gitleaks-Job grün (voller Verlauf, `fetch-depth: 0`) | – |
+| Dependency-/Lockfile-Audit | ERLEDIGT UND VERIFIZIERT | `pnpm audit --audit-level critical`: 2 moderate (postcss via next, uuid via expo-Tooling), beide reine Build-Zeit-Abhängigkeiten, 0 kritisch | Bei Gelegenheit auf neuere Next/Expo-Patch-Versionen aktualisieren |
+| Security-Header (CSP/HSTS/…) | ERLEDIGT UND VERIFIZIERT | Nonce-basierte CSP + 5 weitere Header in `src/proxy.ts`; 0 CSP-Verletzungen in echtem Chromium-Lauf (Patient + Praxis, Login + Formulare) | – |
 | Rate Limiting produktionsreif | TEILWEISE / OPTIONAL NACH V1 | Einladungscode-Rate-Limit existiert (`invite_redemption_attempts`); Login-Rate-Limit liegt bei Supabase Auth selbst | Prüfen, ob Supabase-Auth-Standardlimits für Produktion genügen |
 
 ### A2. Native Geräteprüfung (Phase 2)
@@ -83,10 +83,11 @@ Zusätzliche, im Master-Prompt nicht explizit genannte, aber beim Audit gefunden
 | Punkt | Status | Beleg | Nächster Schritt |
 |---|---|---|---|
 | Technische Dateninventur | TEILWEISE | `docs/PRIVACY_SECURITY.md` Abschnitt 1 existiert, aber nicht store-tauglich strukturiert (kein App-Privacy-/Data-Safety-Mapping) | Erweitern um Store-Mappings |
-| Echte Kontolöschung (nicht nur Sperre) | IMPLEMENTIERBAR – JETZT AUSFÜHREN | Bestätigter Mangel oben | Serverseitige Lösch-/Anonymisierungsroutine implementieren, RLS-Tests für Fremdzugriff |
-| Konfigurierbare Aufbewahrungsregeln (ohne eigene Rechtsentscheidung) | IMPLEMENTIERBAR – JETZT AUSFÜHREN | Nicht vorhanden | Regelwerk mit Platzhalter-Frist + Pflichtfeld „juristisch bestätigt: nein" |
-| Malware-Scan/Quarantäne für Uploads | IMPLEMENTIERBAR – JETZT AUSFÜHREN | ClamAV nicht installiert (kostenlos, lokal nachrüstbar) | ClamAV lokal installieren, Scan-Schritt in Finalisierung einbauen, Testdatei (EICAR) verifizieren |
-| Öffentliche Datenschutz-/Support-/Löschseite | IMPLEMENTIERBAR – JETZT AUSFÜHREN | Nicht vorhanden als Route | Als Next-Route mit klar markierten Rechtsfeldern erstellen |
+| Echte Kontolöschung (nicht nur Sperre) | ERLEDIGT UND VERIFIZIERT | Migration `20260721100000_real_account_deletion.sql`, RPC `request_account_deletion`; 8 neue RLS-Proben (104 gesamt) + vollständiger Browser-Durchlauf mit Wegwerf-Konto (Login → Löschung → Redirect → gesperrter Zweitlogin, Praxisdaten bleiben erhalten) | – |
+| Web-Weg zur Kontolöschung (fehlte komplett, nur mobil vorhanden) | ERLEDIGT UND VERIFIZIERT | `src/server/actions/account-deletion.ts` + `delete-account-form.tsx` in `/profile`; Reauthentifizierung per Passwort vor jeder Löschung | – |
+| Konfigurierbare Aufbewahrungsregeln (ohne eigene Rechtsentscheidung) | ERLEDIGT UND VERIFIZIERT | `retained_data_note`-Spalte + Text dokumentieren pro Antrag, welche Daten aus welchem (offenen) Rechtsgrund bleiben | Endgültige Frist bleibt BLOCKIERT DURCH RECHTLICHE FREIGABE |
+| Malware-Scan für Uploads | ERLEDIGT – LOKAL VERIFIZIERT, CI-LAUF AUSSTEHEND | `src/server/services/malware-scan.ts` (ClamAV `clamscan`, fail-closed); in `finalizeAvatarUpload`/`finalizeUpload` eingebaut hinter `MALWARE_SCAN_ENABLED`; lokal per Playwright mit echtem ClamAV + eigener Testsignatur (`e2e/fixtures/clamav-test-signature.ndb`, da die eingebaute EICAR-Datei nachweislich nur am Dateianfang erkannt wird) verifiziert: beide betroffenen Uploads (Avatar, Übungsvideo) korrekt abgelehnt, normaler Upload-Pfad ohne Scan unverändert grün (104 RLS + 47/49 E2E, 2 bekannte unabhängige Flakes erholt) | Nach Push echten CI-Lauf prüfen (`web-database`-Job installiert ClamAV + Testsignatur, setzt `MALWARE_SCAN_ENABLED=true` für den E2E-Schritt); Produktions-Dauerlösung (`clamd`-Daemon oder Cloud-AV) bleibt an Toms Hosting-Wahl gebunden (siehe A3) |
+| Öffentliche Datenschutz-/Support-/Löschseite | ERLEDIGT UND VERIFIZIERT (Löschseite) | `src/app/account-deletion/page.tsx`, ohne Login erreichbar (HTTP 200 verifiziert); nennt Support-E-Mail-Platzhalter | Datenschutzerklärung als eigene Seite bleibt offen (s. A6); Support-E-Mail ist Platzhalter (`branding.supportEmail`) bis Toms Entscheidung (A5) |
 | Rechtliche Freigabe Aufbewahrungsfristen Luxemburg | BLOCKIERT DURCH RECHTLICHE FREIGABE | Offen seit D-062 | Bleibt offen; nur konfigurierbare Regel + Platzhalter, keine eigene Entscheidung |
 | Apple/Google Health-Declaration, Data-Safety-Mapping | IMPLEMENTIERBAR – JETZT AUSFÜHREN | Nicht vorhanden | Aus Dateninventur ableiten |
 
@@ -135,7 +136,8 @@ Zusätzliche, im Master-Prompt nicht explizit genannte, aber beim Audit gefunden
 ## B. Zusammenfassung nach Zustand (Kurzform für den Abschlussbericht)
 
 - **ERLEDIGT UND VERIFIZIERT:** Web-Kernqualität (Typecheck/Lint/Test/RLS/E2E/Build), Mobile-Kernqualität (Typecheck/Lint/Test/expo-doctor/JS-Export), Rollenbegrenzung App↔Praxis, lokale migrationsbasierte DB, deutsche Lokalisierung ehrlich dokumentiert.
-- **IMPLEMENTIERBAR – JETZT AUSFÜHREN (kein Blocker):** CI-Workflow, Engines-Pinning, Security-Header, echte Kontolöschung, Malware-Scan (ClamAV lokal), App-Icon/Splash aus eigener Marke, Privacy-Dateninventur/Store-Mappings, Deployment-Vorbereitung (Skripte/Variablenlisten ohne Secrets), Android-Emulator-Ersteinrichtung, erweiterte iOS-Simulator-Matrix.
+- **ERLEDIGT, CI-LAUF NACH DIESEM PUSH ZU BESTÄTIGEN:** Malware-Scan-Pipeline für Uploads (ClamAV, lokal vollständig verifiziert inkl. echter Ablehnung; CI installiert ClamAV neu und muss real grün laufen, bevor dies als „verifiziert" gilt).
+- **IMPLEMENTIERBAR – JETZT AUSFÜHREN (kein Blocker):** CI-Workflow, Engines-Pinning, Security-Header, echte Kontolöschung, App-Icon/Splash aus eigener Marke, Privacy-Dateninventur/Store-Mappings, Deployment-Vorbereitung (Skripte/Variablenlisten ohne Secrets), Android-Emulator-Ersteinrichtung, erweiterte iOS-Simulator-Matrix.
 - **BLOCKIERT DURCH TOM/KONTO/2FA/ZAHLUNG:** gehostetes Supabase-Projekt, Domain/Hosting, SMTP-Anbieter, Apple Developer, Google Play Console, EAS-Login, alle signierten Builds/TestFlight/Play-Internal-Uploads, finale App-Identität (Name/Bundle-ID/Package/Publisher/Support-E-Mail).
 - **BLOCKIERT DURCH RECHTLICHE FREIGABE:** endgültige Aufbewahrungsfrist für Luxemburger Patientendaten, jede Aussage zu „vollständiger DSGVO-Konformität" oder Medizinprodukt-Einstufung.
 - **OPTIONAL NACH V1:** weitere Lokalisierungen, Push-Benachrichtigungen (Versand), Universal/App Links (Domain-abhängig ohnehin blockiert), Realtime-Sync.
