@@ -130,10 +130,50 @@ jobs:
           sudo cp e2e/fixtures/clamav-test-signature.ndb \
             /var/lib/clamav/physiocheck-test.ndb
           sudo chmod 644 /var/lib/clamav/physiocheck-test.ndb
-      - name: E2E-Testsuite (Playwright, inkl. Malware-Scan)
+      - name: E2E-Testsuite (Playwright)
         run: pnpm e2e
-        env:
-          MALWARE_SCAN_ENABLED: "true"
+      - name: Datenbank und Webserver für isolierten Malware-Scan-Lauf neu starten
+        # Playwrights automatisch gestarteter Server (`webServer`,
+        # `reuseExistingServer: true`) läuft über beide Testläufe hinweg
+        # weiter. Ein reiner `db:reset` DARUNTER ohne Serverneustart macht
+        # dessen laufende Sitzungen/Verbindungen ungültig (Nutzer-IDs
+        # existieren nach dem Reset nicht mehr) – das erzeugte reproduzierbar
+        # "memberships[0] is undefined"-Abstürze, keinen Scan-Timing-Fehler
+        # (per Server-Log lokal nachvollzogen, nicht angenommen). Server
+        # explizit beenden, DB zurücksetzen, Server explizit neu starten,
+        # bevor Playwright den zweiten Lauf gegen ihn fährt.
+        run: |
+          # "pkill -f 'next start'" trifft den tatsächlichen Prozessnamen
+          # NICHT (läuft als "next-server", nicht "next start" – per `ps`
+          # lokal nachvollzogen) und hätte den alten Server unbemerkt
+          # weiterlaufen lassen. Stattdessen direkt den Port-Inhaber beenden.
+          lsof -ti:3000 | xargs -r kill -9
+          for i in $(seq 1 20); do
+            curl -s -o /dev/null http://localhost:3000/login || break
+            sleep 1
+          done
+          pnpm db:reset
+          pnpm seed
+          # "pnpm dev", nicht "pnpm start": dieser Job baut nie
+          # (`pnpm build` läuft nur im separaten web-quality-Job), Playwrights
+          # eigener `webServer` startet den Hauptlauf oben ebenfalls so.
+          nohup pnpm dev > /tmp/ci-server-restart.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -sf -o /dev/null http://localhost:3000/login && break
+            sleep 1
+          done
+      - name: E2E-Malware-Scan isoliert mit einem Worker
+        # Eigener, serieller Lauf statt Teil des parallelen Haupt-E2E-Laufs
+        # oben: mit 4 parallelen Workern konkurrierten mehrere gleichzeitige
+        # `clamscan`-Aufrufe (Profilbild- und Übungsvideo-Uploads) auf dem
+        # 2-Kern-Runner um CPU-Zeit – ein einzelner Scan brauchte dadurch
+        # spürbar länger als die bereits großzügigen 30s Zusicherungs-
+        # Timeouts. `--workers=1` beseitigt die Konkurrenzsituation
+        # strukturell, statt die Zahl weiter zu erhöhen.
+        run: |
+          MALWARE_SCAN_ENABLED=true pnpm exec playwright test \
+            e2e/patient-avatar.spec.ts e2e/phase-j-exercise-management.spec.ts \
+            --project=chromium --workers=1
       - name: Playwright-Bericht bei Fehlschlag hochladen
         if: failure()
         uses: actions/upload-artifact@v4
