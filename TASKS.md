@@ -189,6 +189,7 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [x] Phase 6 (Teil 1): Store-Texte (Beschreibung, Keywords, Kategorie, Alterseinstufung, Reviewhinweis) als deutscher Entwurf in `docs/APP_STORE_CHECKLIST.md` – bewusst Kategorie „Gesundheit und Fitness" statt „Medizin"; Tom-Gegenlesen vor Einreichung noch offen.
 - [ ] Phase 6 (Teil 2): Screenshots (BLOCKIERT durch fehlenden signierten Build/Gerätematrix)
 - [ ] Phase 7–8: signierte Builds (BLOCKIERT durch Konten), Release-Candidate-Report
+- [x] Nebenbefund: Expo-SDK-Patch-Drift in CI behoben (`expo-doctor` scheiterte an 9 veralteten Paketen inkl. einer fehlenden direkten Abhängigkeit für `@expo/metro-runtime`) – wieder 20/20, iOS+Android-Export grün (D-082).
 
 ## Auftrag vom 19.–20.07.2026 – UI-Parität der nativen App mit der Patienten-Weboberfläche (mit Toms Freigabe per PR #3 `342fba5` in `main` gemergt)
 
