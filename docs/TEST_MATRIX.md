@@ -103,6 +103,23 @@
 | Praxiswechsel | RLS-Suite + UI-Bestätigung | Grün (19.07.2026) |
 | Neues Gerät braucht keinen neuen Code | Browser mit frischem Context | Grün (19.07.2026) |
 
+## Produktions- und Store-Reife (21.07.2026)
+
+| Anforderung | Automatisierte Abdeckung | Status |
+|---|---|---|
+| CI-Pipeline reproduzierbar grün (Web/DB/Mobile/Security) | `.github/workflows/ci.yml`, 4 Jobs, mehrfach über `gh run view --log` real verifiziert (nicht nur lokal angenommen) | Grün (21.07.2026) |
+| Security-Header/CSP blockiert Next.js nicht | Nonce-basierte CSP in `src/proxy.ts`; Playwright-Konsolencheck (0 Verstöße, 0 Fehler auf `/login`/`/register`) | Grün (21.07.2026) |
+| Signierte Avatar-/Videobilder trotz CSP erreichbar | `img-src`/`media-src` inkl. Supabase-Origin; volle E2E-Suite nach Fix grün | Grün (21.07.2026) |
+| Echte Kontolöschung (nicht nur Sperre) | 8 neue RLS-Proben (104 gesamt) + vollständiger Browser-Durchlauf mit Wegwerf-Konto (Login → Löschung → gesperrter Zweitlogin, Praxisdaten bleiben) | Grün (21.07.2026) |
+| Malware-Scan lehnt in einer sonst gültigen Datei versteckte Signatur ab | E2E mit echtem ClamAV + projekteigener Testsignatur (`e2e/fixtures/clamav-test-signature.ndb`), CI installiert ClamAV real; EICAR ungeeignet (nur Dateianfang erkannt, empirisch geprüft) | Lokal grün (21.07.2026); CI-Bestätigung nach Timeout-Fix ausstehend |
+| App-Icon/Splash aus der Marke statt Expo-Standard | `expo-doctor` 20/20, iOS+Android-Export grün nach Asset-Austausch | Grün (21.07.2026) |
+| iOS-Fotozugriffstext gesetzt, keine unnötigen Berechtigungen | `expo config --type introspect` bestätigt Text + fehlende Kamera-/Mikrofon-Deklaration | Grün (21.07.2026) |
+| Health-Check-Route liefert echten DB-Status ohne Zeileninhalte | `GET /api/health` gegen laufenden Produktions-Build geprüft (`curl`, HTTP 200, `{"status":"ok"}`) | Grün (21.07.2026) |
+| Android-Emulator: App baut, installiert, meldet echt an, zeigt echte Daten | `expo run:android` auf AVD mit Android 16/API 36 (arm64-v8a); echte Anmeldung über Dev-Login-Weg; „Heute"-Screen mit 3 echten Übungen in Hell und Dunkel geprüft | Grün (22.07.2026) |
+| iOS-Simulator-Matrix: iPhone Air, iPad Air 11" (M4) | Willkommensbildschirm, Dark Mode, größte Dynamic-Type-Stufe (kein Clipping), `supportsTablet: false` liefert korrektes phone-großes Layout auf dem iPad | Grün (22.07.2026) |
+| iOS Privacy Manifest enthält deklarierte Datentypen + aggregierte Required-Reason-APIs | Echter `expo prebuild --platform ios --clean`; generierte `PrivacyInfo.xcprivacy` geprüft (nicht nur Konfiguration gelesen) | Grün (22.07.2026) |
+| Öffentliche Datenschutzerklärung `/privacy` ohne Login erreichbar, korrekt gerendert | Playwright-Screenshot gegen laufenden Dev-Server (HTTP 200, Titel korrekt, Entwurfshinweis sichtbar) | Grün (22.07.2026) |
+
 ## Mobile Patienten-App (Teile H–M, 19.07.2026)
 
 | Anforderung | Automatisierte Abdeckung | Status |

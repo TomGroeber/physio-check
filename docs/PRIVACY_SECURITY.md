@@ -6,7 +6,18 @@
 - Sichtbar ist das Bild nur für den Patienten selbst und aktive Mitglieder der aktuell verbundenen Praxis; andere Patienten, fremde Praxen, ehemalige Praxen (nach Praxiswechsel) und nicht angemeldete Personen sind per Storage-RLS und serverseitiger Prüfung ausgeschlossen (per RLS-Suite belegt).
 - Upload: freiwillig, max. 5 MB, nur JPEG/PNG/WebP; der MIME-Typ wird nicht allein geglaubt, die Dateisignatur wird serverseitig geprüft. Dateinamen sind zufällige UUIDs im eigenen Profilordner. Ersetzen löscht das alte Objekt (alte signierte URLs laufen zusätzlich zeitlich ab), Entfernen löscht Datei und Verweis; beides wird ohne Dateinamen auditiert.
 - Ohne Bild zeigt die App einen neutralen Initialen-Platzhalter, niemals ein fremdes Personenfoto. Ein Profilbild ist keine Nutzungsvoraussetzung. Seeds und Tests verwenden ausschließlich generierte 1×1-Pixel-Bilder.
-- Offen (wie bei allen Uploads): Malware-Scan mit Quarantäne vor einem echten Pilotbetrieb.
+- Malware-Scan siehe Ergänzung 2026-07-21 unten.
+
+## Ergänzung 2026-07-21: Malware-Scan für Uploads
+
+- Implementiert in `src/server/services/malware-scan.ts`: scannt den vollständigen Dateiinhalt mit ClamAV (`clamscan`), bevor `finalizeAvatarUpload`/`finalizeUpload` die Datei registrieren. Schlägt bei jedem Fehler (Scanner fehlt, Timeout, unerwarteter Exit-Code) **geschlossen** fehl – eine nicht scannbare Datei gilt nie als sauber.
+- Schalter `MALWARE_SCAN_ENABLED` (Standard: aus). Grund: lokale Entwicklung und die aktuelle CI haben keinen dauerhaften `clamd`-Dienst; ein erzwungener Scan würde dort jeden Upload ablehnen. Das ist kein Platzhalter, der Erfolg vortäuscht – der Scan-Code ist echt und wird in CI real durchlaufen (`web-database`-Job installiert ClamAV und setzt `MALWARE_SCAN_ENABLED=true` für den E2E-Lauf).
+- **Produktionsarchitektur-Lücke, ehrlich benannt:** `clamscan` lädt bei jedem Aufruf die komplette Signaturdatenbank neu (lokal gemessen: ~4,6 s). Für eine Serverless-Produktionsumgebung (z. B. Vercel) ist das unpraktikabel. Zwei produktionsfähige Alternativen, beide mit derselben Schnittstelle (`scanBufferForMalware`) umsetzbar, ohne Aufrufer anzupassen:
+  1. Dauerhafter `clamd`-Daemon (eigener Host/Container) über Unix-Socket/TCP – `clamdscan` statt `clamscan`, Millisekunden statt Sekunden pro Scan.
+  2. Verwalteter Cloud-AV-Dienst (z. B. über eine Storage-Trigger-Funktion).
+  Diese Entscheidung braucht ein tatsächliches Hosting-Ziel (Phase 3) und ist daher nicht vor Tom entscheidbar ohne dessen Hosting-Wahl.
+- **Testbarkeits-Erkenntnis:** Die eingebaute EICAR-Testdatei erkennt ClamAV nachweislich nur, wenn sie exakt am Dateianfang steht (Offset 0 erkannt, Offset 1 bereits nicht mehr – empirisch mit `clamscan` geprüft, keine Annahme). Für einen echten Ende-zu-Ende-Test „Schadsoftware versteckt in einer sonst gültigen Datei" reicht EICAR daher nicht aus. Stattdessen definiert `e2e/fixtures/clamav-test-signature.ndb` eine harmlose, projekteigene Testsignatur, die – wie echte Virensignaturen – an beliebiger Stelle im Dateiinhalt erkannt wird. Die CI kopiert sie zusätzlich zur echten ClamAV-Datenbank in deren Datenbankverzeichnis; die Anwendung selbst kennt diese Datei nicht und lädt nie eine andere Datenbank als die ClamAV-Standarddatenbank.
+- E2E-Abdeckung: `e2e/patient-avatar.spec.ts` und `e2e/phase-j-exercise-management.spec.ts` laden je eine Datei mit gültigen Magic Bytes und eingebetteter Testsignatur hoch und erwarten Ablehnung – nur ausgeführt, wenn `MALWARE_SCAN_ENABLED=true` gesetzt ist (lokal per `test.skip` übersprungen, in CI real geprüft).
 
 ## Ergänzung Phase D/E: Planintegrität und Praxiswechsel
 
@@ -57,14 +68,39 @@
 
 | Kategorie | Beispiele | Sensibilität |
 |---|---|---|
-| Kontodaten | E-Mail, Name, Passwort-Hash (bei Supabase Auth) | mittel |
+| Kontodaten | E-Mail, Name, Passwort-Hash (bei Supabase Auth), Telefonnummer (optional) | mittel |
+| Profilbild | Vom Patienten freiwillig hochgeladenes Foto | mittel (Bilddaten, freiwillig) |
 | Praxisverknüpfung | wer ist Patient welcher Praxis | hoch (lässt Behandlung erkennen) |
 | Übungspläne | verordnete Übungen, Dosierung | hoch (Gesundheitsbezug) |
 | Durchführungsprotokolle | Selbstauskunft, Schmerzangaben 0–10, Notizen | **hoch (Gesundheitsdaten)** |
 | Termine | Zeit, Ort, behandelnde Person | hoch |
+| Erinnerungseinstellungen | freiwillige In-App-Hinweiszeiten (kein Push/E-Mail-Versand implementiert) | niedrig |
 | Audit-Ereignisse | wer hat wann was geändert (ohne Gesundheitsdetails) | mittel |
 
-Grundsatz **Datenminimierung**: Patientendatensätze starten mit einem Anzeigenamen; keine Geburtsdaten, Adressen oder Diagnosen im MVP.
+Grundsatz **Datenminimierung**: Patientendatensätze starten mit einem Anzeigenamen; keine Geburtsdaten, Adressen oder Diagnosen im MVP. **Keine** Analyse-/Tracking-/Werbe-SDKs, keine Crash-Reporting-Bibliothek, keine Werbekennungen (verifiziert: kein entsprechendes Paket in `package.json` von Web oder App) – vereinfacht die Store-Angaben unten erheblich, weil ganze Kategorien (Tracking, Nutzungsdaten für Werbung, Diagnosedaten) ehrlich mit „nein" beantwortet werden können.
+
+## 1a. Store-Datenschutz-Mappings (Apple App Privacy / Google Play Data Safety)
+
+Abgeleitet aus der Tabelle oben und dem tatsächlichen Code (nicht angenommen: siehe fehlende Tracking-/Analytics-Pakete). Gilt für die native Patienten-App; die Praxis-Weboberfläche hat kein Store-Privacy-Label. Beide Store-Formulare fragen im Kern dieselben drei Dinge pro Datentyp: **erhoben? mit der Identität verknüpft? zum Tracking über andere Apps/Websites hinweg genutzt?** – Letzteres ist bei PhysioCheck durchgehend **Nein**, weil es keine Tracking-/Werbe-SDKs gibt.
+
+| Datentyp (Apple-Kategorie / Google-Kategorie) | Erhoben? | Mit Nutzeridentität verknüpft? | Zum Tracking genutzt? | Zweck |
+|---|---|---|---|---|
+| Kontaktinfo – Name, E-Mail (Apple: Contact Info · Google: Personal info) | Ja | Ja | Nein | Kontofunktion, Authentifizierung |
+| Kontaktinfo – Telefonnummer (Apple: Contact Info · Google: Personal info) | Ja, optional | Ja | Nein | Freiwillige Angabe der Patientin/des Patienten |
+| Fotos (Apple: User Content – Photos or Videos · Google: Photos and videos) | Ja, optional | Ja | Nein | Freiwilliges Profilbild |
+| Gesundheit und Fitness (Apple: Health & Fitness · Google: Health and fitness) | Ja | Ja | Nein | Übungsdokumentation, Schmerzangaben als Selbstauskunft (keine Diagnose, kein automatisiertes Therapie-Feedback) |
+| Terminplanung (Apple: User Content/Other Data · Google: App activity) | Ja | Ja | Nein | Termine mit der Praxis |
+| Kennungen – Nutzer-ID (Apple: Identifiers · Google: Device or other IDs) | Ja | Ja | Nein | Supabase-Auth-Sitzung (kein Werbekennung, keine Geräte-ID) |
+| Nutzungsdaten (Apple: Usage Data · Google: App activity – App interactions) | Nein | – | – | Keine Analytics-/Produktnutzungs-SDKs eingebunden |
+| Diagnosedaten (Apple: Diagnostics · Google: App info and performance) | Nein | – | – | Kein Crash-/Absturzberichts-SDK eingebunden |
+| Standort (Apple: Location · Google: Location) | Nein | – | – | Nicht erhoben; Praxisadresse ist Praxisdatum, keine Nutzerstandortermittlung |
+| Finanzdaten (Apple: Financial Info · Google: Financial info) | Nein | – | – | Keine Zahlungsabwicklung in der App |
+
+**Apple-spezifisch:** Der „Health & Fitness"-Eintrag im App-Privacy-Formular ist unabhängig von HealthKit zu setzen – die App nutzt **keine** HealthKit-API (keine `expo-health`/`react-native-health`-Abhängigkeit), sondern speichert Schmerzangaben/Durchführungen ausschließlich in der eigenen Datenbank. Falls ein Prüfer nach HealthKit fragt: nicht verwendet.
+
+**Google-spezifisch (Data Safety):** „Data is encrypted in transit" = Ja (TLS/HTTPS, Supabase-Standard). „Users can request data deletion" = Ja (Kontolöschung, siehe D-070) – Google verlangt hierfür einen Deep Link ODER eine Web-URL; `/account-deletion` (öffentlich erreichbar, siehe A4) erfüllt das.
+
+**Noch offen, unabhängig vom Mapping selbst:** Die endgültigen Formulartexte müssen direkt in App Store Connect / Play Console ausgefüllt werden (kein API-Zugriff ohne Entwicklerkonto) – dieses Mapping ist die inhaltliche Vorlage dafür, ersetzt aber nicht das eigentliche Ausfüllen nach Kontoerstellung (BLOCKIERT DURCH TOM/KONTO).
 
 ## 2. Datenfluss (lokal / später Produktion)
 
@@ -94,7 +130,7 @@ Supabase (PostgreSQL + Auth + Storage)
 | Videoabruf durch Unbefugte | privater Bucket, signierte URLs mit kurzer Laufzeit erst nach Prüfung des aktuellen Patientenplans | umgesetzt; erweiterte RLS-Proben lokal noch auszuführen |
 | XSS | React-Escaping, kein `dangerouslySetInnerHTML` mit Nutzerdaten; CSP in Phase 4 | teilweise |
 | CSRF | Next.js Server Actions mit Origin-Prüfung; Cookies SameSite (Supabase-Default) | umgesetzt |
-| Unsichere Uploads | eng begrenztes Upload-Ticket; zufälliger Pfad; Bucket-Limit; serverseitige Pfad-, Größen- und Magic-Byte-Prüfung vor Registrierung | technische Prüfung umgesetzt; Malware-Scan/Quarantäne vor Pilotbetrieb offen |
+| Unsichere Uploads | eng begrenztes Upload-Ticket; zufälliger Pfad; Bucket-Limit; serverseitige Pfad-, Größen- und Magic-Byte-Prüfung vor Registrierung; Malware-Scan (ClamAV) vor Registrierung, sofern `MALWARE_SCAN_ENABLED=true` | technische Prüfung umgesetzt; Scan-Pipeline implementiert und per E2E verifiziert; produktionsreife Dauerlösung (`clamd`/Cloud-AV) offen (siehe Ergänzung 2026-07-21) |
 | Datenabfluss über Logs | keine Gesundheitsdaten in Logs/Audit-Metadaten (Projektregel); Review in Phase 4 | Regel aktiv |
 
 ## 4. Technische Sicherheitsentscheidungen
@@ -110,11 +146,11 @@ Supabase (PostgreSQL + Auth + Storage)
 - [ ] ⚖️ Rechtsgrundlage der Verarbeitung (Art. 9 DSGVO – Gesundheitsdaten) und Einwilligungstexte
 - [ ] ⚖️ Auftragsverarbeitungsvertrag (AVV) mit Supabase bzw. Hosting-Anbieter; EU-/EWR-Region verbindlich wählen (z. B. Frankfurt)
 - [ ] ⚖️ Datenschutzerklärung + Impressum in der App (versioniert über `consent_records`)
-- [ ] ⚖️ Aufbewahrungs- und Löschfristen festlegen (Kontolöschung, Datenexport sind im Datenmodell vorgesehen, aber noch nicht umgesetzt)
+- [x] Kontolöschung ist umgesetzt (sofortige Sperre + Löschung patienteneigener Daten, siehe Ergänzung D-070); ⚖️ **offen bleibt** die endgültige Aufbewahrungsfrist für praxisbezogene Behandlungsdaten (Luxemburg, D-062) – das ist eine Rechtsfrage, keine technische Lücke. Datenexport nicht umgesetzt.
 - [ ] ⚖️ Prüfung, ob die App im Zielmarkt als Medizinprodukt gelten könnte (sie trifft bewusst keine Diagnosen/Therapieentscheidungen)
 - [ ] Rate Limiting produktionsreif (Code-Einlösung, Login) und getestet
-- [ ] Content-Security-Policy und Security-Header (Phase 4)
-- [ ] RLS-Testsuite deckt alle Tabellen ab (Phase 2/4)
+- [x] Content-Security-Policy und Security-Header (nonce-basierte CSP, HSTS, X-Frame-Options u. a. in `src/proxy.ts`, siehe D-069)
+- [x] RLS-Testsuite deckt alle Tabellen ab (104 Proben, lokal verifiziert)
 - [ ] Fehlerüberwachung datensparsam konfigurieren (ohne Patientendaten), falls eingesetzt
 - [ ] Backups/Restore-Prozess des Hosting-Anbieters dokumentieren
 - [ ] TLS erzwungen, HSTS (Deployment)

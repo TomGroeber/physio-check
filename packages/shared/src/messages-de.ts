@@ -335,6 +335,15 @@ export const de = {
       remindersHeading: "Erinnerungen",
       practiceHeading: "Ihre Praxis",
       signOutHeading: "Abmelden",
+      deleteAccount: {
+        heading: "Konto löschen",
+        body: "Sie können die Löschung Ihres Kontos beantragen. Ihr Zugang wird sofort gesperrt; Profilbild, Telefonnummer und Erinnerungseinstellungen werden sofort gelöscht. Praxisbezogene Behandlungsdaten (Termine, Übungspläne, Selbstauskünfte, Verordnungen) bleiben gespeichert, bis die gesetzliche Aufbewahrungsfrist rechtlich bestätigt ist – das ist keine technische Lücke, sondern eine noch offene Rechtsfrage.",
+        confirmLabel: "Ja, ich möchte mein Konto wirklich löschen",
+        submit: "Löschung jetzt beantragen",
+        cancel: "Abbrechen",
+        success: "Ihr Löschantrag wurde verarbeitet. Sie wurden abgemeldet.",
+        error: "Der Löschantrag konnte nicht verarbeitet werden. Bitte versuchen Sie es erneut oder kontaktieren Sie den Support.",
+      },
       name: "Name",
       email: "E-Mail-Adresse",
       practice: "Ihre Praxis",
@@ -856,6 +865,61 @@ export const de = {
   profilePhone: {
     saved: "Telefonnummer gespeichert.",
     saveError: "Die Telefonnummer konnte nicht gespeichert werden.",
+  },
+
+  /**
+   * Entwurf für die öffentliche Datenschutzerklärung (/privacy). Fasst
+   * den tatsächlichen technischen Stand ehrlich zusammen (Basis:
+   * docs/PRIVACY_SECURITY.md) – ersetzt aber KEINE juristische Prüfung.
+   * Rechtsgrundlage, Aufbewahrungsfristen und der Verantwortliche sind
+   * bewusst als offen markiert (siehe CLAUDE.md: keine Rechtskonformität
+   * behaupten, die nicht bestätigt wurde).
+   */
+  legal: {
+    privacyPolicy: {
+      heading: "Datenschutzerklärung",
+      draftNotice:
+        "Dies ist ein technischer Entwurf, der den tatsächlichen Stand der Datenverarbeitung ehrlich beschreibt. Er wurde noch nicht von einer für Datenschutz zuständigen Person rechtlich geprüft oder freigegeben.",
+      lastUpdated: "Stand",
+      sections: [
+        {
+          title: "1. Verantwortlicher",
+          body: "Der Name, die Anschrift und die Kontaktdaten des Verantwortlichen im Sinne der DSGVO stehen noch nicht endgültig fest (offene Entscheidung zur App-Identität). Bis zur Klärung erreichen Sie uns unter der unten genannten Support-Adresse.",
+        },
+        {
+          title: "2. Welche Daten wir verarbeiten",
+          body: "Kontodaten (Name, E-Mail-Adresse, optional Telefonnummer), die Verbindung zu Ihrer Physiotherapiepraxis, Ihr Übungsplan und die zugehörigen Vorgaben, Ihre Selbstauskünfte zur Übungsdurchführung (einschließlich freiwilliger Schmerzangaben), Termine, ein optionales Profilbild sowie technische Protokolldaten zur Absicherung des Kontos (z. B. wer wann eine Änderung vorgenommen hat – ohne Gesundheitsinhalte). Diagnosen oder automatisierte Therapieentscheidungen gehören nicht dazu: Dokumentierte Übungen sind Ihre eigene Selbstauskunft.",
+        },
+        {
+          title: "3. Wofür wir diese Daten verwenden",
+          body: "Ausschließlich, um Ihnen Ihren Übungsplan und Ihre Termine anzuzeigen, Ihre Selbstauskünfte an Ihre Praxis weiterzugeben und Ihr Konto sicher zu betreiben. Es gibt keine Werbung, kein Tracking und keine Weitergabe an Dritte zu anderen Zwecken.",
+        },
+        {
+          title: "4. Rechtsgrundlage",
+          body: "Die Verarbeitung von Gesundheitsdaten (Art. 9 DSGVO) benötigt eine ausdrückliche Rechtsgrundlage. Diese ist derzeit noch nicht abschließend juristisch bestätigt – das ist eine offene Rechtsfrage, keine technische Lücke.",
+        },
+        {
+          title: "5. Empfänger und Auftragsverarbeitung",
+          body: "Ihre Daten werden bei unserem Datenbank-/Infrastrukturanbieter Supabase gespeichert. Ein Auftragsverarbeitungsvertrag sowie die endgültige Wahl der Serverregion (angestrebt: EU/EWR) stehen noch aus. Ihre Praxis sieht ausschließlich die Daten, die für Ihre Behandlung notwendig sind.",
+        },
+        {
+          title: "6. Speicherdauer und Löschung",
+          body: "Sie können die Löschung Ihres Kontos jederzeit beantragen (siehe unsere Seite zur Kontolöschung). Dabei werden Ihr Zugang sofort gesperrt sowie Profilbild, Telefonnummer und Erinnerungseinstellungen sofort gelöscht. Praxisbezogene Behandlungsdaten bleiben gespeichert, bis die gesetzliche Aufbewahrungsfrist rechtlich abschließend geklärt ist – auch das ist eine offene Rechtsfrage, keine erfundene Ausnahme.",
+        },
+        {
+          title: "7. Ihre Rechte",
+          body: "Sie haben nach der DSGVO das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch sowie das Recht, sich bei einer Datenschutzaufsichtsbehörde zu beschweren. Kontaktieren Sie uns über die unten genannte Adresse, um diese Rechte auszuüben.",
+        },
+        {
+          title: "8. Keine automatisierten Entscheidungen",
+          body: "Wir treffen keine automatisierten Diagnose- oder Therapieentscheidungen und erstellen keine automatisierten Persönlichkeitsprofile. Hohe Schmerzangaben lösen höchstens einen neutralen, informativen Hinweis aus.",
+        },
+        {
+          title: "9. Kontakt",
+          body: "Bei Fragen zum Datenschutz oder zur Ausübung Ihrer Rechte schreiben Sie uns an die Support-E-Mail-Adresse dieser App.",
+        },
+      ],
+    },
   },
 } as const;
 

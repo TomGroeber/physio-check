@@ -170,6 +170,29 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [x] Teststabilität: Playwright auf 4 Worker begrenzt, Expect-Timeout 15 s, Hydrations-Klickverluste in drei Spezifikationen behoben.
 - [x] Merge nach `main` mit Toms Freigabe (2026-07-19): Fast-Forward `4723363..91591df`, gepusht.
 
+## Auftrag vom 21.07.2026 – Produktions- und Store-Reife (Branch `claude/store-release-readiness-20260721`)
+
+- [x] Phase 0: Repository-Zustand verifiziert (nicht auf frühere Berichte verlassen) – `main@9415660`, Working Tree sauber, `origin/main` identisch.
+- [x] Alle acht im Auftrag genannten Verdachtsstellen geprüft und bestätigt (veralteter Commit in `docs/AI_HANDOFF.md`, Platzhalter-Version/Bundle-ID, Expo-Standard-Icon statt Marke, leere `eas.json`-Submit-Konfiguration, kein gehosteter Backendstand, keine GitHub Actions, Kontolöschung sperrt nur statt zu löschen, kein Android-Emulator/kein signierter Build je erstellt).
+- [x] Zusätzliche Funde: fehlende Security-Header, fehlendes `engines`/`packageManager`-Pinning, keine Malware-Scan-Pipeline.
+- [x] Vollständige, belegte Release-Gap-Matrix erstellt: `docs/RELEASE_READINESS.md` (5 Zustände, 8 Bereiche A1–A8).
+- [x] Phase 1: CI-Workflow (`.github/workflows/ci.yml`, 4 Jobs, real per `gh run view` grün verifiziert), `engines`/`packageManager`-Pinning, Security-Header (nonce-basierte CSP in `src/proxy.ts`, HSTS/X-Frame-Options/etc.), Dependency-Audit (`pnpm audit`), Secret-Scan (Gitleaks).
+- [x] Phase 2: Android-Emulator lokal eingerichtet (Command-Line-Tools + OpenJDK 17, kostenlos, kein Konto), AVD mit Android 16/API 36 gebootet, `expo run:android` echt gebaut und installiert, per Dev-Login-Weg echt angemeldet mit echten Backend-Daten in Hell/Dunkel geprüft (D-084). Erweiterte iOS-Matrix: iPhone Air + iPad Air 11" zusätzlich zum iPhone 17 Pro, Dark Mode, größte Dynamic-Type-Stufe, `supportsTablet: false` bestätigt. VoiceOver/Reduce Motion und vollständiger Tap-Durchlauf bleiben ohne Bedienungshilfen-Berechtigung offen (unverändert von Toms Mac).
+- [x] Phase 3 (Teil 1): Health-Check-Route (`GET /api/health`, lokal verifiziert) + vollständige Deployment-Vorbereitung (`docs/DEPLOYMENT.md`: Env-Var-Liste, Rollout-Schritte, anbieterneutrales Monitoring-Konzept) – alles, was ohne Konto-/Domain-Entscheidung vorbereitbar ist.
+- [ ] Phase 3 (Teil 2): gehostetes Supabase-Projekt, Domain/Hosting, SMTP, Backups (BLOCKIERT DURCH TOM/KONTO)
+- [x] Phase 4 (Teil 1): echte Kontolöschung statt reiner Sperre (Migration `20260721100000_real_account_deletion.sql`, Web-Weg im Profil, Reauthentifizierung per Passwort, öffentliche Info-Seite `/account-deletion`).
+- [x] Phase 4 (Teil 2): Malware-Scan für Uploads (`src/server/services/malware-scan.ts`, ClamAV, fail-closed, hinter `MALWARE_SCAN_ENABLED`); EICAR erkennt ClamAV nur am Dateianfang, eigene Testsignatur genutzt (siehe `docs/PRIVACY_SECURITY.md`). Isolierter CI-Lauf schlug wiederholt fehl; Root-Cause über mehrere Diagnoseschritte gefunden (D-079/D-080/D-081, zuletzt: Server startete im CI-Schritt ohne `MALWARE_SCAN_ENABLED=true`) und behoben – real in CI grün bestätigt (`gh run view 29941832703`, alle 4 Jobs).
+- [x] Phase 4 (Teil 3): technische Dateninventur erweitert (Profilbild, Telefonnummer, Erinnerungen ergänzt) und um Store-Mapping-Tabelle (Apple App Privacy / Google Data Safety / Health-Declaration) ergänzt – `docs/PRIVACY_SECURITY.md` Abschnitt 1a; gegen tatsächlichen Code geprüft (keine Tracking-/Analytics-/Crash-SDKs).
+- [x] Phase 4 (Teil 4): öffentliche Datenschutzerklärung `/privacy` als ehrlicher technischer Entwurf mit deutlichem „noch nicht rechtlich geprüft"-Hinweis; Text in `packages/shared/src/messages-de.ts` (D-087). Rechtliche Prüfung durch eine zuständige Person bleibt offen.
+- [x] Phase 5 (Teil 1): App-Icon/Splash/Adaptive-Icon aus `logo.svg` gerendert statt Expo-Standard (`icon.png`, `favicon.png`, `splash-icon.png`, Android-Ebenen); `app.json`-Hintergrundfarben auf Marken-Navy vereinheitlicht; iOS-Fotozugriffstext (Deutsch) gesetzt, Kamera/Mikrofon explizit nicht deklariert. `expo-doctor` 20/20, iOS+Android-Export grün.
+- [x] Phase 5 (Teil 2): iOS Privacy Manifest über `app.json` → `ios.privacyManifests` (natives Expo-Feld); Required-Reason-APIs werden automatisch aus den Abhängigkeiten aggregiert; per echtem `expo prebuild` verifiziert (D-086).
+- [ ] Phase 5 (Teil 3): finale App-Identität (Toms Entscheidung, siehe A5)
+- [x] Phase 6 (Teil 1): Store-Texte (Beschreibung, Keywords, Kategorie, Alterseinstufung, Reviewhinweis) als deutscher Entwurf in `docs/APP_STORE_CHECKLIST.md` – bewusst Kategorie „Gesundheit und Fitness" statt „Medizin"; Tom-Gegenlesen vor Einreichung noch offen. Checkliste komplett gegen den aktuellen Repo-Stand aufgefrischt (Datenschutzerklärung, Android-Emulator, Privacy Manifest nicht mehr fälschlich als offen gelistet).
+- [ ] Phase 6 (Teil 2): Screenshots (BLOCKIERT durch fehlenden signierten Build/Gerätematrix)
+- [x] Phase 8: Release-Candidate-Report erstellt (`docs/RELEASE_CANDIDATE_REPORT.md`) – Versionen/Commit/CI-Lauf, vollständige Testmatrix-Zusammenfassung, bekannte Einschränkungen, externe Blocker, Rollback-Plan, JA/NEIN-Einschätzung getrennt für iOS/Android/Web.
+- [ ] Phase 7: signierte EAS-Builds (BLOCKIERT DURCH TOM/KONTO)
+- [x] Nebenbefund: Expo-SDK-Patch-Drift in CI behoben (`expo-doctor` scheiterte an 9 veralteten Paketen inkl. einer fehlenden direkten Abhängigkeit für `@expo/metro-runtime`) – wieder 20/20, iOS+Android-Export grün (D-082).
+
 ## Auftrag vom 19.–20.07.2026 – UI-Parität der nativen App mit der Patienten-Weboberfläche (mit Toms Freigabe per PR #3 `342fba5` in `main` gemergt)
 
 Erster echter Simulatorlauf (iPhone 17 Pro, iOS 26.5, Expo-Tunnel) zeigte: Tab-Bar unten beschnitten, Navigation schlecht sichtbar, Design weicht stark von der abgestimmten Patienten-Weboberfläche ab. Die Web-Patientenansicht ist die verbindliche Referenz.

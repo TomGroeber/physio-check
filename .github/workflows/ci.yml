@@ -1,0 +1,269 @@
+name: CI
+
+# Reproduzierbare Prüfstrecke für Web und native Patienten-App.
+# Läuft auf Pull Requests gegen main und auf main selbst.
+#
+# Sicherheitsentscheidungen:
+# - `permissions: contents: read` global; Jobs, die mehr brauchen,
+#   erhalten es explizit und minimal.
+# - Keine Secrets werden verwendet – alle Werte hier sind die
+#   öffentlich bekannten Standardwerte der lokalen Supabase-CLI
+#   (JWT_SECRET etc. sind Entwickler-Defaults, keine echten Geheimnisse)
+#   oder Platzhalter für den Build-Schritt ohne Datenbank.
+# - PRs aus Forks bekommen dieselben (Nicht-)Secrets wie jeder andere
+#   Lauf – es gibt nichts Sensibles freizugeben.
+# - Drittanbieter-Actions sind auf Major-Version-Tags verifizierter
+#   Publisher gepinnt (actions/*, pnpm/*, supabase/*).
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Muss >=22.13.0 sein: pnpm 11.11.0 verlangt das (22.12.0 schlägt in CI
+  # fehl, auch wenn es lokal wegen einer neueren installierten Node-
+  # Version nie auffällt) – 22.23.1 spiegelt Toms lokale Version.
+  NODE_VERSION: "22.23.1"
+  PNPM_VERSION: "11.11.0"
+  # Platzhalter für den Build-Schritt ohne laufende Datenbank – kein
+  # echtes Geheimnis, nur ein syntaktisch gültiger Wert.
+  BUILD_PLACEHOLDER_SUPABASE_URL: "http://127.0.0.1:54321"
+  BUILD_PLACEHOLDER_SUPABASE_ANON_KEY: "build-time-placeholder-anon-key"
+  BUILD_PLACEHOLDER_APP_URL: "http://localhost:3000"
+
+jobs:
+  web-quality:
+    name: Web · Typecheck, Lint, Unit-Tests, Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm shared:typecheck
+      - name: Build (Platzhalter-Umgebung, keine Datenbank nötig)
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ env.BUILD_PLACEHOLDER_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ env.BUILD_PLACEHOLDER_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_APP_URL: ${{ env.BUILD_PLACEHOLDER_APP_URL }}
+
+  web-database:
+    name: Web · RLS + E2E (lokale Supabase)
+    runs-on: ubuntu-latest
+    # 25 reichte ohne ClamAV-Installation/Signatur-Download; mit reeller
+    # Malware-Scan-Prüfung im E2E-Lauf mehr Puffer einplanen.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Playwright-Browser installieren
+        # Kein Browser-Filter: das "mobile"-Projekt (iPhone-14-Profil)
+        # nutzt WebKit, nicht Chromium – ein auf "chromium" verengter
+        # Install ließ 17 Mobile-Fälle mit "Executable doesn't exist"
+        # scheitern (erster echter CI-Lauf, per gh run view gefunden).
+        run: pnpm exec playwright install --with-deps
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Lokale Supabase starten
+        run: supabase start
+      - name: Lokale Supabase-Werte als .env.local ablegen
+        run: |
+          supabase status -o env \
+            --override-name api.url=NEXT_PUBLIC_SUPABASE_URL \
+            --override-name auth.anon_key=NEXT_PUBLIC_SUPABASE_ANON_KEY \
+            --override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY \
+            > .env.local
+          echo "NEXT_PUBLIC_APP_URL=http://localhost:3000" >> .env.local
+      - name: Datenbank zurücksetzen (Migrationen) und Demo-Daten säen
+        run: |
+          pnpm db:reset
+          pnpm seed
+      - name: RLS-Testsuite
+        run: pnpm test:rls
+      - name: ClamAV installieren (Malware-Scan-Pipeline echt prüfen)
+        # Ohne diesen Schritt bliebe der Scan-Pfad in Upload-Finalisierung
+        # (finalizeAvatarUpload/finalizeUpload) ungetestet – hier wird er
+        # mit einer echten EICAR-Testsignatur durchlaufen, nicht nur
+        # behauptet. Produktions-Serverless braucht stattdessen einen
+        # dauerhaften clamd-Daemon oder Cloud-AV-Dienst (siehe
+        # docs/PRIVACY_SECURITY.md).
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clamav
+          # apt startet den freshclam-Systemdienst sofort im Hintergrund;
+          # ohne Stopp kollidiert der manuelle Lauf mit dessen Sperrdatei.
+          sudo systemctl stop clamav-freshclam
+          sudo freshclam
+          # Eigene, harmlose Testsignatur zusätzlich zur echten Virendatenbank
+          # ablegen (siehe e2e/fixtures/clamav-test-signature.ndb): die
+          # eingebaute EICAR-Testdatei erkennt ClamAV nur exakt am
+          # Dateianfang (lokal empirisch geprüft), nicht wenn sie – wie
+          # echte Schadsoftware – innerhalb einer sonst gültigen Datei
+          # versteckt ist. Die Testsignatur landet in derselben
+          # Datenbank, die `clamscan` ohnehin automatisch lädt.
+          sudo cp e2e/fixtures/clamav-test-signature.ndb \
+            /var/lib/clamav/physiocheck-test.ndb
+          sudo chmod 644 /var/lib/clamav/physiocheck-test.ndb
+          # Verhindert vorsorglich, dass ein systemd-Timer die Datenbank
+          # später im selben Job erneut aktualisiert.
+          sudo systemctl disable --now clamav-freshclam.timer 2>/dev/null || true
+      - name: E2E-Testsuite (Playwright)
+        run: pnpm e2e
+      - name: Datenbank und Webserver für isolierten Malware-Scan-Lauf neu starten
+        # Playwrights automatisch gestarteter Server (`webServer`,
+        # `reuseExistingServer: true`) läuft über beide Testläufe hinweg
+        # weiter. Ein reiner `db:reset` DARUNTER ohne Serverneustart macht
+        # dessen laufende Sitzungen/Verbindungen ungültig (Nutzer-IDs
+        # existieren nach dem Reset nicht mehr) – das erzeugte reproduzierbar
+        # "memberships[0] is undefined"-Abstürze, keinen Scan-Timing-Fehler
+        # (per Server-Log lokal nachvollzogen, nicht angenommen). Server
+        # explizit beenden, DB zurücksetzen, Server explizit neu starten,
+        # bevor Playwright den zweiten Lauf gegen ihn fährt.
+        run: |
+          # "pkill -f 'next start'" trifft den tatsächlichen Prozessnamen
+          # NICHT (läuft als "next-server", nicht "next start" – per `ps`
+          # lokal nachvollzogen) und hätte den alten Server unbemerkt
+          # weiterlaufen lassen. Stattdessen direkt den Port-Inhaber beenden.
+          lsof -ti:3000 | xargs -r kill -9
+          for i in $(seq 1 20); do
+            curl -s -o /dev/null http://localhost:3000/login || break
+            sleep 1
+          done
+          pnpm db:reset
+          # Vereinzelt (einmal beobachtet) ist die lokale Supabase-Auth
+          # direkt nach "Restarting containers..." noch nicht bereit,
+          # obwohl der Reset-Befehl bereits als abgeschlossen meldet –
+          # `createUser` schlägt dann mit einem leeren Fehlerobjekt fehl.
+          # Ein einmaliger Retry mit kurzer Wartezeit fängt das ab, ohne
+          # echte Seed-Fehler zu verschleiern (die schlagen weiterhin
+          # beim zweiten Versuch fehl).
+          pnpm seed || (sleep 5 && pnpm seed)
+          # "pnpm dev", nicht "pnpm start": dieser Job baut nie
+          # (`pnpm build` läuft nur im separaten web-quality-Job), Playwrights
+          # eigener `webServer` startet den Hauptlauf oben ebenfalls so.
+          # MALWARE_SCAN_ENABLED muss HIER auf dem Serverstart gesetzt sein –
+          # nicht nur auf dem Playwright-Befehl im nächsten Schritt. Das war
+          # der eigentliche Grund für alle bisherigen Fehlschläge dieses
+          # isolierten Laufs: der Server scannte nie (per Server-Log
+          # bestätigt – `finalizeExerciseMediaUploadAction` lief in ~200ms
+          # durch, ein echter Scan braucht mehrere Sekunden), obwohl der
+          # Test korrekt eine Ablehnung erwartete.
+          MALWARE_SCAN_ENABLED=true nohup pnpm dev > /tmp/ci-server-restart.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -sf -o /dev/null http://localhost:3000/login && break
+            sleep 1
+          done
+      - name: E2E-Malware-Scan isoliert mit einem Worker
+        # Eigener, serieller Lauf statt Teil des parallelen Haupt-E2E-Laufs
+        # oben: mit 4 parallelen Workern konkurrierten mehrere gleichzeitige
+        # `clamscan`-Aufrufe (Profilbild- und Übungsvideo-Uploads) auf dem
+        # 2-Kern-Runner um CPU-Zeit – ein einzelner Scan brauchte dadurch
+        # spürbar länger als die bereits großzügigen 30s Zusicherungs-
+        # Timeouts. `--workers=1` beseitigt die Konkurrenzsituation
+        # strukturell, statt die Zahl weiter zu erhöhen.
+        run: |
+          MALWARE_SCAN_ENABLED=true pnpm exec playwright test \
+            e2e/patient-avatar.spec.ts e2e/phase-j-exercise-management.spec.ts \
+            --project=chromium --workers=1
+      - name: Playwright-Bericht bei Fehlschlag hochladen
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  mobile-quality:
+    name: Mobile · Typecheck, Lint, Unit-Tests, expo-doctor, Export
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/patient-mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        working-directory: .
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - name: expo-doctor
+        run: npx expo-doctor
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: ${{ env.BUILD_PLACEHOLDER_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_KEY: build-time-placeholder-publishable-key
+          EXPO_PUBLIC_API_BASE_URL: ${{ env.BUILD_PLACEHOLDER_APP_URL }}
+      - name: Produktions-JS-Bundle exportieren (iOS)
+        run: npx expo export --platform ios
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: ${{ env.BUILD_PLACEHOLDER_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_KEY: build-time-placeholder-publishable-key
+          EXPO_PUBLIC_API_BASE_URL: ${{ env.BUILD_PLACEHOLDER_APP_URL }}
+      - name: Produktions-JS-Bundle exportieren (Android)
+        run: npx expo export --platform android
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: ${{ env.BUILD_PLACEHOLDER_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_KEY: build-time-placeholder-publishable-key
+          EXPO_PUBLIC_API_BASE_URL: ${{ env.BUILD_PLACEHOLDER_APP_URL }}
+
+  security-and-dependencies:
+    name: Sicherheit · Secret-Scan + Dependency-Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # voller Verlauf für den Secret-Scan
+      - name: Secret-Scan (Git-Verlauf + Working Tree)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          # Automatisch von GitHub bereitgestelltes, ablaufendes Token –
+          # kein selbst angelegtes Secret. Seit einem Breaking Change
+          # verlangt die Action dies explizit für PR-Läufe.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Dependency-Audit (informativ, bricht bei „critical" ab)
+        run: pnpm audit --audit-level critical

@@ -1199,6 +1199,119 @@ async function main() {
     check("aktuell verbundene Praxis sieht das Bild nach dem Rückwechsel", !error && Boolean(data));
   }
 
+  // ---------- Echte Kontolöschung (Master-Prompt Phase 4, 21.07.2026) ----------
+  // Eigener, wegwerfbarer Testpatient statt Petra: die Funktion löscht
+  // echte Daten (Telefon, Profilbild-Verweis, Erinnerungen,
+  // Benachrichtigungen) – das soll die vielen anderen Proben in dieser
+  // Datei, die Petras Zustand voraussetzen, nicht beeinflussen können.
+  console.log("\nEchte Kontolöschung: eigener Testpatient");
+  const DELETION_TEST_EMAIL = "rls-account-deletion@demo.physiocheck.test";
+  await deleteAuthUserByEmail(DELETION_TEST_EMAIL);
+  const { data: deletionTestUser, error: deletionTestUserError } =
+    await service.auth.admin.createUser({
+      email: DELETION_TEST_EMAIL,
+      password: PASSWORD,
+      email_confirm: true,
+      user_metadata: { full_name: "Löschtest Patient", locale: "de" },
+    });
+  if (deletionTestUserError || !deletionTestUser.user) {
+    throw new Error(`deletion test user: ${deletionTestUserError?.message}`);
+  }
+  const deletionTestId = deletionTestUser.user.id;
+  const deletionAvatarPath = `${deletionTestId}/rls-deletion-test.png`;
+  await service.storage.from("patient-avatars").upload(deletionAvatarPath, png, {
+    contentType: "image/png",
+    upsert: true,
+  });
+  await service
+    .from("profiles")
+    .update({ phone: "+352 691 000 999", avatar_path: deletionAvatarPath })
+    .eq("id", deletionTestId);
+  await service.from("patient_reminder_preferences").insert({
+    profile_id: deletionTestId,
+    exercise_reminders_enabled: true,
+  });
+  await service.from("notifications").insert({
+    recipient_profile_id: deletionTestId,
+    type: "exercise_plan_published",
+    title: "Testhinweis",
+    body: "",
+  });
+
+  const deletionTestClient = await loginClient(DELETION_TEST_EMAIL);
+  {
+    const { error } = await deletionTestClient.rpc("request_account_deletion", {
+      p_profile_id: petraId,
+    });
+    check(
+      "kann Löschung nicht für ein fremdes Konto anstoßen",
+      Boolean(error) && /not_authorized/.test(error!.message)
+    );
+  }
+  {
+    const { error } = await anonClient().rpc("request_account_deletion", {
+      p_profile_id: deletionTestId,
+    });
+    check("nicht angemeldet: Löschfunktion abgelehnt", Boolean(error));
+  }
+  {
+    const { data, error } = await deletionTestClient.rpc("request_account_deletion", {
+      p_profile_id: deletionTestId,
+    });
+    check(
+      "eigene Kontolöschung: liefert den bisherigen Avatar-Pfad zurück",
+      !error && data?.[0]?.avatar_path === deletionAvatarPath
+    );
+  }
+  {
+    const { data } = await service
+      .from("profiles")
+      .select("phone, avatar_path")
+      .eq("id", deletionTestId)
+      .single();
+    check(
+      "Telefonnummer und Profilbild-Verweis sind sofort gelöscht",
+      data?.phone === "" && data?.avatar_path === null
+    );
+  }
+  {
+    const { data } = await service
+      .from("patient_reminder_preferences")
+      .select("profile_id")
+      .eq("profile_id", deletionTestId);
+    check("Erinnerungseinstellungen sind gelöscht", (data ?? []).length === 0);
+  }
+  {
+    const { data } = await service
+      .from("notifications")
+      .select("id")
+      .eq("recipient_profile_id", deletionTestId);
+    check("eigene Benachrichtigungen sind gelöscht", (data ?? []).length === 0);
+  }
+  {
+    const { data } = await service
+      .from("account_deletion_requests")
+      .select("status, retained_data_note")
+      .eq("profile_id", deletionTestId)
+      .order("requested_at", { ascending: false })
+      .limit(1);
+    check(
+      "Löschantrag ist dokumentiert (Status + Retention-Hinweis)",
+      data?.[0]?.status === "processed" && (data?.[0]?.retained_data_note.length ?? 0) > 0
+    );
+  }
+  // Die DB-Funktion selbst löscht nur die Verweise; das Storage-Objekt
+  // entfernt der aufrufende Route-Handler mit Service-Role (identischer
+  // Ablauf wie in src/app/api/mobile/account-deletion/route.ts).
+  await service.storage.from("patient-avatars").remove([deletionAvatarPath]);
+  {
+    const { data, error } = await deletionTestClient.storage
+      .from("patient-avatars")
+      .download(deletionAvatarPath);
+    check("gelöschtes Profilbild ist aus dem Storage entfernt", Boolean(error) && !data);
+  }
+  await deleteAuthUserByEmail(DELETION_TEST_EMAIL);
+
   // ---------- Aufräumen ----------
   console.log("\nAufräumen …");
   await service.from("profiles").update({ avatar_path: null }).eq("id", petraId);
