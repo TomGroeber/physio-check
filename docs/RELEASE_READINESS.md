@@ -130,15 +130,17 @@ Zusätzliche, im Master-Prompt nicht explizit genannte, aber beim Audit gefunden
 
 | Punkt | Status | Beleg | Nächster Schritt |
 |---|---|---|---|
-| `docs/RELEASE_CANDIDATE_REPORT.md` | IMPLEMENTIERBAR – JETZT AUSFÜHREN | Existiert noch nicht | Nach Abschluss der erreichbaren Phasen erstellen |
-| Getrennte JA/NEIN-Entscheidung iOS/Android/Web | IMPLEMENTIERBAR – JETZT AUSFÜHREN | – | Ehrlich anhand tatsächlicher Prüfungen treffen |
+| `docs/RELEASE_CANDIDATE_REPORT.md` | ERLEDIGT UND VERIFIZIERT | Versionen/Commit/CI-Lauf, vollständige Testmatrix-Zusammenfassung (115 Web-Unit/16 Mobile-Unit/104 RLS-Proben/41 E2E-Specs), bekannte Einschränkungen, externe Blocker, Rollback-Plan | – |
+| Getrennte JA/NEIN-Entscheidung iOS/Android/Web | ERLEDIGT UND VERIFIZIERT | Im Release-Candidate-Report: iOS/Android JA für internen Test, NEIN für Store-Einreichung (Rechtsprüfung/App-Identität/Screenshots fehlen); Web JA für internen Rollout, NEIN für Produktivbetrieb (kein Hosting/Domain) | – |
 
 ## B. Zusammenfassung nach Zustand (Kurzform für den Abschlussbericht)
 
 - **ERLEDIGT UND VERIFIZIERT:** Web-Kernqualität (Typecheck/Lint/Test/RLS/E2E/Build), Mobile-Kernqualität (Typecheck/Lint/Test/expo-doctor/JS-Export), Rollenbegrenzung App↔Praxis, lokale migrationsbasierte DB, deutsche Lokalisierung ehrlich dokumentiert.
 - **ERLEDIGT UND VERIFIZIERT (Ergänzung):** Privacy-Dateninventur inkl. Apple-App-Privacy-/Google-Data-Safety-/Health-Mapping (`docs/PRIVACY_SECURITY.md` Abschnitt 1a), App-Icon/Splash aus eigener Marke, iOS-Fotozugriffstext, iOS Privacy Manifest, Store-Texte (Entwurf), Health-Check-Route + Deployment-Vorbereitung (`docs/DEPLOYMENT.md`), Android-Emulator-Ersteinrichtung, erweiterte iOS-Simulator-Matrix.
 - **ERLEDIGT, CI-LAUF NACH LETZTEM FIX AUSSTEHEND:** Malware-Scan-Pipeline für Uploads (siehe A4-Tabelle für die genaue Historie – war bereits einmal real grün, ein eigener Isolations-Fix führte zu einer Regression, die per Server-Log root-caused und behoben wurde).
-- **IMPLEMENTIERBAR – JETZT AUSFÜHREN (kein Blocker):** Store-/Review-Paket zusammenstellen, Release-Candidate-Report; Store-Screenshots bleiben BLOCKIERT (setzen signierten Build voraus, s. A2/A7).
+- **ERLEDIGT UND VERIFIZIERT (Ergänzung 2):** öffentliche Datenschutzerklärung `/privacy` (ehrlicher technischer Entwurf, D-087), Store-/Review-Paket auf aktuellen Stand gebracht (`docs/APP_STORE_CHECKLIST.md`), Release-Candidate-Report (`docs/RELEASE_CANDIDATE_REPORT.md`) mit getrennter JA/NEIN-Einschätzung pro Plattform.
+- **Damit sind alle als „IMPLEMENTIERBAR – JETZT AUSFÜHREN" markierten Punkte abgearbeitet.** Store-Screenshots bleiben BLOCKIERT (setzen signierten Build voraus, s. A2/A7).
 - **BLOCKIERT DURCH TOM/KONTO/2FA/ZAHLUNG:** gehostetes Supabase-Projekt, Domain/Hosting, SMTP-Anbieter, Apple Developer, Google Play Console, EAS-Login, alle signierten Builds/TestFlight/Play-Internal-Uploads, finale App-Identität (Name/Bundle-ID/Package/Publisher/Support-E-Mail).
+- **BLOCKIERT DURCH RECHTLICHE FREIGABE:** juristische Prüfung der Datenschutzerklärung, offene Rechtsfrage Luxemburg zu Aufbewahrungspflichten physiotherapeutischer Behandlungsdaten.
 - **BLOCKIERT DURCH RECHTLICHE FREIGABE:** endgültige Aufbewahrungsfrist für Luxemburger Patientendaten, jede Aussage zu „vollständiger DSGVO-Konformität" oder Medizinprodukt-Einstufung.
 - **OPTIONAL NACH V1:** weitere Lokalisierungen, Push-Benachrichtigungen (Versand), Universal/App Links (Domain-abhängig ohnehin blockiert), Realtime-Sync.

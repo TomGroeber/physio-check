@@ -187,9 +187,10 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [x] Phase 5 (Teil 1): App-Icon/Splash/Adaptive-Icon aus `logo.svg` gerendert statt Expo-Standard (`icon.png`, `favicon.png`, `splash-icon.png`, Android-Ebenen); `app.json`-Hintergrundfarben auf Marken-Navy vereinheitlicht; iOS-Fotozugriffstext (Deutsch) gesetzt, Kamera/Mikrofon explizit nicht deklariert. `expo-doctor` 20/20, iOS+Android-Export grün.
 - [x] Phase 5 (Teil 2): iOS Privacy Manifest über `app.json` → `ios.privacyManifests` (natives Expo-Feld); Required-Reason-APIs werden automatisch aus den Abhängigkeiten aggregiert; per echtem `expo prebuild` verifiziert (D-086).
 - [ ] Phase 5 (Teil 3): finale App-Identität (Toms Entscheidung, siehe A5)
-- [x] Phase 6 (Teil 1): Store-Texte (Beschreibung, Keywords, Kategorie, Alterseinstufung, Reviewhinweis) als deutscher Entwurf in `docs/APP_STORE_CHECKLIST.md` – bewusst Kategorie „Gesundheit und Fitness" statt „Medizin"; Tom-Gegenlesen vor Einreichung noch offen.
+- [x] Phase 6 (Teil 1): Store-Texte (Beschreibung, Keywords, Kategorie, Alterseinstufung, Reviewhinweis) als deutscher Entwurf in `docs/APP_STORE_CHECKLIST.md` – bewusst Kategorie „Gesundheit und Fitness" statt „Medizin"; Tom-Gegenlesen vor Einreichung noch offen. Checkliste komplett gegen den aktuellen Repo-Stand aufgefrischt (Datenschutzerklärung, Android-Emulator, Privacy Manifest nicht mehr fälschlich als offen gelistet).
 - [ ] Phase 6 (Teil 2): Screenshots (BLOCKIERT durch fehlenden signierten Build/Gerätematrix)
-- [ ] Phase 7–8: signierte Builds (BLOCKIERT durch Konten), Release-Candidate-Report
+- [x] Phase 8: Release-Candidate-Report erstellt (`docs/RELEASE_CANDIDATE_REPORT.md`) – Versionen/Commit/CI-Lauf, vollständige Testmatrix-Zusammenfassung, bekannte Einschränkungen, externe Blocker, Rollback-Plan, JA/NEIN-Einschätzung getrennt für iOS/Android/Web.
+- [ ] Phase 7: signierte EAS-Builds (BLOCKIERT DURCH TOM/KONTO)
 - [x] Nebenbefund: Expo-SDK-Patch-Drift in CI behoben (`expo-doctor` scheiterte an 9 veralteten Paketen inkl. einer fehlenden direkten Abhängigkeit für `@expo/metro-runtime`) – wieder 20/20, iOS+Android-Export grün (D-082).
 
 ## Auftrag vom 19.–20.07.2026 – UI-Parität der nativen App mit der Patienten-Weboberfläche (mit Toms Freigabe per PR #3 `342fba5` in `main` gemergt)
