@@ -16,8 +16,9 @@ Vollständiger Audit gegen den tatsächlichen Repository-Zustand (nicht gegen fr
 - **Store-Datenschutz-Mappings und Store-Texte**: Apple-App-Privacy-/Google-Data-Safety-/Health-Mapping direkt aus dem Code abgeleitet (kein Tracking/Analytics/Crash-SDK vorhanden, siehe D-075); deutscher Entwurf für Beschreibung/Keywords/Kategorie/Alterseinstufung, bewusst „Gesundheit und Fitness" statt „Medizin" (D-076).
 - **Health-Check-Route + Deployment-Vorbereitung**: `GET /api/health`, vollständige Env-Var-Liste/Rollout-Schritte/Monitoring-Konzept in `docs/DEPLOYMENT.md` – alles ohne Konto-/Domain-Entscheidung Machbare.
 - **Nebenbefund behoben**: Expo-SDK-Patch-Drift (`expo-doctor` scheiterte an veralteten Paketen, unabhängig vom eigentlichen Auftrag) – `@expo/metro-runtime` fehlte als direkte Abhängigkeit (D-082).
+- **Phase 2 (Android-Emulator + erweiterte iOS-Matrix)**: Android-Emulator kostenlos lokal eingerichtet (Command-Line-Tools + OpenJDK 17, kein Konto), `expo run:android` echt gebaut auf Android 16/API 36, echte Anmeldung + echte Backend-Daten in Hell/Dunkel geprüft (D-084). iOS-Matrix um iPhone Air + iPad Air 11" erweitert, Dark Mode + größte Dynamic-Type-Stufe + `supportsTablet: false`-Layout bestätigt. VoiceOver/Reduce Motion/vollständiger Tap-Durchlauf bleiben ohne Bedienungshilfen-Berechtigung offen (Umgebungsblocker auf Toms Mac, nicht neu). Erkenntnis zu einer Grenze der Deep-Link-Navigationsverifikation dokumentiert (D-085).
 
-**Offen für die nächste Etappe:** Phase 5 Rest (iOS Privacy Manifest, finale App-Identität – Toms Entscheidung), Phase 2 (Android-Emulator-Ersteinrichtung), Phase 3 Rest (gehostetes Supabase-Projekt/Domain/Hosting – BLOCKIERT DURCH TOM/KONTO), Phase 6 Rest (Screenshots, blockiert durch A2/A7), Phase 7–8.
+**Offen für die nächste Etappe:** Phase 5 Rest (iOS Privacy Manifest, finale App-Identität – Toms Entscheidung), Phase 3 Rest (gehostetes Supabase-Projekt/Domain/Hosting – BLOCKIERT DURCH TOM/KONTO), Phase 6 Rest (Screenshots, blockiert durch A2/A7), Phase 7–8, Release-Candidate-Report.
 
 ## Letzter Auftrag (20.07.2026, sechster): UI-Parität der nativen App mit der Patienten-Weboberfläche
 
