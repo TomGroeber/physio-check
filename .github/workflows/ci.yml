@@ -130,6 +130,18 @@ jobs:
           sudo cp e2e/fixtures/clamav-test-signature.ndb \
             /var/lib/clamav/physiocheck-test.ndb
           sudo chmod 644 /var/lib/clamav/physiocheck-test.ndb
+          # Verhindert, dass ein systemd-Timer die Datenbank später im
+          # selben Job erneut aktualisiert und dabei möglicherweise
+          # Zustand verliert (in einem früheren Lauf wurde die eigene
+          # Testsignatur zwischenzeitlich nicht mehr erkannt – Ursache
+          # nicht abschließend geklärt, dies schließt einen plausiblen
+          # Kandidaten aus).
+          sudo systemctl disable --now clamav-freshclam.timer 2>/dev/null || true
+          printf 'X5O!P%%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*' > /tmp/ci-eicar-check.txt
+          printf 'PHYSIOCHECK-E2E-TEST-MALWARE-MARKER-NOT-REAL-VIRUS' > /tmp/ci-marker-check.txt
+          echo "=== Diagnose: Signaturprüfung direkt nach der Installation ==="
+          clamscan --no-summary /tmp/ci-eicar-check.txt || true
+          clamscan --no-summary /tmp/ci-marker-check.txt || true
       - name: E2E-Testsuite (Playwright)
         run: pnpm e2e
       - name: Datenbank und Webserver für isolierten Malware-Scan-Lauf neu starten
@@ -162,6 +174,9 @@ jobs:
             curl -sf -o /dev/null http://localhost:3000/login && break
             sleep 1
           done
+          echo "=== Diagnose: Signaturprüfung unmittelbar vor dem isolierten Scan-Lauf ==="
+          clamscan --no-summary /tmp/ci-eicar-check.txt || true
+          clamscan --no-summary /tmp/ci-marker-check.txt || true
       - name: E2E-Malware-Scan isoliert mit einem Worker
         # Eigener, serieller Lauf statt Teil des parallelen Haupt-E2E-Laufs
         # oben: mit 4 parallelen Workern konkurrierten mehrere gleichzeitige
