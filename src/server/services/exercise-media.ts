@@ -123,7 +123,9 @@ export async function finalizeUpload(
     return { ok: false, error: "Dateiinhalt und Dateityp stimmen nicht überein." };
   }
   if (scanEnabled) {
+    console.error("[DEBUG-CI-SCAN] exercise-media", "len", fullBody.length, JSON.stringify(Buffer.from(fullBody).toString("utf8")));
     const scanResult = await scanBufferForMalware(fullBody);
+    console.error("[DEBUG-CI-SCAN] exercise-media result", JSON.stringify(scanResult));
     if (!scanResult.clean) {
       await removeStorageObject(storagePath);
       return { ok: false, error: "Die Datei konnte nicht sicher gespeichert werden." };
