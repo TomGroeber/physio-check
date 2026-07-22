@@ -117,6 +117,7 @@
 | Health-Check-Route liefert echten DB-Status ohne Zeileninhalte | `GET /api/health` gegen laufenden Produktions-Build geprüft (`curl`, HTTP 200, `{"status":"ok"}`) | Grün (21.07.2026) |
 | Android-Emulator: App baut, installiert, meldet echt an, zeigt echte Daten | `expo run:android` auf AVD mit Android 16/API 36 (arm64-v8a); echte Anmeldung über Dev-Login-Weg; „Heute"-Screen mit 3 echten Übungen in Hell und Dunkel geprüft | Grün (22.07.2026) |
 | iOS-Simulator-Matrix: iPhone Air, iPad Air 11" (M4) | Willkommensbildschirm, Dark Mode, größte Dynamic-Type-Stufe (kein Clipping), `supportsTablet: false` liefert korrektes phone-großes Layout auf dem iPad | Grün (22.07.2026) |
+| iOS Privacy Manifest enthält deklarierte Datentypen + aggregierte Required-Reason-APIs | Echter `expo prebuild --platform ios --clean`; generierte `PrivacyInfo.xcprivacy` geprüft (nicht nur Konfiguration gelesen) | Grün (22.07.2026) |
 
 ## Mobile Patienten-App (Teile H–M, 19.07.2026)
 

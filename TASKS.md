@@ -185,7 +185,8 @@ Grundlage: bestätigte Entscheidungen vom 11.07.2026 (ganzzahlige Behandlungsein
 - [x] Phase 4 (Teil 3): technische Dateninventur erweitert (Profilbild, Telefonnummer, Erinnerungen ergänzt) und um Store-Mapping-Tabelle (Apple App Privacy / Google Data Safety / Health-Declaration) ergänzt – `docs/PRIVACY_SECURITY.md` Abschnitt 1a; gegen tatsächlichen Code geprüft (keine Tracking-/Analytics-/Crash-SDKs).
 - [ ] Phase 4 (Teil 4): konsolidierte Datenschutzerklärungs-Vorlage (Fließtext für Endnutzer).
 - [x] Phase 5 (Teil 1): App-Icon/Splash/Adaptive-Icon aus `logo.svg` gerendert statt Expo-Standard (`icon.png`, `favicon.png`, `splash-icon.png`, Android-Ebenen); `app.json`-Hintergrundfarben auf Marken-Navy vereinheitlicht; iOS-Fotozugriffstext (Deutsch) gesetzt, Kamera/Mikrofon explizit nicht deklariert. `expo-doctor` 20/20, iOS+Android-Export grün.
-- [ ] Phase 5 (Teil 2): iOS Privacy Manifest/Required-Reason-API, finale App-Identität (Toms Entscheidung, siehe A5)
+- [x] Phase 5 (Teil 2): iOS Privacy Manifest über `app.json` → `ios.privacyManifests` (natives Expo-Feld); Required-Reason-APIs werden automatisch aus den Abhängigkeiten aggregiert; per echtem `expo prebuild` verifiziert (D-086).
+- [ ] Phase 5 (Teil 3): finale App-Identität (Toms Entscheidung, siehe A5)
 - [x] Phase 6 (Teil 1): Store-Texte (Beschreibung, Keywords, Kategorie, Alterseinstufung, Reviewhinweis) als deutscher Entwurf in `docs/APP_STORE_CHECKLIST.md` – bewusst Kategorie „Gesundheit und Fitness" statt „Medizin"; Tom-Gegenlesen vor Einreichung noch offen.
 - [ ] Phase 6 (Teil 2): Screenshots (BLOCKIERT durch fehlenden signierten Build/Gerätematrix)
 - [ ] Phase 7–8: signierte Builds (BLOCKIERT durch Konten), Release-Candidate-Report
