@@ -189,6 +189,14 @@ jobs:
           MALWARE_SCAN_ENABLED=true pnpm exec playwright test \
             e2e/patient-avatar.spec.ts e2e/phase-j-exercise-management.spec.ts \
             --project=chromium --workers=1
+      - name: Server-Log des isolierten Laufs ausgeben (Diagnose)
+        # Der Server läuft als Hintergrundprozess (nohup ... &); sein
+        # stdout/stderr landet in dieser Datei, nicht automatisch im
+        # CI-Log des vorigen Schritts – ohne dieses `cat` bleiben
+        # Server-seitige console.error-Ausgaben (z. B. Scan-Diagnose)
+        # unsichtbar.
+        if: always()
+        run: cat /tmp/ci-server-restart.log || true
       - name: Playwright-Bericht bei Fehlschlag hochladen
         if: failure()
         uses: actions/upload-artifact@v4
