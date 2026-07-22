@@ -156,7 +156,14 @@ jobs:
             sleep 1
           done
           pnpm db:reset
-          pnpm seed
+          # Vereinzelt (einmal beobachtet) ist die lokale Supabase-Auth
+          # direkt nach "Restarting containers..." noch nicht bereit,
+          # obwohl der Reset-Befehl bereits als abgeschlossen meldet –
+          # `createUser` schlägt dann mit einem leeren Fehlerobjekt fehl.
+          # Ein einmaliger Retry mit kurzer Wartezeit fängt das ab, ohne
+          # echte Seed-Fehler zu verschleiern (die schlagen weiterhin
+          # beim zweiten Versuch fehl).
+          pnpm seed || (sleep 5 && pnpm seed)
           # "pnpm dev", nicht "pnpm start": dieser Job baut nie
           # (`pnpm build` läuft nur im separaten web-quality-Job), Playwrights
           # eigener `webServer` startet den Hauptlauf oben ebenfalls so.
