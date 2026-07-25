@@ -45,7 +45,10 @@ export async function getExerciseDetail(
        schedule, sets, repetitions, hold_seconds, total_duration_seconds,
        rest_seconds, note,
        exercises ( id, title, equipment ),
-       exercise_plan_versions ( exercise_plans ( patient_profile_id, status, practices ( timezone ) ) )`
+       exercise_plan_versions (
+         exercise_plans!exercise_plan_versions_plan_id_fkey (
+           patient_profile_id, status, practices ( timezone ) )
+       )`
     )
     .eq("id", planItemId)
     .maybeSingle();

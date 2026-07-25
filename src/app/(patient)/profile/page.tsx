@@ -13,6 +13,7 @@ import { THEME_COOKIE, parsePatientTheme } from "@/lib/theme";
 import { ReminderPreferencesForm } from "@/components/patient/reminder-preferences-form";
 import { EmailChangeForm } from "@/components/patient/email-change-form";
 import { PasswordChangeForm } from "@/components/patient/password-change-form";
+import { DeleteAccountForm } from "@/components/patient/delete-account-form";
 import { FormMessage } from "@/components/auth/form-message";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -135,6 +136,13 @@ export default async function ProfilePage({
             {de.common.signOut}
           </Button>
         </form>
+      </section>
+
+      <section aria-labelledby="delete-account-heading" className="flex flex-col gap-3">
+        <h2 id="delete-account-heading" className="text-2xl font-bold">
+          {t.deleteAccount.heading}
+        </h2>
+        <DeleteAccountForm />
       </section>
     </div>
   );

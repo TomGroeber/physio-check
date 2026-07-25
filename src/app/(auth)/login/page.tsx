@@ -7,9 +7,19 @@ import { getPendingInvite } from "@/server/services/invites";
 
 export const metadata: Metadata = { title: de.auth.login.title };
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ account_deleted?: string }>;
+}) {
   const session = await getSessionContext();
   if (session) redirect(homeRouteFor(session));
+  const query = await searchParams;
 
-  return <LoginForm hasPendingInvite={Boolean(await getPendingInvite())} />;
+  return (
+    <LoginForm
+      hasPendingInvite={Boolean(await getPendingInvite())}
+      accountDeleted={Boolean(query.account_deleted)}
+    />
+  );
 }

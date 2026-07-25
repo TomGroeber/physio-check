@@ -1,7 +1,8 @@
 import { Image } from "expo-image";
-import { StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { branding, maxContentWidth, spacing, type } from "@/config/branding";
+import { branding, maxContentWidth, spacing, touch, type } from "@/config/branding";
 import { web } from "@/messages/de";
 import { useSession } from "@/lib/session";
 import { useTheme } from "@/lib/theme";
@@ -14,6 +15,7 @@ import { useTheme } from "@/lib/theme";
 export function AppHeader() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { fullName, avatarUrl } = useSession();
   const initials = fullName
     .split(/\s+/)
@@ -36,33 +38,45 @@ export function AppHeader() {
           alignSelf: "center",
           width: "100%",
           maxWidth: maxContentWidth,
-          height: 64,
+          minHeight: 64,
           flexDirection: "row",
           alignItems: "center",
           gap: spacing.md - 4,
           paddingHorizontal: spacing.md,
+          paddingVertical: spacing.sm,
         }}
       >
         <Image
           source={require("../../assets/images/logo.svg")}
-          style={{ width: 32, height: 32 }}
+          style={{ width: 32, height: 32, flexShrink: 0 }}
           contentFit="contain"
           accessible={false}
         />
-        <Text style={{ fontSize: type.lg, fontWeight: "700", color: theme.foreground }}>
+        {/* Wortmarke ist Markenname, kein Inhalt: begrenzte Skalierung
+            verhindert, dass sie bei größter Systemschrift Logo/Avatar
+            aus der Kopfzeile drängt; Inhaltstexte skalieren überall
+            uneingeschränkt (WCAG 2.2 AA). */}
+        <Text
+          style={{ fontSize: type.lg, fontWeight: "700", color: theme.foreground, flexShrink: 1 }}
+          maxFontSizeMultiplier={1.5}
+        >
           {branding.appName}
         </Text>
-        <View style={{ marginLeft: "auto" }}>
+        <Pressable
+          onPress={() => router.push("/(tabs)/profile")}
+          accessibilityRole="button"
+          accessibilityLabel={web.patient.nav.profile}
+          hitSlop={(touch.minHeight - 40) / 2}
+          style={{ marginLeft: "auto", flexShrink: 0 }}
+        >
           {avatarUrl ? (
             <Image
               source={{ uri: avatarUrl }}
               style={{ width: 40, height: 40, borderRadius: 20 }}
-              accessibilityLabel={web.common.avatarAlt(fullName)}
+              accessible={false}
             />
           ) : (
             <View
-              accessible
-              accessibilityLabel={web.common.avatarAlt(fullName)}
               style={{
                 width: 40,
                 height: 40,
@@ -77,7 +91,7 @@ export function AppHeader() {
               </Text>
             </View>
           )}
-        </View>
+        </Pressable>
       </View>
     </View>
   );

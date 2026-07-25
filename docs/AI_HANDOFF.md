@@ -1,6 +1,40 @@
 # PhysioCheck – AI Handoff
 
-> Stand: 2026-07-20 (nach Merge) · `main@342fba5` (PR #3) enthält ALLE bisherigen Aufträge inkl. der UI-Parität der nativen App · GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
+> Stand: 2026-07-21 · `main@9415660` (PR #3 gemergt als `342fba5`, danach Doku-Korrektur `9415660`) enthält ALLE bisherigen Aufträge inkl. der UI-Parität der nativen App · Arbeitszweig für die Store-Release-Vorbereitung: `claude/store-release-readiness-20260721` · GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
+
+## Aktueller Auftrag (21.07.2026, siebter): Produktions- und Store-Reife
+
+Vollständiger Audit gegen den tatsächlichen Repository-Zustand (nicht gegen frühere Berichte) durchgeführt – alle acht im Auftrag genannten Verdachtsstellen bestätigt plus zusätzliche Funde (fehlende Security-Header, fehlendes Engines-Pinning, keine Malware-Scan-Pipeline). Vollständige, belegte Matrix: `docs/RELEASE_READINESS.md`. Diese Sitzung arbeitet die dort als „IMPLEMENTIERBAR – JETZT AUSFÜHREN" markierten Punkte ab und dokumentiert alle Konto-/Zahlungs-/Rechtsblocker exakt, ohne sie zu erfinden oder zu umgehen.
+
+**Bisher umgesetzt und real verifiziert (nicht nur „sollte funktionieren"):**
+
+- **CI-Pipeline** (`.github/workflows/ci.yml`, 4 Jobs) – über mehrere echte `gh run view --log`-Läufe verifiziert, drei reale Fehlerursachen dabei gefunden und behoben (Node-Version, Gitleaks-Token, WebKit für das „mobile"-Playwright-Projekt). `engines`/`packageManager` in `package.json` gepinnt (D-068).
+- **Security-Header/CSP** – nonce-basiert in `src/proxy.ts` (eine statische CSP hätte Next.js' eigene Inline-Skripte blockiert, per Playwright-Konsolencheck belegt); `img-src`/`media-src` erlauben zusätzlich die Supabase-Origin (sonst brechen signierte Avatar-/Videobilder, per E2E-Regression gefunden) (D-069).
+- **Echte Kontolöschung** statt reiner Zugangssperre, inkl. Web-Weg (fehlte vorher komplett) und öffentlicher Info-Seite `/account-deletion` – Migration `20260721100000_real_account_deletion.sql`, 104 RLS-Proben, vollständiger Browser-Durchlauf mit Wegwerf-Konto (D-070).
+- **Malware-Scan-Pipeline** für Übungsmedien und Profilbilder (`src/server/services/malware-scan.ts`, ClamAV, fail-closed) hinter `MALWARE_SCAN_ENABLED` – **real in CI grün verifiziert** (`gh run view 29941832703`, alle 4 Jobs). Ein isolierter, serieller CI-Verifikationslauf (um Parallel-Worker-Konkurrenz bei `clamscan` zu vermeiden) schlug über mehrere Iterationen fehl; jede Ursache wurde per echtem Server-/Scanner-Log gefunden statt vermutet (D-071/D-072/D-077 bis D-081) – die letzte und tatsächliche Ursache: der CI-Schritt startete den Webserver ohne `MALWARE_SCAN_ENABLED=true`, nur der Playwright-Befehl hatte die Variable gesetzt.
+- **App-Icon/Splash/Adaptive-Icon aus der Marke** (`logo.svg`) statt Expo-Standard-Icon, plus deutscher iOS-Fotozugriffstext ohne unnötige Kamera-/Mikrofon-Deklaration (D-073/D-074) – `expo-doctor` 20/20, iOS+Android-Export grün.
+- **Store-Datenschutz-Mappings und Store-Texte**: Apple-App-Privacy-/Google-Data-Safety-/Health-Mapping direkt aus dem Code abgeleitet (kein Tracking/Analytics/Crash-SDK vorhanden, siehe D-075); deutscher Entwurf für Beschreibung/Keywords/Kategorie/Alterseinstufung, bewusst „Gesundheit und Fitness" statt „Medizin" (D-076).
+- **Health-Check-Route + Deployment-Vorbereitung**: `GET /api/health`, vollständige Env-Var-Liste/Rollout-Schritte/Monitoring-Konzept in `docs/DEPLOYMENT.md` – alles ohne Konto-/Domain-Entscheidung Machbare.
+- **Nebenbefund behoben**: Expo-SDK-Patch-Drift (`expo-doctor` scheiterte an veralteten Paketen, unabhängig vom eigentlichen Auftrag) – `@expo/metro-runtime` fehlte als direkte Abhängigkeit (D-082).
+- **Phase 2 (Android-Emulator + erweiterte iOS-Matrix)**: Android-Emulator kostenlos lokal eingerichtet (Command-Line-Tools + OpenJDK 17, kein Konto), `expo run:android` echt gebaut auf Android 16/API 36, echte Anmeldung + echte Backend-Daten in Hell/Dunkel geprüft (D-084). iOS-Matrix um iPhone Air + iPad Air 11" erweitert, Dark Mode + größte Dynamic-Type-Stufe + `supportsTablet: false`-Layout bestätigt. VoiceOver/Reduce Motion/vollständiger Tap-Durchlauf bleiben ohne Bedienungshilfen-Berechtigung offen (Umgebungsblocker auf Toms Mac, nicht neu). Erkenntnis zu einer Grenze der Deep-Link-Navigationsverifikation dokumentiert (D-085).
+- **Phase 5 (iOS Privacy Manifest)**: `app.json` → `ios.privacyManifests` (natives Expo-Feld, kein eigenes Plugin nötig) deklariert dieselben Datentypen wie das App-Privacy-Mapping; Required-Reason-APIs werden von Expo automatisch aus den Abhängigkeiten aggregiert. Per echtem `expo prebuild --clean` verifiziert (D-086).
+- **Öffentliche Datenschutzerklärung** (`src/app/privacy/page.tsx`, Text in `packages/shared/src/messages-de.ts` unter `legal.privacyPolicy`) – ohne Login erreichbar, per Playwright-Screenshot verifiziert. Ehrlicher technischer Entwurf: Verantwortlicher/Rechtsgrundlage (Art. 9 DSGVO)/Aufbewahrungsfrist bewusst als noch nicht juristisch bestätigt markiert, deutlich sichtbarer Entwurfshinweis oben auf der Seite statt erfundener Rechtskonformität (D-087).
+- **Store-/Review-Paket aufgefrischt** (`docs/APP_STORE_CHECKLIST.md`) – gegen den tatsächlichen Repo-Stand geprüft: Datenschutzerklärung, iOS Privacy Manifest, Android-Emulator-Lauf waren dort noch fälschlich als offen gelistet, jetzt korrigiert.
+- **Release-Candidate-Report** (`docs/RELEASE_CANDIDATE_REPORT.md`, neu) – Versionen/Commit/CI-Lauf, vollständige Testmatrix-Zusammenfassung (115 Web-Unit/16 Mobile-Unit/104 RLS-Proben/41 E2E-Specs, CI 4/4 Jobs grün), bekannte Einschränkungen, externe Blocker, Rollback-Plan, getrennte JA/NEIN-Freigabeentscheidung pro Plattform (D-088).
+
+## Nachtrag (25.07.2026): Echter iOS-Tap-Durchlauf nach Bedienungshilfen-Freigabe
+
+Tom hat macOS-Bedienungshilfen für Terminal freigegeben – erster echter Tap-Durchlauf im iPhone-17-Pro-Simulator möglich (`cliclick`, Koordinaten aus echten Gerätescreenshots berechnet, nicht geraten). Vollständiger Patientenablauf per echtem Tap verifiziert: Registrierung, Login, Einladungscode, Praxisverbindung, Telefonnummer, Profilbild hoch-/ersetzen/entfernen, Passwort-/E-Mail-Änderung, Übung öffnen + Dokumentation, Terminabsage mit Grund, Terminangebot annehmen, Konto löschen. Details und Ergebnistabelle: `docs/TEST_MATRIX.md`.
+
+**Vier reale Fehler gefunden und behoben, die vorher technisch nie erreichbar waren:**
+- Übungsdetail lud nie (mehrdeutige DB-Beziehung `exercise_plan_versions`↔`exercise_plans`, im Web längst mit explizitem Beziehungs-Hinweis gelöst, im Mobile-Port vergessen) — D-089
+- Profilbild-Upload scheiterte immer (React Natives `fetch().blob()` liefert für lokale Dateien keinen Content-Type; zusätzlich scheitert der klassische RN-Dateideskriptor auf RN 0.86/New Architecture) — D-090
+- Kopfzeile und Kartentext wurden bei größter Systemschrift abgeschnitten (`overflow: hidden` auf Karten, nicht mitskalierende Zeilenhöhe, feste Kopfzeilenhöhe) — D-091/D-092
+- Profilbild oben rechts hatte keinen Tap-Handler (Tom-Wunsch) — jetzt führt Antippen direkt zu Profil
+
+VoiceOver bewusst nicht getestet (Toms Entscheidung). Apple-/Google-Anmeldung als sinnvoller, aber bewusst nicht implementierter Punkt zurückgestellt – braucht Apple-Developer- bzw. Google-Cloud-Konto (Abschnitt-2-Stopppunkt, kein Codeaufwand vor Kontoeinrichtung).
+
+**Offen für die nächste Etappe:** PR #4 von Draft auf „ready for review" prüfen/setzen und mergen (letzter Schritt des Auftrags). Datenschutzerklärung braucht noch juristische Prüfung durch eine zuständige Person, sobald App-Identität feststeht. Phase 3 Rest (gehostetes Supabase-Projekt/Domain/Hosting), Phase 6 Rest (Screenshots), Phase 7–8 bleiben BLOCKIERT DURCH TOM/KONTO.
 
 ## Letzter Auftrag (20.07.2026, sechster): UI-Parität der nativen App mit der Patienten-Weboberfläche
 

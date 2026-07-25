@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  PixelRatio,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -106,7 +107,12 @@ export function Title({ children }: { children: ReactNode }) {
   return (
     <Text
       accessibilityRole="header"
-      style={{ fontSize: type.title, fontWeight: "700", color: theme.foreground }}
+      style={{
+        fontSize: type.title,
+        lineHeight: type.title * 1.25 * PixelRatio.getFontScale(),
+        fontWeight: "700",
+        color: theme.foreground,
+      }}
     >
       {children}
     </Text>
@@ -119,7 +125,12 @@ export function PageHeading({ children }: { children: ReactNode }) {
   return (
     <Text
       accessibilityRole="header"
-      style={{ fontSize: type.xl, fontWeight: "700", color: theme.foreground }}
+      style={{
+        fontSize: type.xl,
+        lineHeight: type.xl * 1.25 * PixelRatio.getFontScale(),
+        fontWeight: "700",
+        color: theme.foreground,
+      }}
     >
       {children}
     </Text>
@@ -132,7 +143,12 @@ export function SectionHeading({ children }: { children: ReactNode }) {
   return (
     <Text
       accessibilityRole="header"
-      style={{ fontSize: type.lg, fontWeight: "700", color: theme.foreground }}
+      style={{
+        fontSize: type.lg,
+        lineHeight: type.lg * 1.25 * PixelRatio.getFontScale(),
+        fontWeight: "700",
+        color: theme.foreground,
+      }}
     >
       {children}
     </Text>
@@ -159,7 +175,12 @@ export function Body({
     <Text
       style={{
         fontSize: type[size],
-        lineHeight: type[size] * 1.45,
+        // `lineHeight` skaliert in RN NICHT automatisch mit der
+        // Systemschriftgröße (anders als `fontSize`) – ohne den
+        // manuellen Faktor schneidet iOS bei großen Bedienungshilfen-
+        // Textgrößen Ober-/Unterlängen ab, weil die Zeilenbox zu
+        // niedrig bleibt (per Screenshot bei größter Stufe bestätigt).
+        lineHeight: type[size] * 1.45 * PixelRatio.getFontScale(),
         fontWeight: bold ? "700" : "400",
         color: color ?? (muted ? theme.mutedForeground : theme.foreground),
         textAlign: center ? "center" : "left",
@@ -190,7 +211,10 @@ export function Card({
         borderRadius: radius.lg,
         padding: padded ? spacing.md + 4 : 0,
         gap: spacing.md - 4,
-        overflow: "hidden",
+        // Kein `overflow: "hidden"`: keine Karte enthält eckige
+        // Bilder, die abgerundet werden müssten – dafür würde es bei
+        // großer Systemschrift echten Text abschneiden statt nur die
+        // Ecke zu runden (per Screenshot bei größter Stufe bestätigt).
       }}
     >
       {children}
@@ -503,7 +527,8 @@ export function Collapsible({
         borderColor: theme.border,
         borderRadius: radius.lg,
         backgroundColor: theme.card,
-        overflow: "hidden",
+        // Kein `overflow: "hidden"` (siehe Card-Komponente oben) –
+        // schneidet sonst Text bei großer Systemschrift ab.
       }}
     >
       <Pressable

@@ -76,7 +76,7 @@ export const app = {
   deleteAccount: {
     title: "Konto löschen",
     body:
-      "Sie können die Löschung Ihres Kontos beantragen. Wichtig: Ihre Praxis muss Behandlungsunterlagen unter Umständen gesetzlich aufbewahren – diese werden dann nicht sofort gelöscht. Ihr Zugang wird deaktiviert und Ihr Antrag dokumentiert.",
+      "Sie können die Löschung Ihres Kontos beantragen. Ihr Zugang wird sofort gesperrt; Profilbild, Telefonnummer und Erinnerungseinstellungen werden sofort gelöscht. Praxisbezogene Behandlungsdaten (Termine, Übungspläne, Selbstauskünfte, Verordnungen) bleiben gespeichert, bis die gesetzliche Aufbewahrungsfrist rechtlich bestätigt ist – das ist eine offene Rechtsfrage, keine technische Lücke.",
     confirmLabel: "Ja, ich möchte mein Konto löschen",
     submit: "Löschung beantragen",
     doubleCheckTitle: "Sind Sie sicher?",
