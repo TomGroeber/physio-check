@@ -1,6 +1,6 @@
 # PhysioCheck – Release-Candidate-Report
 
-> Stand: 22.07.2026 · Branch `claude/store-release-readiness-20260721` · Commit `a616e7e` · CI-Lauf [`29955743043`](https://github.com/TomGroeber/physio-check/actions/runs/29955743043) (alle 4 Jobs grün)
+> Stand: 25.07.2026 · Branch `claude/store-release-readiness-20260721` · Commit `5a5de4a` · CI-Lauf [`30159333312`](https://github.com/TomGroeber/physio-check/actions/runs/30159333312) (alle 4 Jobs grün)
 >
 > Dieser Report fasst den technisch erreichbaren Reifegrad zusammen. Er ersetzt keine juristische Prüfung und ist **keine Freigabe zur Einreichung** – die Einreichung selbst bleibt an die genannten Abschnitt-2-Stopppunkte gebunden (Konto-Logins, Zahlungen, unwiderrufliche App-Identität, Rechtsentscheidungen).
 
@@ -38,6 +38,7 @@
 - **Deep-Link-Navigation zu einer bereits laufenden App-Instanz** verhält sich nicht wie eine echte In-App-Navigation (`xcrun simctl openurl` löst zusätzlich einen nicht automatisch wegklickbaren System-Dialog aus). Für Kaltstart-Fälle funktioniert `xcrun simctl launch` ohne dieses Problem. Dokumentiert als D-085, nach 3 dokumentierten Fehlversuchen bewusst nicht weiterverfolgt (systematisches Debugging-Prinzip: Grenze der Testumgebung akzeptieren statt weiter zu raten).
 - **VoiceOver bewusst nicht getestet** – Toms Entscheidung, kein technischer Blocker (macOS-Bedienungshilfen sind seit 25.07.2026 freigegeben, ein Folgelauf wäre technisch möglich).
 - **Kein produktionsreifer Dauer-Malware-Scanner**: Die aktuelle ClamAV-Integration ist fail-closed und in CI verifiziert, aber die Wahl zwischen einem dauerhaft laufenden `clamd`-Dienst oder einem Cloud-AV-Dienst hängt von der noch offenen Hosting-Entscheidung ab.
+- **Die vier am 25.07.2026 gefundenen und behobenen Fehler (D-089 bis D-092) sind manuell per echtem Tap-Durchlauf verifiziert, nicht durch neue automatisierte Tests abgedeckt.** Sie betreffen Datenbankabfrage-Mehrdeutigkeit, React-Native-Multipart-Uploads und Dynamic-Type-Layout – Bereiche, die sich nur mit Aufwand sinnvoll automatisiert testen lassen (echte Supabase-Instanz bzw. native Modul-Emulation). Ein Regressions-Risiko bleibt bis eine passende Testabdeckung ergänzt wird.
 
 ## 4. Externe Blocker (Abschnitt-2-Stopppunkte – benötigen Tom)
 
