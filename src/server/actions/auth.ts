@@ -13,6 +13,7 @@ import {
 } from "@/lib/validation/auth";
 import { de } from "@/messages/de";
 import { getPendingInvite } from "@/server/services/invites";
+import { getPendingStaffInviteFromSession } from "@/server/services/staff-invites";
 
 export type AuthFormState = {
   error?: string;
@@ -56,6 +57,9 @@ export async function loginAction(
   }
 
   revalidatePath("/", "layout");
+  if (await getPendingStaffInviteFromSession()) {
+    redirect("/staff-invite/confirm");
+  }
   if (await getPendingInvite()) {
     // Angemeldete Benutzer bestätigen eine geprüfte Einladung im
     // geschützten Verbindungsbereich.
@@ -80,14 +84,20 @@ export async function registerAction(
 
   // Registrierung ist ohne Einladung möglich. Sie erzeugt ausschließlich
   // ein unverbundenes Patientenkonto ohne jede Praxis- oder Mitarbeiterrolle;
-  // die Praxisverbindung entsteht erst später über einen geprüften Code.
+  // die Praxisverbindung entsteht erst später über einen geprüften Code
+  // ODER, bei einer Mitarbeitereinladung, über den atomaren Annahme-RPC
+  // (accept_staff_invite) auf /staff-invite/confirm - niemals durch die
+  // Registrierung selbst.
+  const pendingStaffInvite = await getPendingStaffInviteFromSession();
+  const nextPath = pendingStaffInvite ? "/staff-invite/confirm" : "/connect";
+
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
       data: { full_name: parsed.data.fullName, locale: "de" },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/auth/confirm?next=/connect`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/auth/confirm?next=${nextPath}`,
     },
   });
 

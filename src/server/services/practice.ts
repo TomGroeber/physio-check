@@ -14,10 +14,65 @@ export async function getPractice(practiceId: string) {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from("practices")
-    .select("id, name, address_street, address_postal_code, address_city, phone, timezone")
+    .select(
+      "id, name, address_street, address_postal_code, address_city, phone, timezone, support_email, support_url, settings"
+    )
     .eq("id", practiceId)
     .single();
   return data;
+}
+
+/**
+ * Praxisadmin bearbeitet die eigene Praxis. RLS-geprüfter normaler
+ * Client (Update-Policy "practices: admin updates own fields") - kein
+ * Service-Role nötig, Lebenszyklus-/Betreiberfelder bleiben durch den
+ * Spaltensperr-Trigger geschützt.
+ */
+export async function updatePracticeProfileAsPracticeAdmin(
+  practiceId: string,
+  input: {
+    name: string;
+    addressStreet: string;
+    addressPostalCode: string;
+    addressCity: string;
+    phone: string;
+    timezone: string;
+    supportEmail: string;
+    supportUrl: string;
+  }
+): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
+    .from("practices")
+    .update({
+      name: input.name,
+      address_street: input.addressStreet,
+      address_postal_code: input.addressPostalCode,
+      address_city: input.addressCity,
+      phone: input.phone,
+      timezone: input.timezone,
+      support_email: input.supportEmail,
+      support_url: input.supportUrl,
+    })
+    .eq("id", practiceId);
+  return !error;
+}
+
+/** Mitglieder der eigenen Praxis (für die Selbstverwaltung). */
+export async function listPracticeMembers(practiceId: string) {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase
+    .from("practice_members")
+    .select("id, profile_id, role, is_active, profiles ( full_name )")
+    .eq("practice_id", practiceId)
+    .order("created_at");
+  return (data ?? []).map((m) => ({
+    id: m.id,
+    profileId: m.profile_id,
+    fullName: m.profiles?.full_name ?? "",
+    role: m.role,
+    isActive: m.is_active,
+  }));
 }
 
 export async function getDashboardData(practiceId: string, timezone: string) {

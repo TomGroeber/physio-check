@@ -14,9 +14,11 @@ const t = de.auth.register;
 export function RegisterForm({
   practiceName,
   patientDisplayName,
+  lockedEmail = null,
 }: {
   practiceName: string | null;
   patientDisplayName: string | null;
+  lockedEmail?: string | null;
 }) {
   const [state, formAction, isPending] = useActionState<AuthFormState, FormData>(
     registerAction,
@@ -77,6 +79,8 @@ export function RegisterForm({
           type="email"
           autoComplete="email"
           required
+          readOnly={Boolean(lockedEmail)}
+          defaultValue={lockedEmail ?? undefined}
           className="h-12 text-lg"
         />
       </div>
