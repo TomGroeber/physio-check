@@ -85,17 +85,17 @@ create policy "practices: admin updates own fields"
   using (public.is_practice_admin(id))
   with check (public.is_practice_admin(id));
 
--- Spaltensperre fuer Lebenszyklus-/Betreiberfelder. Der Bypass gilt
--- fuer den Service-Role-Client, NICHT fuer is_platform_admin(): unter
--- Service-Role hat der Request keinen Nutzer-JWT-Sub, `auth.uid()`
--- liefert dort NULL, is_platform_admin() waere also fuer den
--- Service-Role-Pfad IMMER false. Die Betreiber-Server-Actions pruefen
--- is_platform_admin() bereits ueber die Sitzung des angemeldeten
--- Nutzers, BEVOR sie den Service-Role-Client fuer den eigentlichen
--- Schreibzugriff erzeugen (Auftragsregel: kein Service-Role-Aufruf
--- ohne unmittelbar vorherige Plattformadminpruefung) - der Trigger
--- vertraut also bewusst dem bereits geprueften Service-Role-Pfad,
--- nicht direkt is_platform_admin().
+-- Spaltensperre fuer Lebenszyklus-/Betreiberfelder. Zwei legitime
+-- Schreibpfade: (a) eine SECURITY-DEFINER-RPC wie set_practice_lifecycle,
+-- aufgerufen ueber die normale Sitzung des Plattformadmins - dort
+-- loest auth.uid() korrekt auf, is_platform_admin() liefert also ein
+-- verlaessliches Ergebnis; (b) ein Service-Role-Client (kein Nutzer-
+-- JWT-Sub, auth.uid() liefert dort NULL, is_platform_admin() waere
+-- IMMER false) - fuer diesen Pfad pruefen die Betreiber-Server-Actions
+-- is_platform_admin() bereits VOR der Service-Role-Erzeugung
+-- (Auftragsregel: kein Service-Role-Aufruf ohne unmittelbar vorherige
+-- Plattformadminpruefung), der Trigger vertraut diesem bereits
+-- geprueften Pfad zusaetzlich.
 create function public.prevent_practice_lifecycle_self_edit()
 returns trigger
 language plpgsql
@@ -103,7 +103,7 @@ security definer
 set search_path = ''
 as $$
 begin
-  if auth.role() = 'service_role' then
+  if public.is_platform_admin() or auth.role() = 'service_role' then
     return new;
   end if;
 

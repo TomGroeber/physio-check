@@ -1773,6 +1773,37 @@ export type Database = {
         Args: { p_appointment_id: string }
         Returns: string
       }
+      create_practice_with_admin_invite: {
+        Args: {
+          p_address_city: string
+          p_address_postal_code: string
+          p_address_street: string
+          p_admin_email: string
+          p_admin_token_hash: string
+          p_invite_expires_at: string
+          p_name: string
+          p_phone: string
+          p_status: Database["public"]["Enums"]["practice_status"]
+          p_support_email: string
+          p_support_url: string
+          p_timezone: string
+          p_trial_ends_at?: string
+        }
+        Returns: {
+          out_invite_id: string
+          out_practice_id: string
+        }[]
+      }
+      create_staff_invite_as_platform_admin: {
+        Args: {
+          p_email: string
+          p_expires_at: string
+          p_practice_id: string
+          p_role: Database["public"]["Enums"]["practice_role"]
+          p_token_hash: string
+        }
+        Returns: string
+      }
       decline_appointment_offer: {
         Args: { p_offer_id: string }
         Returns: undefined
@@ -1871,6 +1902,32 @@ export type Database = {
       }
       set_patient_phone: {
         Args: { new_phone: string; target_patient_id: string }
+        Returns: undefined
+      }
+      set_practice_lifecycle: {
+        Args: {
+          p_internal_note: string
+          p_practice_id: string
+          p_status: Database["public"]["Enums"]["practice_status"]
+          p_trial_ends_at?: string
+        }
+        Returns: undefined
+      }
+      set_practice_member_status: {
+        Args: {
+          p_is_active: boolean
+          p_member_id: string
+          p_role: Database["public"]["Enums"]["practice_role"]
+        }
+        Returns: undefined
+      }
+      update_platform_config: { Args: { p_config: Json }; Returns: undefined }
+      update_platform_feature_flags: {
+        Args: { p_flags: Json }
+        Returns: undefined
+      }
+      update_practice_settings: {
+        Args: { p_practice_id: string; p_settings: Json }
         Returns: undefined
       }
     }
