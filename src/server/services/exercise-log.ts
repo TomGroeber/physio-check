@@ -238,9 +238,9 @@ export async function logExerciseCompletion(
   const { error } = await supabase.rpc("record_exercise_occurrence", {
     p_plan_item_id: input.planItemId,
     p_status: input.status,
-    p_sets_completed: input.setsCompleted ?? null,
-    p_pain_before: input.painBefore ?? null,
-    p_pain_after: input.painAfter ?? null,
+    p_sets_completed: input.setsCompleted ?? undefined,
+    p_pain_before: input.painBefore ?? undefined,
+    p_pain_after: input.painAfter ?? undefined,
     p_note: input.note,
   });
 

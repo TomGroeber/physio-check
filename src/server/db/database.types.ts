@@ -34,6 +34,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_deletion_requests: {
+        Row: {
+          id: string
+          processed_at: string | null
+          profile_id: string
+          requested_at: string
+          retained_data_note: string
+          status: string
+        }
+        Insert: {
+          id?: string
+          processed_at?: string | null
+          profile_id: string
+          requested_at?: string
+          retained_data_note?: string
+          status?: string
+        }
+        Update: {
+          id?: string
+          processed_at?: string | null
+          profile_id?: string
+          requested_at?: string
+          retained_data_note?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_deletion_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointment_authorization_usages: {
         Row: {
           appointment_id: string
@@ -837,40 +872,44 @@ export type Database = {
           },
         ]
       }
-      patient_reminder_preferences: {
+      patient_calendar_colors: {
         Row: {
+          color: string
           created_at: string
-          exercise_reminders_enabled: boolean
-          plan_updates_enabled: boolean
-          profile_id: string
-          quiet_end: string
-          quiet_start: string
+          id: string
+          patient_profile_id: string
+          practice_id: string
           updated_at: string
         }
         Insert: {
+          color: string
           created_at?: string
-          exercise_reminders_enabled?: boolean
-          plan_updates_enabled?: boolean
-          profile_id: string
-          quiet_end?: string
-          quiet_start?: string
+          id?: string
+          patient_profile_id: string
+          practice_id: string
           updated_at?: string
         }
         Update: {
+          color?: string
           created_at?: string
-          exercise_reminders_enabled?: boolean
-          plan_updates_enabled?: boolean
-          profile_id?: string
-          quiet_end?: string
-          quiet_start?: string
+          id?: string
+          patient_profile_id?: string
+          practice_id?: string
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "patient_reminder_preferences_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: true
+            foreignKeyName: "patient_calendar_colors_patient_profile_id_fkey"
+            columns: ["patient_profile_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_calendar_colors_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
             referencedColumns: ["id"]
           },
         ]
@@ -1000,116 +1039,6 @@ export type Database = {
           },
         ]
       }
-      practice_waitlist_entries: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          id: string
-          note: string
-          patient_profile_id: string
-          practice_id: string
-          preferred_times: string
-          priority: Database["public"]["Enums"]["waitlist_priority"]
-          resolved_at: string | null
-          status: Database["public"]["Enums"]["waitlist_status"]
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          note?: string
-          patient_profile_id: string
-          practice_id: string
-          preferred_times?: string
-          priority?: Database["public"]["Enums"]["waitlist_priority"]
-          resolved_at?: string | null
-          status?: Database["public"]["Enums"]["waitlist_status"]
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          note?: string
-          patient_profile_id?: string
-          practice_id?: string
-          preferred_times?: string
-          priority?: Database["public"]["Enums"]["waitlist_priority"]
-          resolved_at?: string | null
-          status?: Database["public"]["Enums"]["waitlist_status"]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "practice_waitlist_entries_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "practice_members"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "practice_waitlist_entries_patient_profile_id_fkey"
-            columns: ["patient_profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "practice_waitlist_entries_practice_id_fkey"
-            columns: ["practice_id"]
-            isOneToOne: false
-            referencedRelation: "practices"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      pinned_patients: {
-        Row: {
-          created_at: string
-          id: string
-          note: string
-          patient_profile_id: string
-          pinned_by: string | null
-          practice_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          note?: string
-          patient_profile_id: string
-          pinned_by?: string | null
-          practice_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          note?: string
-          patient_profile_id?: string
-          pinned_by?: string | null
-          practice_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pinned_patients_patient_profile_id_fkey"
-            columns: ["patient_profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pinned_patients_pinned_by_fkey"
-            columns: ["pinned_by"]
-            isOneToOne: false
-            referencedRelation: "practice_members"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pinned_patients_practice_id_fkey"
-            columns: ["practice_id"]
-            isOneToOne: false
-            referencedRelation: "practices"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       patient_invites: {
         Row: {
           code_hash: string
@@ -1223,79 +1152,180 @@ export type Database = {
           },
         ]
       }
-      account_deletion_requests: {
+      patient_reminder_preferences: {
         Row: {
-          id: string
-          processed_at: string | null
+          created_at: string
+          exercise_reminders_enabled: boolean
+          plan_updates_enabled: boolean
           profile_id: string
-          requested_at: string
-          retained_data_note: string
-          status: string
+          quiet_end: string
+          quiet_start: string
+          updated_at: string
         }
         Insert: {
-          id?: string
-          processed_at?: string | null
+          created_at?: string
+          exercise_reminders_enabled?: boolean
+          plan_updates_enabled?: boolean
           profile_id: string
-          requested_at?: string
-          retained_data_note?: string
-          status?: string
+          quiet_end?: string
+          quiet_start?: string
+          updated_at?: string
         }
         Update: {
-          id?: string
-          processed_at?: string | null
+          created_at?: string
+          exercise_reminders_enabled?: boolean
+          plan_updates_enabled?: boolean
           profile_id?: string
-          requested_at?: string
-          retained_data_note?: string
-          status?: string
+          quiet_end?: string
+          quiet_start?: string
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "account_deletion_requests_profile_id_fkey"
+            foreignKeyName: "patient_reminder_preferences_profile_id_fkey"
             columns: ["profile_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
-      patient_calendar_colors: {
+      pinned_patients: {
         Row: {
-          color: string
           created_at: string
           id: string
+          note: string
           patient_profile_id: string
+          pinned_by: string | null
           practice_id: string
-          updated_at: string
         }
         Insert: {
-          color: string
           created_at?: string
           id?: string
+          note?: string
           patient_profile_id: string
+          pinned_by?: string | null
           practice_id: string
-          updated_at?: string
         }
         Update: {
-          color?: string
           created_at?: string
           id?: string
+          note?: string
           patient_profile_id?: string
+          pinned_by?: string | null
           practice_id?: string
-          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "patient_calendar_colors_patient_profile_id_fkey"
+            foreignKeyName: "pinned_patients_patient_profile_id_fkey"
             columns: ["patient_profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "patient_calendar_colors_practice_id_fkey"
+            foreignKeyName: "pinned_patients_pinned_by_fkey"
+            columns: ["pinned_by"]
+            isOneToOne: false
+            referencedRelation: "practice_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pinned_patients_practice_id_fkey"
             columns: ["practice_id"]
             isOneToOne: false
             referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_admins: {
+        Row: {
+          created_at: string
+          granted_by: string
+          id: string
+          note: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted_by?: string
+          id?: string
+          note?: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string
+          granted_by?: string
+          id?: string
+          note?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_admins_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_config: {
+        Row: {
+          default_new_practice_locale: string
+          default_new_practice_timezone: string
+          feature_flags: Json
+          id: number
+          imprint_url: string
+          maintenance_active: boolean
+          maintenance_message: string
+          max_upload_mb: number
+          privacy_url: string
+          product_name: string
+          support_email: string
+          support_url: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          default_new_practice_locale?: string
+          default_new_practice_timezone?: string
+          feature_flags?: Json
+          id?: number
+          imprint_url?: string
+          maintenance_active?: boolean
+          maintenance_message?: string
+          max_upload_mb?: number
+          privacy_url?: string
+          product_name?: string
+          support_email?: string
+          support_url?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          default_new_practice_locale?: string
+          default_new_practice_timezone?: string
+          feature_flags?: Json
+          id?: number
+          imprint_url?: string
+          maintenance_active?: boolean
+          maintenance_message?: string
+          max_upload_mb?: number
+          privacy_url?: string
+          product_name?: string
+          support_email?: string
+          support_url?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_config_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1342,17 +1372,86 @@ export type Database = {
           },
         ]
       }
+      practice_waitlist_entries: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string
+          patient_profile_id: string
+          practice_id: string
+          preferred_times: string
+          priority: Database["public"]["Enums"]["waitlist_priority"]
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["waitlist_status"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string
+          patient_profile_id: string
+          practice_id: string
+          preferred_times?: string
+          priority?: Database["public"]["Enums"]["waitlist_priority"]
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["waitlist_status"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string
+          patient_profile_id?: string
+          practice_id?: string
+          preferred_times?: string
+          priority?: Database["public"]["Enums"]["waitlist_priority"]
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["waitlist_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_waitlist_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "practice_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "practice_waitlist_entries_patient_profile_id_fkey"
+            columns: ["patient_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "practice_waitlist_entries_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       practices: {
         Row: {
           address_city: string
           address_postal_code: string
           address_street: string
           created_at: string
+          created_by_platform_admin_id: string | null
           id: string
+          internal_note: string
           name: string
           phone: string
           settings: Json
+          status: Database["public"]["Enums"]["practice_status"]
+          status_changed_at: string
+          status_changed_by: string | null
+          support_email: string
+          support_url: string
           timezone: string
+          trial_ends_at: string | null
           updated_at: string
         }
         Insert: {
@@ -1360,11 +1459,19 @@ export type Database = {
           address_postal_code?: string
           address_street?: string
           created_at?: string
+          created_by_platform_admin_id?: string | null
           id?: string
+          internal_note?: string
           name: string
           phone?: string
           settings?: Json
+          status?: Database["public"]["Enums"]["practice_status"]
+          status_changed_at?: string
+          status_changed_by?: string | null
+          support_email?: string
+          support_url?: string
           timezone?: string
+          trial_ends_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -1372,14 +1479,37 @@ export type Database = {
           address_postal_code?: string
           address_street?: string
           created_at?: string
+          created_by_platform_admin_id?: string | null
           id?: string
+          internal_note?: string
           name?: string
           phone?: string
           settings?: Json
+          status?: Database["public"]["Enums"]["practice_status"]
+          status_changed_at?: string
+          status_changed_by?: string | null
+          support_email?: string
+          support_url?: string
           timezone?: string
+          trial_ends_at?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "practices_created_by_platform_admin_id_fkey"
+            columns: ["created_by_platform_admin_id"]
+            isOneToOne: false
+            referencedRelation: "platform_admins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "practices_status_changed_by_fkey"
+            columns: ["status_changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -1410,6 +1540,80 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      staff_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by_profile_id: string | null
+          created_at: string
+          created_by_member_id: string | null
+          created_by_platform_admin_id: string | null
+          email: string
+          expires_at: string
+          id: string
+          practice_id: string
+          revoked_at: string | null
+          role: Database["public"]["Enums"]["practice_role"]
+          token_hash: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by_profile_id?: string | null
+          created_at?: string
+          created_by_member_id?: string | null
+          created_by_platform_admin_id?: string | null
+          email: string
+          expires_at?: string
+          id?: string
+          practice_id: string
+          revoked_at?: string | null
+          role: Database["public"]["Enums"]["practice_role"]
+          token_hash: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by_profile_id?: string | null
+          created_at?: string
+          created_by_member_id?: string | null
+          created_by_platform_admin_id?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          practice_id?: string
+          revoked_at?: string | null
+          role?: Database["public"]["Enums"]["practice_role"]
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_invites_accepted_by_profile_id_fkey"
+            columns: ["accepted_by_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_invites_created_by_member_id_fkey"
+            columns: ["created_by_member_id"]
+            isOneToOne: false
+            referencedRelation: "practice_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_invites_created_by_platform_admin_id_fkey"
+            columns: ["created_by_platform_admin_id"]
+            isOneToOne: false
+            referencedRelation: "platform_admins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_invites_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       treatment_authorization_adjustments: {
         Row: {
@@ -1538,6 +1742,13 @@ export type Database = {
         Args: { p_offer_id: string }
         Returns: string
       }
+      accept_staff_invite: {
+        Args: { p_invite_id: string; p_token_hash: string }
+        Returns: {
+          out_practice_id: string
+          out_role: Database["public"]["Enums"]["practice_role"]
+        }[]
+      }
       archive_exercise_plan: {
         Args: {
           p_notification_body: string
@@ -1552,10 +1763,6 @@ export type Database = {
         Args: { p_authorization_id: string }
         Returns: number
       }
-      decline_appointment_offer: {
-        Args: { p_offer_id: string }
-        Returns: undefined
-      }
       authorization_remaining: {
         Args: { p_authorization_id: string }
         Returns: number
@@ -1566,26 +1773,28 @@ export type Database = {
         Args: { p_appointment_id: string }
         Returns: string
       }
-      is_linked_patient: { Args: { p_practice_id: string }; Returns: boolean }
-      list_authorization_warnings: {
-        Args: {
-          p_practice_id: string
-          p_units_threshold: number
-          p_expiry_days: number
-        }
-        Returns: {
-          patient_profile_id: string
-          authorization_id: string
-          title: string
-          remaining: number
-          valid_until: string | null
-        }[]
+      decline_appointment_offer: {
+        Args: { p_offer_id: string }
+        Returns: undefined
       }
+      is_linked_patient: { Args: { p_practice_id: string }; Returns: boolean }
+      is_platform_admin: { Args: never; Returns: boolean }
       is_practice_admin: { Args: { p_practice_id: string }; Returns: boolean }
       is_practice_member: { Args: { p_practice_id: string }; Returns: boolean }
-      member_can_view_patient: {
-        Args: { p_patient_id: string }
-        Returns: boolean
+      is_valid_plan_schedule: { Args: { p_schedule: Json }; Returns: boolean }
+      list_authorization_warnings: {
+        Args: {
+          p_expiry_days: number
+          p_practice_id: string
+          p_units_threshold: number
+        }
+        Returns: {
+          authorization_id: string
+          patient_profile_id: string
+          remaining: number
+          title: string
+          valid_until: string
+        }[]
       }
       mark_completion_log_reviewed: {
         Args: { p_log_id: string }
@@ -1594,6 +1803,10 @@ export type Database = {
       mark_notification_read: {
         Args: { p_notification_id: string }
         Returns: undefined
+      }
+      member_can_view_patient: {
+        Args: { p_patient_id: string }
+        Returns: boolean
       }
       patient_can_view_exercise: {
         Args: { p_exercise_id: string }
@@ -1617,11 +1830,11 @@ export type Database = {
       }
       record_exercise_occurrence: {
         Args: {
-          p_note: string
-          p_pain_after: number | null
-          p_pain_before: number | null
+          p_note?: string
+          p_pain_after?: number
+          p_pain_before?: number
           p_plan_item_id: string
-          p_sets_completed: number | null
+          p_sets_completed?: number
           p_status: Database["public"]["Enums"]["completion_status"]
         }
         Returns: string
@@ -1634,9 +1847,19 @@ export type Database = {
         Args: { p_code_hash: string; p_expires_at: string; p_invite_id: string }
         Returns: string
       }
+      renew_staff_invite: {
+        Args: {
+          p_expires_at: string
+          p_invite_id: string
+          p_token_hash: string
+        }
+        Returns: string
+      }
       request_account_deletion: {
         Args: { p_profile_id: string }
-        Returns: { avatar_path: string | null }[]
+        Returns: {
+          avatar_path: string
+        }[]
       }
       request_appointment_cancellation: {
         Args: { p_appointment_id: string; p_reason?: string }
@@ -1667,15 +1890,16 @@ export type Database = {
       dosage_type: "repetitions" | "duration"
       link_status: "active" | "ended"
       media_kind: "video" | "thumbnail" | "captions" | "fallback_image"
+      offer_status: "offered" | "accepted" | "declined" | "withdrawn"
       patient_document_category:
         | "prescription"
         | "finding"
         | "patient_record"
         | "therapy_report"
         | "other"
-      offer_status: "offered" | "accepted" | "declined" | "withdrawn"
       plan_status: "active" | "archived"
       practice_role: "therapist" | "admin"
+      practice_status: "trial" | "active" | "suspended" | "archived"
       waitlist_priority: "normal" | "high"
       waitlist_status: "waiting" | "resolved"
     }
@@ -1825,6 +2049,7 @@ export const Constants = {
       dosage_type: ["repetitions", "duration"],
       link_status: ["active", "ended"],
       media_kind: ["video", "thumbnail", "captions", "fallback_image"],
+      offer_status: ["offered", "accepted", "declined", "withdrawn"],
       patient_document_category: [
         "prescription",
         "finding",
@@ -1834,6 +2059,10 @@ export const Constants = {
       ],
       plan_status: ["active", "archived"],
       practice_role: ["therapist", "admin"],
+      practice_status: ["trial", "active", "suspended", "archived"],
+      waitlist_priority: ["normal", "high"],
+      waitlist_status: ["waiting", "resolved"],
     },
   },
 } as const
+

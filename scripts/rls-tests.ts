@@ -371,8 +371,6 @@ async function main() {
       p_plan_item_id: seededPlanItem.id,
       p_status: "partial",
       p_sets_completed: 1,
-      p_pain_before: null,
-      p_pain_after: null,
       p_note: "Lokaler RLS-Test",
     });
     recordedOccurrenceId = first.data ?? null;
@@ -381,8 +379,6 @@ async function main() {
       p_plan_item_id: seededPlanItem.id,
       p_status: "completed",
       p_sets_completed: 1,
-      p_pain_before: null,
-      p_pain_after: null,
       p_note: "Darf nicht doppelt entstehen",
     });
     check("RPC verhindert unbeabsichtigten zusätzlichen Tagesdurchgang", Boolean(duplicate.error));
@@ -551,10 +547,6 @@ async function main() {
     const { error } = await foreign.rpc("record_exercise_occurrence", {
       p_plan_item_id: seededPlanItem.id,
       p_status: "completed",
-      p_sets_completed: null,
-      p_pain_before: null,
-      p_pain_after: null,
-      p_note: "",
     });
     check("RPC record_exercise_occurrence: Fremdpraxis wird abgelehnt", Boolean(error));
   }
