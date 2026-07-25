@@ -22,7 +22,19 @@ Vollständiger Audit gegen den tatsächlichen Repository-Zustand (nicht gegen fr
 - **Store-/Review-Paket aufgefrischt** (`docs/APP_STORE_CHECKLIST.md`) – gegen den tatsächlichen Repo-Stand geprüft: Datenschutzerklärung, iOS Privacy Manifest, Android-Emulator-Lauf waren dort noch fälschlich als offen gelistet, jetzt korrigiert.
 - **Release-Candidate-Report** (`docs/RELEASE_CANDIDATE_REPORT.md`, neu) – Versionen/Commit/CI-Lauf, vollständige Testmatrix-Zusammenfassung (115 Web-Unit/16 Mobile-Unit/104 RLS-Proben/41 E2E-Specs, CI 4/4 Jobs grün), bekannte Einschränkungen, externe Blocker, Rollback-Plan, getrennte JA/NEIN-Freigabeentscheidung pro Plattform (D-088).
 
-**Offen für die nächste Etappe:** PR #4 von Draft auf „ready for review" prüfen/setzen (letzter Schritt des Auftrags). Datenschutzerklärung braucht noch juristische Prüfung durch eine zuständige Person, sobald App-Identität feststeht. Phase 3 Rest (gehostetes Supabase-Projekt/Domain/Hosting), Phase 6 Rest (Screenshots), Phase 7–8 bleiben BLOCKIERT DURCH TOM/KONTO.
+## Nachtrag (25.07.2026): Echter iOS-Tap-Durchlauf nach Bedienungshilfen-Freigabe
+
+Tom hat macOS-Bedienungshilfen für Terminal freigegeben – erster echter Tap-Durchlauf im iPhone-17-Pro-Simulator möglich (`cliclick`, Koordinaten aus echten Gerätescreenshots berechnet, nicht geraten). Vollständiger Patientenablauf per echtem Tap verifiziert: Registrierung, Login, Einladungscode, Praxisverbindung, Telefonnummer, Profilbild hoch-/ersetzen/entfernen, Passwort-/E-Mail-Änderung, Übung öffnen + Dokumentation, Terminabsage mit Grund, Terminangebot annehmen, Konto löschen. Details und Ergebnistabelle: `docs/TEST_MATRIX.md`.
+
+**Vier reale Fehler gefunden und behoben, die vorher technisch nie erreichbar waren:**
+- Übungsdetail lud nie (mehrdeutige DB-Beziehung `exercise_plan_versions`↔`exercise_plans`, im Web längst mit explizitem Beziehungs-Hinweis gelöst, im Mobile-Port vergessen) — D-089
+- Profilbild-Upload scheiterte immer (React Natives `fetch().blob()` liefert für lokale Dateien keinen Content-Type; zusätzlich scheitert der klassische RN-Dateideskriptor auf RN 0.86/New Architecture) — D-090
+- Kopfzeile und Kartentext wurden bei größter Systemschrift abgeschnitten (`overflow: hidden` auf Karten, nicht mitskalierende Zeilenhöhe, feste Kopfzeilenhöhe) — D-091/D-092
+- Profilbild oben rechts hatte keinen Tap-Handler (Tom-Wunsch) — jetzt führt Antippen direkt zu Profil
+
+VoiceOver bewusst nicht getestet (Toms Entscheidung). Apple-/Google-Anmeldung als sinnvoller, aber bewusst nicht implementierter Punkt zurückgestellt – braucht Apple-Developer- bzw. Google-Cloud-Konto (Abschnitt-2-Stopppunkt, kein Codeaufwand vor Kontoeinrichtung).
+
+**Offen für die nächste Etappe:** PR #4 von Draft auf „ready for review" prüfen/setzen und mergen (letzter Schritt des Auftrags). Datenschutzerklärung braucht noch juristische Prüfung durch eine zuständige Person, sobald App-Identität feststeht. Phase 3 Rest (gehostetes Supabase-Projekt/Domain/Hosting), Phase 6 Rest (Screenshots), Phase 7–8 bleiben BLOCKIERT DURCH TOM/KONTO.
 
 ## Letzter Auftrag (20.07.2026, sechster): UI-Parität der nativen App mit der Patienten-Weboberfläche
 

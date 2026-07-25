@@ -2,6 +2,12 @@ import { DEFAULT_REMINDER_PREFERENCES } from "@physio-check/shared";
 import { apiFetch } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 
+function extensionForMimeType(mimeType: string): string {
+  if (mimeType === "image/png") return "png";
+  if (mimeType === "image/webp") return "webp";
+  return "jpg";
+}
+
 export type ReminderPreferences = {
   exerciseRemindersEnabled: boolean;
   planUpdatesEnabled: boolean;
@@ -92,25 +98,44 @@ export type AvatarUploadResult = { signedUrl: string };
  */
 export async function uploadAvatar(
   fileUri: string,
-  mimeType: string,
-  sizeBytes: number
+  mimeType: string
 ): Promise<AvatarUploadResult> {
+  // Bytegröße kommt bewusst vom geladenen Blob, nicht vom Picker-Ergebnis:
+  // `ImagePicker`s `fileSize` fehlt bei `allowsEditing: true` nach dem
+  // Zuschneiden zuverlässig (iOS liefert dafür kein Metadatenfeld), sonst
+  // ginge stets `sizeBytes: 0` an den Server und jeder Upload schlüge fehl.
+  const file = await fetch(fileUri);
+  const blob = await file.blob();
+
   const ticket = await apiFetch<{
     uploadUrl: string;
     path: string;
   }>("/api/mobile/avatar/start", {
     method: "POST",
-    body: { mimeType, sizeBytes },
+    body: { mimeType, sizeBytes: blob.size },
   });
 
   // Direkt-Upload zur signierten URL (Token steckt in der URL; kein
-  // weiterer Schlüssel nötig) – gleiches Muster wie der Web-Upload.
-  const file = await fetch(fileUri);
-  const blob = await file.blob();
+  // weiterer Schlüssel nötig) – gleiches Muster wie der Web-Upload
+  // (`src/lib/upload-with-progress.ts`): Supabase Storages
+  // Signed-Upload-Endpunkt erwartet `multipart/form-data`. Der Blob aus
+  // `fetch(fileUri).blob()` trägt für lokale `file://`-URIs keinen
+  // Content-Type (React Natives Fetch-Polyfill setzt keinen), wodurch
+  // der Multipart-Teil serverseitig als `text/plain` ankommt und
+  // Supabase Storage mit 415/400 ablehnt – behoben, indem der Blob mit
+  // explizitem `type` neu verpackt wird. Der ältere RN-Dateideskriptor
+  // `{ uri, name, type }` (ohne Blob) scheitert auf dieser RN-Version
+  // (0.86, New Architecture) mit "Unsupported FormDataPart
+  // implementation" – beides per echtem Server-/Laufzeitfehler
+  // bestätigt, nicht vermutet.
+  const typedBlob = new Blob([blob], { type: mimeType });
+  const body = new FormData();
+  body.append("cacheControl", "3600");
+  body.append("", typedBlob, `avatar.${extensionForMimeType(mimeType)}`);
   const upload = await fetch(ticket.uploadUrl, {
     method: "PUT",
-    headers: { "Content-Type": mimeType, "x-upsert": "false" },
-    body: blob,
+    headers: { "x-upsert": "false" },
+    body,
   });
   if (!upload.ok) throw new Error(`Upload fehlgeschlagen (${upload.status})`);
 

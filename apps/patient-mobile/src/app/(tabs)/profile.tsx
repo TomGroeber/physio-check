@@ -30,6 +30,7 @@ import {
   saveReminderPreferences,
   uploadAvatar,
 } from "@/data/profile";
+import { ApiRequestError } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import { supabase } from "@/lib/supabase";
 import { useThemeSetting } from "@/lib/theme";
@@ -122,19 +123,27 @@ export default function Profile() {
       setMessage({ kind: "error", text: t.avatar.unsupportedType });
       return;
     }
-    if ((asset.fileSize ?? 0) > MAX_AVATAR_MB * 1024 * 1024) {
+    // `asset.fileSize` fehlt nach dem Zuschneiden (`allowsEditing: true`)
+    // auf iOS zuverlässig - hier nur ein optionaler Schnellausschluss,
+    // die verbindliche Prüfung läuft serverseitig gegen die echte
+    // Blobgröße (siehe uploadAvatar).
+    if (asset.fileSize && asset.fileSize > MAX_AVATAR_MB * 1024 * 1024) {
       setMessage({ kind: "error", text: t.avatar.tooLarge(MAX_AVATAR_MB) });
       return;
     }
     setBusy(true);
     setMessage(null);
     try {
-      await uploadAvatar(asset.uri, mimeType, asset.fileSize ?? 0);
+      await uploadAvatar(asset.uri, mimeType);
       setMessage({ kind: "success", text: web.common.saved });
       await refreshContext();
       state.refresh();
-    } catch {
-      setMessage({ kind: "error", text: t.avatar.uploadFailed });
+    } catch (error) {
+      const text =
+        error instanceof ApiRequestError && error.message.includes("Größenlimit")
+          ? t.avatar.tooLarge(MAX_AVATAR_MB)
+          : t.avatar.uploadFailed;
+      setMessage({ kind: "error", text });
     } finally {
       setBusy(false);
     }

@@ -31,12 +31,12 @@
 | iOS Privacy Manifest | `PrivacyInfo.xcprivacy` per echtem `expo prebuild --clean` generiert und inhaltlich geprüft | D-086 |
 | Öffentliche Datenschutzerklärung | `/privacy` ohne Login erreichbar, per Playwright-Screenshot verifiziert | D-087 |
 | Malware-Scan (ClamAV, fail-closed) | Real in CI verifiziert inkl. eigens gebauter Testsignatur für unerkennbare EICAR-Grenzfälle | D-071/D-072/D-077 bis D-081, `.github/workflows/ci.yml` |
+| **iOS-Tap-Durchlauf (echte Bedienungshilfen-Freigabe, 25.07.2026)** | Voller Patientenablauf per echtem Tap: Registrierung, Login, Einladungscode, Praxisverbindung, Profil (Telefon/Bild/Passwort/E-Mail), Übung öffnen + Dokumentation, Terminabsage, Terminangebot annehmen, Konto löschen. Vier reale Fehler gefunden und behoben, die vorher technisch nie erreichbar waren | D-089 bis D-092, `docs/TEST_MATRIX.md` |
 
 ## 3. Bekannte Einschränkungen (dokumentiert, kein Blocker für weitere technische Arbeit)
 
-- **macOS-Bedienungshilfen-Berechtigung fehlt** auf Toms Mac für automatisierte Taps im Simulator (Formulareingabe wie Telefonnummer/Absagegrund/Bildauswahl konnte deshalb nicht vollautomatisch durchgespielt werden, nur direkt setzbare Zustände wie Dark Mode/Dynamic Type). Umgebungsblocker, kein Codeproblem; unverändert seit der vorherigen Sitzung.
 - **Deep-Link-Navigation zu einer bereits laufenden App-Instanz** verhält sich nicht wie eine echte In-App-Navigation (`xcrun simctl openurl` löst zusätzlich einen nicht automatisch wegklickbaren System-Dialog aus). Für Kaltstart-Fälle funktioniert `xcrun simctl launch` ohne dieses Problem. Dokumentiert als D-085, nach 3 dokumentierten Fehlversuchen bewusst nicht weiterverfolgt (systematisches Debugging-Prinzip: Grenze der Testumgebung akzeptieren statt weiter zu raten).
-- **VoiceOver und Reduce-Motion** lassen sich ohne Bedienungshilfen-Berechtigung nicht per `simctl` automatisiert um- oder abschalten (im Gegensatz zu Dark Mode/Dynamic Type/Kontrast, für die `simctl ui` funktioniert).
+- **VoiceOver bewusst nicht getestet** – Toms Entscheidung, kein technischer Blocker (macOS-Bedienungshilfen sind seit 25.07.2026 freigegeben, ein Folgelauf wäre technisch möglich).
 - **Kein produktionsreifer Dauer-Malware-Scanner**: Die aktuelle ClamAV-Integration ist fail-closed und in CI verifiziert, aber die Wahl zwischen einem dauerhaft laufenden `clamd`-Dienst oder einem Cloud-AV-Dienst hängt von der noch offenen Hosting-Entscheidung ab.
 
 ## 4. Externe Blocker (Abschnitt-2-Stopppunkte – benötigen Tom)
@@ -65,7 +65,7 @@ Diese Punkte sind technisch vorbereitet, aber absichtlich nicht ausgeführt:
 
 | Plattform | Technisch bereit für internen Test (TestFlight/Play interner Test)? | Technisch bereit für öffentliche Store-Einreichung? |
 |---|---|---|
-| **iOS** | **JA** – Build, Login, UI-Parität, Dark Mode, Dynamic Type, Privacy Manifest alle real verifiziert; fehlt nur ein Apple-Developer-Konto plus EAS-Build | **NEIN** – Datenschutzerklärung braucht juristische Prüfung, App-Identität ist nicht final, keine Store-Screenshots vorhanden |
+| **iOS** | **JA** – Build, Login, UI-Parität, Dark Mode, Dynamic Type, Privacy Manifest sowie ein vollständiger echter Tap-Durchlauf aller Kernabläufe real verifiziert; fehlt nur ein Apple-Developer-Konto plus EAS-Build | **NEIN** – Datenschutzerklärung braucht juristische Prüfung, App-Identität ist nicht final, keine Store-Screenshots vorhanden |
 | **Android** | **JA** – Build, Login, echte Backend-Daten in Hell/Dunkel real verifiziert; fehlt nur ein Play-Console-Konto plus EAS-Build | **NEIN** – gleiche Gründe wie iOS |
 | **Web (Praxis-Dashboard)** | **JA** für einen internen/Staging-Rollout – CI durchgängig grün, Security-Header/CSP verifiziert, Malware-Scan verifiziert | **NEIN** für Produktivbetrieb – kein gehostetes Supabase-Projekt, keine Domain, kein Hosting-Ziel entschieden |
 

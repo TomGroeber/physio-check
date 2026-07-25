@@ -187,9 +187,31 @@ Erster echter Simulatorlauf (iPhone 17 Pro, iOS 26.5, Metro über `exp://`-Tunne
 | **Simulatorlauf (iPhone 17 Pro, iOS 26.5, Metro über `exp://127.0.0.1:8081`)** | Login mit Demo-Patientin, Code-/Verbindungsbereich (inkl. neuem Kontoabschnitt), Heute, Termine, Profil – hell und dunkel; Tab-Bar vollständig sichtbar; s. „UI-Parität“ oben |
 | `pnpm docs:sync` | Grün (Obsidian-Vault auf Toms Mac) |
 
-## Bekannte Einschränkungen
+## Echter iOS-Tap-Durchlauf nach Bedienungshilfen-Freigabe (25.07.2026)
 
-- **GUI-Tap-Automatisierung im Simulator ist ohne manuelle macOS-Accessibility-Freigabe blockiert.** `cliclick`/`osascript System Events` scheitern mit „Accessibility privileges not enabled“ – das erfordert einen physischen Klick in Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen, den nur Tom ausführen kann (kein Code-Defekt). Verifikation erfolgte stattdessen über Expo-Deep-Links (`exp://127.0.0.1:8081/--/<route>`), `xcrun simctl ui booted appearance dark/light` (tap-frei) und einen temporären, **nie committeten** Test-Login-Screen (`_dev-login.tsx`, vor jedem Commit gelöscht, `git status` bestätigt keinen Rest). Formulareingaben (Telefonnummer ändern, Bild auswählen, Absage-Text) und Übungsdetail/geführte Sitzung wurden dadurch NICHT per Tap im Simulator geprüft, nur per Code-Review und den bestehenden Komponententests. Wenn Tom die Berechtigung erteilt, kann ein Folgelauf diese Lücke schließen.
+Tom hat macOS-Bedienungshilfen für Terminal freigegeben; erster echter Tap-Durchlauf im iPhone-17-Pro-Simulator möglich (`cliclick` + `osascript System Events`, Koordinaten aus echten Gerätescreenshots berechnet). Getestet mit einem neu registrierten Testkonto und dem seed-basierten Demo-Patientenkonto.
+
+| Bereich | Ergebnis |
+|---|---|
+| Registrierung, E-Mail-Bestätigung (echte Mailpit-Mail), Login | Grün – echte Session, echter Redirect |
+| Einladungscode einlösen, Praxisverbindung bestätigen | Grün – echter DB-Eintrag in `patient_practice_links` |
+| Telefonnummer ändern | Grün – echter DB-Wert per SQL-Probe bestätigt |
+| Profilbild hochladen/ersetzen/entfernen | **Erst nach Bugfix grün** – Upload schlug zunächst zuverlässig fehl (D-090) |
+| Passwort ändern (Anstoß) | Grün – echte Reset-Mail in Mailpit |
+| E-Mail ändern | Grün – echte Doppelbestätigungs-Mails an alte und neue Adresse |
+| Übung öffnen, Video-Hinweis, Dokumentation speichern | **Erst nach Bugfix grün** – Laden schlug zunächst zuverlässig fehl (D-089); danach echter `completion_logs`-Eintrag mit `status: completed` bestätigt |
+| Terminabsage mit Grund | Grün – echter Eintrag in `cancellation_requests` (Grundtext korrekt gespeichert, nicht in `appointments.cancellation_reason` – das ist eine separate, bewusst getrennte Tabelle) |
+| Terminangebot annehmen | Grün – Angebot verschwindet aus „Terminangebote“, Termin erscheint verbindlich unter „Kommende Termine“ |
+| Konto löschen | Grün – Zugang nach Löschung gesperrt (`banned_until` weit in der Zukunft), Profildaten geleert; praxisbezogene Daten bewusst erhalten (D-070) |
+| Dunkelmodus (In-App-Auswahl) | Grün; System-Dunkelmodus wird bewusst NICHT automatisch übernommen, sobald einmal manuell gewählt wurde (D-056, wie im Web) |
+| Größte Systemschriftgröße (Bedienungshilfen-Textgrößen) | **Erst nach Bugfix grün** – Kopfzeile und Kartentext wurden abgeschnitten (D-091/D-092); nach Fix erneut typecheck-/lint-/testgrün, visuelle Nachprüfung durch Tom steht noch aus |
+| Reduce Motion | Grün, unauffällig |
+| Untere Navigation / Safe Areas | Grün, keine Überdeckung festgestellt |
+| VoiceOver | Bewusst nicht getestet (Toms Entscheidung) |
+
+Vier reale, vorher nie erreichbare Fehler gefunden und behoben – siehe D-089 bis D-092 in `DECISIONS.md`. Zusätzlich: Profilbild oben rechts antippen führt jetzt direkt zu Profil (vorher ohne Tap-Handler).
+
+## Bekannte Einschränkungen
 - Nach wiederholten `db:reset`/Seed-Zyklen kann sich der Turbopack-Dev-Cache verkeilen: E2E-Navigationen hängen dann dauerhaft und der WebServer loggt ChunkLoadErrors. Abhilfe: `rm -rf .next` vor dem Lauf. **Neu (20.07.2026):** Ein zusätzlicher, bisher unbekannter Auslöser sind parallel laufende Mobile-Entwicklungsprozesse (Metro-Bundler + gebooteter Simulator) – sie konkurrieren mit dem Next-Dev-Server um lokale Ressourcen und lösten in dieser Sitzung zwei aufeinanderfolgende Fehlschläge trotz Cache-Löschung aus. Vor `pnpm e2e` immer `pnpm mobile:start` beenden und den Simulator herunterfahren.
 - Ein einzelner Server-Action-Roundtrip kann unter voller E2E-Parallellast selten >10 s dauern (Einladungscode-Erzeugung); der konfigurierte Retry mit Trace fängt das auf.
 - Formulare mit `state`+`revalidatePath` (Praxisbereich, Telefonnummer, Erinnerungen) sind vom intermittierenden Roundtrip-Problem grundsätzlich weiter betroffen (im Test 5×/5 stabil); patientenkritische Bestätigungen nutzen deshalb das Redirect-Muster (D-053).
