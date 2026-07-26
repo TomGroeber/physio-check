@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getSessionContext } from "@/server/services/session";
 import { getPractice, listPracticeMembers } from "@/server/services/practice";
 import { listStaffInvites } from "@/server/services/staff-invites";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlassPanel, GlassPanelHeader, GlassPanelTitle } from "@/components/ui/glass-panel";
 import { de } from "@/messages/de";
 import { MembersSection, ProfileForm, SettingsForm } from "./settings-forms";
 import type { PracticeSettings } from "@/lib/validation/platform-admin";
@@ -27,19 +27,19 @@ export default async function SettingsPage() {
     return (
       <div className="flex max-w-3xl flex-col gap-6">
         <h1 className="text-2xl font-bold">{t.title}</h1>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">{t.practiceData}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-1 text-base">
+        <GlassPanel>
+          <GlassPanelHeader>
+            <GlassPanelTitle>{t.practiceData}</GlassPanelTitle>
+          </GlassPanelHeader>
+          <div className="flex flex-col gap-1 text-base">
             <p className="font-semibold">{practice?.name}</p>
             <p>{practice?.address_street}</p>
             <p>
               {practice?.address_postal_code} {practice?.address_city}
             </p>
             {practice?.phone && <p>{practice.phone}</p>}
-          </CardContent>
-        </Card>
+          </div>
+        </GlassPanel>
         <p className="text-sm text-muted-foreground">{t.onlyAdminsCanManage}</p>
       </div>
     );

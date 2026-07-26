@@ -82,7 +82,7 @@ function ProfileTab({ practice }: { practice: PracticeDetailForAdmin }) {
             <Input id="supportEmail" name="supportEmail" type="email" defaultValue={practice.supportEmail} maxLength={200} />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="supportUrl">{tSettings.heading}</Label>
+            <Label htmlFor="supportUrl">{de.admin.config.supportUrl}</Label>
             <Input id="supportUrl" name="supportUrl" type="url" defaultValue={practice.supportUrl} maxLength={300} />
           </div>
         </div>

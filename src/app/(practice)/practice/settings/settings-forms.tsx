@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlassPanel, GlassPanelHeader, GlassPanelTitle } from "@/components/ui/glass-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,12 +81,11 @@ export function ProfileForm({ practice }: { practice: Practice }) {
   );
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">{de.practice.settings.editProfile}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form action={formAction} className="flex flex-col gap-4">
+    <GlassPanel>
+      <GlassPanelHeader>
+        <GlassPanelTitle>{de.practice.settings.editProfile}</GlassPanelTitle>
+      </GlassPanelHeader>
+      <form action={formAction} className="flex flex-col gap-4">
           <FormMessage error={state.error} success={state.success ? de.common.saved : undefined} />
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-2 sm:col-span-2">
@@ -129,8 +128,7 @@ export function ProfileForm({ practice }: { practice: Practice }) {
           </div>
           <SubmitButton>{de.common.save}</SubmitButton>
         </form>
-      </CardContent>
-    </Card>
+    </GlassPanel>
   );
 }
 
@@ -141,12 +139,11 @@ export function SettingsForm({ settings }: { settings: Partial<PracticeSettings>
   );
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">{tSettings.heading}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form action={formAction} className="flex flex-col gap-4">
+    <GlassPanel>
+      <GlassPanelHeader>
+        <GlassPanelTitle>{tSettings.heading}</GlassPanelTitle>
+      </GlassPanelHeader>
+      <form action={formAction} className="flex flex-col gap-4">
           <FormMessage error={state.error} success={state.success ? de.common.saved : undefined} />
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-2">
@@ -221,8 +218,7 @@ export function SettingsForm({ settings }: { settings: Partial<PracticeSettings>
           </div>
           <SubmitButton>{tSettings.save}</SubmitButton>
         </form>
-      </CardContent>
-    </Card>
+    </GlassPanel>
   );
 }
 
@@ -243,11 +239,11 @@ export function MembersSection({
 
   return (
     <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">{de.practice.settings.membersHeading}</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
+      <GlassPanel>
+        <GlassPanelHeader>
+          <GlassPanelTitle>{de.practice.settings.membersHeading}</GlassPanelTitle>
+        </GlassPanelHeader>
+        <div className="flex flex-col gap-3">
           {members.length === 0 ? (
             <p className="text-sm text-muted-foreground">{tDetail.membersEmpty}</p>
           ) : (
@@ -276,80 +272,76 @@ export function MembersSection({
             </ul>
           )}
           <p className="text-xs text-muted-foreground">{tDetail.lastAdminProtected}</p>
-        </CardContent>
-      </Card>
+        </div>
+      </GlassPanel>
 
       {openInvites.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">{tDetail.openInvitesHeading}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="flex flex-col divide-y">
-              {openInvites.map((invite) => (
-                <li key={invite.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                  <div className="flex items-center gap-3">
-                    <span className="font-medium">{invite.email}</span>
-                    <Badge variant="secondary">
-                      {invite.role === "admin" ? tDetail.roleAdmin : tDetail.roleTherapist}
-                    </Badge>
-                  </div>
-                  <div className="flex gap-2">
-                    <form action={revokeStaffInviteAction}>
-                      <input type="hidden" name="inviteId" value={invite.id} />
-                      <Button type="submit" variant="outline" size="sm">
-                        {tDetail.revoke}
-                      </Button>
-                    </form>
-                    <RenewInviteButton inviteId={invite.id} />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        <GlassPanel>
+          <GlassPanelHeader>
+            <GlassPanelTitle>{tDetail.openInvitesHeading}</GlassPanelTitle>
+          </GlassPanelHeader>
+          <ul className="flex flex-col divide-y">
+            {openInvites.map((invite) => (
+              <li key={invite.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                <div className="flex items-center gap-3">
+                  <span className="font-medium">{invite.email}</span>
+                  <Badge variant="secondary">
+                    {invite.role === "admin" ? tDetail.roleAdmin : tDetail.roleTherapist}
+                  </Badge>
+                </div>
+                <div className="flex gap-2">
+                  <form action={revokeStaffInviteAction}>
+                    <input type="hidden" name="inviteId" value={invite.id} />
+                    <Button type="submit" variant="outline" size="sm">
+                      {tDetail.revoke}
+                    </Button>
+                  </form>
+                  <RenewInviteButton inviteId={invite.id} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </GlassPanel>
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">{tStaff.inviteHeading}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form action={inviteAction} className="flex flex-col gap-4">
-            <FormMessage error={inviteState.error} />
-            {inviteState.inviteLink ? (
-              <div className="flex flex-col gap-2 rounded-lg bg-muted p-3">
-                <p className="text-sm font-medium">{tStaff.inviteLinkCreated}</p>
-                <Input readOnly value={inviteState.inviteLink} className="font-mono text-sm" />
-                <p className="text-xs text-muted-foreground">{tStaff.inviteHint}</p>
-              </div>
-            ) : null}
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="invite-name">{tStaff.inviteName}</Label>
-                <Input id="invite-name" name="name" required maxLength={200} />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="invite-email">{tStaff.inviteEmail}</Label>
-                <Input id="invite-email" name="email" type="email" required maxLength={200} />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="invite-role">{tStaff.inviteRole}</Label>
-                <Select name="role" defaultValue="therapist">
-                  <SelectTrigger id="invite-role">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">{tDetail.roleAdmin}</SelectItem>
-                    <SelectItem value="therapist">{tDetail.roleTherapist}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+      <GlassPanel>
+        <GlassPanelHeader>
+          <GlassPanelTitle>{tStaff.inviteHeading}</GlassPanelTitle>
+        </GlassPanelHeader>
+        <form action={inviteAction} className="flex flex-col gap-4">
+          <FormMessage error={inviteState.error} />
+          {inviteState.inviteLink ? (
+            <div className="flex flex-col gap-2 rounded-lg bg-muted p-3">
+              <p className="text-sm font-medium">{tStaff.inviteLinkCreated}</p>
+              <Input readOnly value={inviteState.inviteLink} className="font-mono text-sm" />
+              <p className="text-xs text-muted-foreground">{tStaff.inviteHint}</p>
             </div>
-            <SubmitButton>{tStaff.inviteSubmit}</SubmitButton>
-          </form>
-        </CardContent>
-      </Card>
+          ) : null}
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="invite-name">{tStaff.inviteName}</Label>
+              <Input id="invite-name" name="name" required maxLength={200} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="invite-email">{tStaff.inviteEmail}</Label>
+              <Input id="invite-email" name="email" type="email" required maxLength={200} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="invite-role">{tStaff.inviteRole}</Label>
+              <Select name="role" defaultValue="therapist">
+                <SelectTrigger id="invite-role">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">{tDetail.roleAdmin}</SelectItem>
+                  <SelectItem value="therapist">{tDetail.roleTherapist}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <SubmitButton>{tStaff.inviteSubmit}</SubmitButton>
+        </form>
+      </GlassPanel>
     </div>
   );
 }
