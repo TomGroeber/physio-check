@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Text, TextInput, View } from "react-native";
 import { formatTime } from "@physio-check/shared";
 import { TAB_BAR_CONTENT_HEIGHT } from "@/components/tab-bar";
+import { GlassCard } from "@/components/glass-card";
 import {
   AppButton,
   Banner,
@@ -68,93 +69,97 @@ export default function Messages() {
         {link?.practiceName ?? ""}
       </Body>
 
-      {messages.length === 0 ? (
-        <Body muted>{t.emptyState}</Body>
-      ) : (
-        <View style={{ gap: spacing.sm }}>
-          {messages.map((message) => {
-            const own = message.senderProfileId === userId;
-            return (
-              <View
-                key={message.id}
-                style={{
-                  alignSelf: own ? "flex-end" : "flex-start",
-                  maxWidth: "85%",
-                  backgroundColor: own ? theme.primary : theme.secondary,
-                  borderRadius: radius.xl,
-                  paddingHorizontal: spacing.md - 4,
-                  paddingVertical: spacing.sm,
-                }}
-              >
-                <Text style={{ fontSize: type.base, color: own ? theme.primaryForeground : theme.foreground }}>
-                  {message.body}
-                </Text>
-                <Text
+      <GlassCard>
+        {messages.length === 0 ? (
+          <Body muted>{t.emptyState}</Body>
+        ) : (
+          <View style={{ gap: spacing.sm }}>
+            {messages.map((message) => {
+              const own = message.senderProfileId === userId;
+              return (
+                <View
+                  key={message.id}
                   style={{
-                    fontSize: type.small - 2,
-                    marginTop: spacing.xs,
-                    color: own ? theme.primaryForeground : theme.mutedForeground,
-                    opacity: own ? 0.75 : 1,
+                    alignSelf: own ? "flex-end" : "flex-start",
+                    maxWidth: "85%",
+                    backgroundColor: own ? theme.primary : theme.secondary,
+                    borderRadius: radius.xl,
+                    paddingHorizontal: spacing.md - 4,
+                    paddingVertical: spacing.sm,
                   }}
                 >
-                  {t.sentAt(formatTime(new Date(message.createdAt), branding.defaultTimeZone))}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
-      )}
+                  <Text style={{ fontSize: type.base, color: own ? theme.primaryForeground : theme.foreground }}>
+                    {message.body}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: type.small - 2,
+                      marginTop: spacing.xs,
+                      color: own ? theme.primaryForeground : theme.mutedForeground,
+                      opacity: own ? 0.75 : 1,
+                    }}
+                  >
+                    {t.sentAt(formatTime(new Date(message.createdAt), branding.defaultTimeZone))}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        )}
+      </GlassCard>
 
       <Body muted size="small">
         {t.safetyNotice}
       </Body>
 
-      <View style={{ gap: spacing.sm }}>
-        {sendError ? <Banner kind="error">{sendError}</Banner> : null}
-        <TextInput
-          ref={inputRef}
-          value={draft}
-          onChangeText={setDraft}
-          placeholder={t.placeholder}
-          placeholderTextColor={theme.mutedForeground}
-          accessibilityLabel={t.placeholder}
-          multiline
-          maxLength={2000}
-          style={{
-            minHeight: touch.minHeight,
-            maxHeight: 120,
-            borderWidth: 1,
-            borderColor: theme.input,
-            borderRadius: radius.lg,
-            paddingHorizontal: spacing.md - 4,
-            paddingVertical: spacing.sm,
-            fontSize: type.base,
-            color: theme.foreground,
-            backgroundColor: theme.card,
-            textAlignVertical: "top",
-          }}
-        />
-        <AppButton
-          label={sending ? t.sending : t.send}
-          disabled={sending || draft.trim().length === 0}
-          onPress={async () => {
-            const body = draft.trim();
-            if (!body) return;
-            setSending(true);
-            setSendError(null);
-            try {
-              await sendMessage(body);
-              setDraft("");
-              inputRef.current?.blur();
-              state.refresh();
-            } catch {
-              setSendError(t.sendError);
-            } finally {
-              setSending(false);
-            }
-          }}
-        />
-      </View>
+      <GlassCard strong>
+        <View style={{ gap: spacing.sm }}>
+          {sendError ? <Banner kind="error">{sendError}</Banner> : null}
+          <TextInput
+            ref={inputRef}
+            value={draft}
+            onChangeText={setDraft}
+            placeholder={t.placeholder}
+            placeholderTextColor={theme.mutedForeground}
+            accessibilityLabel={t.placeholder}
+            multiline
+            maxLength={2000}
+            style={{
+              minHeight: touch.minHeight,
+              maxHeight: 120,
+              borderWidth: 1,
+              borderColor: theme.input,
+              borderRadius: radius.lg,
+              paddingHorizontal: spacing.md - 4,
+              paddingVertical: spacing.sm,
+              fontSize: type.base,
+              color: theme.foreground,
+              backgroundColor: theme.card,
+              textAlignVertical: "top",
+            }}
+          />
+          <AppButton
+            label={sending ? t.sending : t.send}
+            disabled={sending || draft.trim().length === 0}
+            onPress={async () => {
+              const body = draft.trim();
+              if (!body) return;
+              setSending(true);
+              setSendError(null);
+              try {
+                await sendMessage(body);
+                setDraft("");
+                inputRef.current?.blur();
+                state.refresh();
+              } catch {
+                setSendError(t.sendError);
+              } finally {
+                setSending(false);
+              }
+            }}
+          />
+        </View>
+      </GlassCard>
     </Screen>
   );
 }

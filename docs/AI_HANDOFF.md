@@ -1,6 +1,38 @@
 # PhysioCheck – AI Handoff
 
-> Stand: 2026-07-26 · `main@be94192` (PR #5 gemergt, regulärer Merge-Commit) enthält jetzt ALLE bisherigen Aufträge inkl. Betreiberportal, Liquid-Glass-Design und Nachrichtenfunktion · CI auf `main` real verifiziert grün (alle 4 Jobs) · Feature-Branch `claude/platform-admin-20260725` ist abgeschlossen · GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
+> Stand: 2026-07-26 · `main@be94192` ist der letzte GEMERGTE Stand (s. vorheriger Auftrag unten). **Aktuell IN ARBEIT, NICHT gemergt/gepusht:** Branch `claude/mobile-liquid-glass-tabbar-20260726`, native Liquid-Glass-Tab-Leiste – s. Abschnitt direkt unten für exakten Zwischenstand. GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
+
+## AKTUELLER Auftrag (26.07.2026, IN ARBEIT, Branch `claude/mobile-liquid-glass-tabbar-20260726`): Native Liquid-Glass-Tab-Leiste
+
+**Für eine andere KI, die hier bei einem Limit-Abbruch übernimmt:** Lies das zuerst, bevor du irgendetwas tust.
+
+**Auftrag:** Die untere Navigation der nativen Patienten-App (`apps/patient-mobile`) soll wie eine echte, hochwertige Apple-iOS-26-Liquid-Glass-Tab-Leiste aussehen (Referenz: Toms sehr detaillierter Auftragstext, sinngemäß in DECISIONS.md D-106 ff. zusammengefasst) – NICHT nur eine schwebende weiße Fläche mit flachem Kreis.
+
+**Aktueller Code-Stand (5 Commits auf dem Branch, NICHTS gepusht):**
+1. `d49f94a` Nachrichten-Karten von `expo-blur` auf `@callstack/liquid-glass` umgestellt.
+2. `f6505e9` Jest-Mock für das native Glas-Modul.
+3. `b5ed10b` Tab-Leiste zur schwebenden Kapsel umgebaut (`position: absolute`, Kapselrundung, EINE animierte Hervorhebung statt Pille-pro-Tab, Zieh-Geste via PanResponder-Capture-Phase).
+4. `322cbc2` Doku-Zwischenstand (D-106–D-111).
+5. `42bec7a` **Wichtigster Commit:** `src/components/liquid-lens.tsx` (neu) – eigener optischer Effekt-Layer (Reflexionsbögen, cyan-/magentafarbene Kanten, Rand, Schatten, wandernder Schimmer) über der nativen Glasfläche, weil die reine native API (`UIGlassEffect`) laut Tom „kaum einen sichtbaren Unterschied" zur alten Fassung zeigte. Neue Abhängigkeit `expo-linear-gradient`. Neuer gemeinsamer Hook `src/lib/accessibility-preferences.ts` (Reduce Motion/Transparency).
+
+**Bisherige Rückmeldungen von Tom (chronologisch, wichtig für den Ton der weiteren Arbeit):**
+- 1. Fassung (nur natives `@callstack/liquid-glass`, keine eigene Optik): **ausdrücklich abgelehnt** – „kaum ein sichtbarer Unterschied … Schimmer-/Reflexions-/Wassertropfen-Effekt fehlt praktisch vollständig". Tom akzeptiert die API-Grenze (keine echte chromatische Dispersion über öffentliche APIs) NICHT als Abschlussgrund – er verlangt eine sichtbare SIMULATION davon.
+- Sehr detaillierte Anforderungsliste erhalten (s. D-112 in DECISIONS.md bzw. TASKS.md-Eintrag): Reflexionsbogen, Gegenreflex, cyan-/magentafarbene Kanten, räumlicher Rand, Schatten, wandernder Schimmer, elastische Bewegung – aber „kein vollständig blau/pink gefärbter Kreis", „kein Glitzer", „kein Dauerblinken".
+- Ausdrückliches Verbot: **kein Push, kein PR, kein Merge**, bis Tom das sichtbare Ergebnis selbst bestätigt hat.
+- Abnahmekriterium von Tom selbst formuliert: direkter Vorher-/Nachher-Vergleich (gleicher Tab, gleiche Helligkeit, alte Leiste links/neue rechts), Screenshots aller vier Tabs in Light+Dark Mode, eine Simulator-Aufnahme in Bewegung. **Das existiert noch NICHT** – bisher nur Einzelscreenshots, kein Side-by-Side-Vergleichsbild, keine Aufnahme.
+
+**Was NACH Commit `42bec7a` bereits per Screenshot verifiziert wurde** (Datei-Pfade liegen nur lokal im Scratchpad der damaligen Session, nicht im Repo):
+- Typecheck/Lint/16 Jest-Tests grün, `expo-doctor` 20/20 grün, nativer Rebuild erfolgreich.
+- Sichtbare Verbesserung nach Verstärken der Deckkraft (Kanten/Highlights): Kapsel wirkt spürbar runder/dimensionaler mit erkennbarem kühlen oberen/warmen unteren Farbton (Termine-Tab, heller Modus, Screenshot `/tmp/lens-strong1.png` – lokale Datei, nicht committed).
+- Dark Mode NICHT verifizierbar über `xcrun simctl ui booted appearance dark` – die App hat einen EIGENEN In-App-Dunkelmodus-Schalter (unabhängig vom System), muss über die App selbst (Profil-Screen) umgeschaltet werden.
+- Eine falsche Fährte gefunden und ausgeräumt: verschachtelte `LiquidGlassView` sah nach unscharfen Tab-Labels aus, war aber tatsächlich der native Glaseffekt, der echten scrollenden Hintergrund (z. B. einen Button-Text) korrekt weichzeichnet.
+
+**Nächster Schritt in Reihenfolge:**
+1. Vorher-/Nachher-Vergleichsscreenshot erstellen (alte Fassung vs. `42bec7a`, gleicher Tab/gleiche Helligkeit nebeneinander).
+2. Screenshots aller vier Tabs, Light + Dark Mode (Dark Mode über den In-App-Schalter, nicht `simctl`).
+3. Kurze Simulator-Aufnahme der Zieh-Geste/des Schimmers in Bewegung.
+4. Reduce Motion/Reduce Transparency tatsächlich am Gerät aktivieren und verifizieren (Code-Pfad existiert, ist aber noch nicht mit echten Systemeinstellungen getestet).
+5. Ergebnis Tom zeigen, auf explizite Bestätigung warten – **erst danach** `git push` + PR öffnen (beides bisher bewusst unterlassen).
 
 ## Letzter Auftrag (25.–26.07.2026, achter, ABGESCHLOSSEN und gemergt): Betreiberportal, Liquid-Glass-Design, Nachrichtenfunktion
 
