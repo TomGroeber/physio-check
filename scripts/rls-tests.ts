@@ -10,13 +10,20 @@
  *  C) Praxismitglied kann die eigene Rolle nicht eskalieren
  *  D) Unverbundenes Konto sieht nichts
  *  E) Storage: private Buckets sind für Patienten/Fremdpraxen nicht direkt lesbar
+ *  G) Zugangs-Wiederherstellung (D-113): nur Plattformadmin darf auslösen,
+ *     Einlösen ist ausschließlich per Service-Role erreichbar
  *
  * Die Fremdpraxis wird über den Service-Role-Key angelegt und am Ende
  * entfernt. NIEMALS gegen eine echte Umgebung ausführen.
  */
+import { createHash } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../src/server/db/database.types";
 import { hashInviteCode } from "../src/lib/invite-code";
+
+function sha256Hex(value: string): string {
+  return createHash("sha256").update(value).digest("hex");
+}
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -1449,6 +1456,153 @@ async function main() {
     check("gelöschtes Profilbild ist aus dem Storage entfernt", Boolean(error) && !data);
   }
   await deleteAuthUserByEmail(DELETION_TEST_EMAIL);
+
+  console.log("\nG) Zugangs-Wiederherstellung (D-113)");
+  const RECOVERY_OLD_EMAIL = "rls-recovery-old@demo.physiocheck.test";
+  const RECOVERY_NEW_EMAIL = "rls-recovery-new@demo.physiocheck.test";
+  await deleteAuthUserByEmail(RECOVERY_OLD_EMAIL);
+  await deleteAuthUserByEmail(RECOVERY_NEW_EMAIL);
+  let recoveryOldUserId: string | null = null;
+  let recoveryMemberId: string | null = null;
+  let recoveryNewUserId: string | null = null;
+  {
+    // Eigenes, wegwerfbares Mitglied statt der echten Demo-Konten -
+    // ein echtes Redeem haengt profile_id endgueltig um und wuerde
+    // sonst therapeutin@/admin@ dauerhaft von ihrem Konto trennen.
+    const { data: oldUser, error: oldUserError } = await service.auth.admin.createUser({
+      email: RECOVERY_OLD_EMAIL,
+      password: PASSWORD,
+      email_confirm: true,
+      user_metadata: { full_name: "RLS Recovery Alt", locale: "de" },
+    });
+    if (oldUserError || !oldUser.user) throw new Error(`recovery old user: ${oldUserError?.message}`);
+    recoveryOldUserId = oldUser.user.id;
+
+    const { data: member, error: memberError } = await service
+      .from("practice_members")
+      .insert({ practice_id: practiceAId, profile_id: recoveryOldUserId, role: "therapist" })
+      .select("id")
+      .single();
+    if (memberError || !member) throw new Error(`recovery member: ${memberError?.message}`);
+    recoveryMemberId = member.id;
+
+    const platformAdmin = await loginClient("betreiber@demo.physiocheck.test");
+
+    {
+      const { error } = await therapist.rpc("create_practice_member_recovery", {
+        p_practice_member_id: recoveryMemberId,
+        p_new_email: RECOVERY_NEW_EMAIL,
+        p_token_hash: sha256Hex("nicht-platform-admin-versuch"),
+        p_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+      check(
+        "Nicht-Plattformadmin darf keine Wiederherstellung erzeugen",
+        Boolean(error) && /not_authorized/.test(error!.message)
+      );
+    }
+
+    const firstToken = "erste-anfrage-" + crypto.randomUUID();
+    const firstTokenHash = sha256Hex(firstToken);
+    {
+      const { error } = await platformAdmin.rpc("create_practice_member_recovery", {
+        p_practice_member_id: recoveryMemberId,
+        p_new_email: RECOVERY_NEW_EMAIL,
+        p_token_hash: firstTokenHash,
+        p_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+      check("Plattformadmin kann eine Wiederherstellung erzeugen", !error);
+    }
+    {
+      const { data } = await service.rpc("inspect_practice_member_recovery", {
+        p_token_hash: firstTokenHash,
+      });
+      check(
+        "Erste Anfrage ist über den Token sichtbar",
+        data?.[0]?.out_practice_member_id === recoveryMemberId &&
+          data?.[0]?.out_new_email === RECOVERY_NEW_EMAIL
+      );
+    }
+    {
+      const { data } = await service.rpc("inspect_practice_member_recovery", {
+        p_token_hash: sha256Hex("frei-erfundener-token"),
+      });
+      check("Erfundener Token liefert nichts", (data ?? []).length === 0);
+    }
+
+    const secondToken = "zweite-anfrage-" + crypto.randomUUID();
+    const secondTokenHash = sha256Hex(secondToken);
+    {
+      const { error } = await platformAdmin.rpc("create_practice_member_recovery", {
+        p_practice_member_id: recoveryMemberId,
+        p_new_email: RECOVERY_NEW_EMAIL,
+        p_token_hash: secondTokenHash,
+        p_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+      check("Zweite Anfrage für dasselbe Mitglied wird erzeugt", !error);
+    }
+    {
+      const { data } = await service.rpc("inspect_practice_member_recovery", {
+        p_token_hash: firstTokenHash,
+      });
+      check("Erste Anfrage wurde durch die zweite automatisch widerrufen", (data ?? []).length === 0);
+    }
+    {
+      const { error } = await therapist.rpc("redeem_practice_member_recovery", {
+        p_token_hash: secondTokenHash,
+        p_new_profile_id: recoveryOldUserId,
+      });
+      check("Normale Sitzung (nicht Service-Role) kann nicht einlösen", Boolean(error));
+    }
+
+    const { data: newUser, error: newUserError } = await service.auth.admin.createUser({
+      email: RECOVERY_NEW_EMAIL,
+      password: PASSWORD,
+      email_confirm: true,
+      user_metadata: { full_name: "RLS Recovery Neu", locale: "de" },
+    });
+    if (newUserError || !newUser.user) throw new Error(`recovery new user: ${newUserError?.message}`);
+    recoveryNewUserId = newUser.user.id;
+
+    {
+      const { data, error } = await service.rpc("redeem_practice_member_recovery", {
+        p_token_hash: secondTokenHash,
+        p_new_profile_id: recoveryNewUserId,
+      });
+      check(
+        "Service-Role löst die Wiederherstellung ein",
+        !error && data?.[0]?.out_practice_id === practiceAId && data?.[0]?.out_role === "therapist"
+      );
+    }
+    {
+      const { data } = await service
+        .from("practice_members")
+        .select("profile_id, role, practice_id")
+        .eq("id", recoveryMemberId)
+        .single();
+      check(
+        "Mitgliedszeile ist jetzt auf das neue Konto umgehängt, Rolle/Praxis unverändert",
+        data?.profile_id === recoveryNewUserId &&
+          data?.role === "therapist" &&
+          data?.practice_id === practiceAId
+      );
+    }
+    {
+      const { data } = await service.rpc("inspect_practice_member_recovery", {
+        p_token_hash: secondTokenHash,
+      });
+      check("Eingelöster Token ist danach nicht mehr sichtbar", (data ?? []).length === 0);
+    }
+    {
+      const { error } = await service.rpc("redeem_practice_member_recovery", {
+        p_token_hash: secondTokenHash,
+        p_new_profile_id: recoveryNewUserId,
+      });
+      check("Doppeltes Einlösen desselben Tokens wird abgelehnt", Boolean(error));
+    }
+  }
+  if (recoveryMemberId) await service.from("practice_members").delete().eq("id", recoveryMemberId);
+  if (recoveryOldUserId) await service.auth.admin.deleteUser(recoveryOldUserId);
+  if (recoveryNewUserId) await service.auth.admin.deleteUser(recoveryNewUserId);
 
   // ---------- Aufräumen ----------
   console.log("\nAufräumen …");
