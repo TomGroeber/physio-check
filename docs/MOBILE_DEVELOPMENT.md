@@ -47,7 +47,7 @@ apps/patient-mobile/
 ├── eas.json                EAS-Profile development/preview/production (ohne Zugangsdaten)
 ├── src/app/                Expo-Router-Routen (KEINE Testdateien hierhin – werden sonst Routen!)
 │   ├── (auth)/              Willkommen, Login, Code/Verbindung (Kontoabschnitt+Abmelden), Registrierung, Aussperrung, Passwort
-│   ├── (tabs)/              Heute · Termine · Profil (max. 3 Bereiche) + Unterseiten session, exercise/[planItemId]
+│   ├── (tabs)/              Heute · Termine · Nachrichten · Profil (max. 4 Bereiche, CLAUDE.md Regel 9) + Unterseiten session, exercise/[planItemId]
 │   ├── auth/confirm.tsx · reset-password.tsx · invite/[code].tsx   Deep-Link-Ziele
 │   └── delete-account.tsx  Kontolöschungsantrag (D-062)
 ├── src/data/                Datenzugriff (Supabase RLS + RPCs + /api/mobile)
@@ -62,7 +62,7 @@ apps/patient-mobile/
 - **Sessions**: AES-verschlüsselt in AsyncStorage, Schlüssel im SecureStore (`secure-session-storage.ts`, D-061). Nie zu einfachem AsyncStorage wechseln.
 - **`@physio-check/shared`** wird als TypeScript-Quelle konsumiert: Next braucht `transpilePackages`, Metro/Jest transformieren es automatisch. Die Website re-exportiert die verschobenen Module unter den alten `@/lib/...`-Pfaden. Seit dem UI-Paritäts-Auftrag (20.07.2026) liegen auch `messages-de.ts`, `reminders.ts` und `exercise-log-validation.ts` dort (D-065) – die App verwendet **dieselben** deutschen Texte wie die Website, nie eine zweite Übersetzung.
 - **Design ist an die Patienten-Weboberfläche gebunden** (D-064): Farben, Radien, Abstände, Typografie kommen aus `branding.ts` und spiegeln exakt `src/app/globals.css`. Bei Web-Design-Änderungen `branding.ts` synchron halten.
-- **Tab-Bar** (`components/tab-bar.tsx`) berechnet ihre Höhe aus Inhalt + `useSafeAreaInsets().bottom` – nie eine feste Höhe setzen (Ursache des früheren Croppings, D-063).
+- **Tab-Bar** (`components/tab-bar.tsx`) berechnet ihre Höhe aus Inhalt + `useSafeAreaInsets().bottom` – nie eine feste Höhe setzen (Ursache des früheren Croppings, D-063). Seit 26.07.2026 (D-106–D-111) eine schwebende, randabgesetzte Glaskapsel (`position: absolute`, `@callstack/liquid-glass`) statt randlosem Balken; die Screens reservieren dafür über `Screen`'s `bottomInset={TAB_BAR_CONTENT_HEIGHT}` Platz. Eine einzelne `Animated.Value`-Hervorhebung gleitet zwischen den Zielen (Feder-Animation beim Antippen, direktes Folgen der Fingerposition beim Ziehen). Auf Android und älterem iOS: einfache, transluzente Fläche ohne Animation der Hervorhebungsfarbe (kein `isLiquidGlassSupported`).
 - **Jest**: `jest@~29.7.0` ist bewusst gepinnt (jest-expo 57 nutzt intern Jest 29; Jest 30 bricht mit `clearMocksOnScope`). `@types/jest@29.5.14` ebenso gepinnt (sonst meldet `expo-doctor` eine Versionsabweichung). RNTL v14: `render` ist **async** → immer `await render(...)`. Safe-Area und AsyncStorage werden global gemockt (`jest.setup.js`, offizielle Jest-Mocks der Bibliotheken).
 - **Deep Links** (Dev, ohne Dev-Client nur `exp://` nutzbar – das eigene Schema `physiocheck://` wird erst in einem EAS-/Dev-Client-Build registriert): `xcrun simctl openurl booted "exp://127.0.0.1:8081/--/invite/DEMA-PHYS-2326"`. Universal/App Links benötigen eine Domain (offen, s. Checkliste).
 - **Praxisrollen** werden nach Login erkannt (Mitgliedszeile via RLS) und ausgesperrt; es gibt keinen mobilen Praxisbereich.
