@@ -61,6 +61,67 @@ Kurz gesagt: Alles, was bei falscher Bedienung eine Sicherheitslücke, einen Dat
 - Sich als eine andere Person anmelden („Impersonation") – das gibt es bewusst nicht. Sollte später ein Support-Zugriff nötig werden, muss das ein eigenes, offen dokumentiertes „Break-Glass"-Konzept werden, nie eine stillschweigende Funktion.
 - Praxen oder deren Historie endgültig löschen – Sperren/Archivieren verstecken nur, sie löschen nicht.
 
+## Schritt für Schritt: Eine neue Praxis als Kundin anlegen
+
+Beispiel-Szenario: Du verkaufst PhysioCheck an eine Physiopraxis und richtest ihren Zugang ein.
+
+### Voraussetzung: Du selbst brauchst Zugang zum Betreiberportal
+
+Falls dein Konto noch nicht als Plattform-Admin freigeschaltet ist (einmalig, per Kommandozeile):
+
+```bash
+pnpm platform-admin grant --email deine@email.tld --yes
+```
+
+### Schritt 1 – Praxis anlegen
+
+1. Im Portal auf **„Praxen"** klicken, dann **„Neue Praxis anlegen"** (`/admin/practices/new`).
+2. Abschnitt **„1. Praxisdaten"** ausfüllen: Praxisname (Pflichtfeld), Adresse, Zeitzone (Pflichtfeld, ist vorausgefüllt), Telefon, Kontakt-E-Mail der Praxis, Anfangsstatus (**„Testphase"** oder **„Sofort aktiv"**; bei Testphase zusätzlich das Enddatum).
+3. Abschnitt **„2. Erste:r Praxisadmin"** ausfüllen: Name und E-Mail-Adresse der Person, die als Erste:r Zugang zur Praxis bekommen soll.
+4. Auf **„Praxis anlegen"** klicken.
+
+> **Hinweis (bekannte Einschränkung):** Die Felder „Land" und „Webseite" im Formular werden aktuell zwar angezeigt, aber nicht gespeichert – das ist noch nicht angebunden. Sag Bescheid, falls du diese Felder brauchst, dann ergänze ich das.
+
+### Schritt 2 – Einladungslink an die Praxis weitergeben
+
+Nach dem Anlegen erscheint direkt auf derselben Seite ein Einladungslink (**„Einladungslink (einmalig, 7 Tage gültig)"**) mit einem **„Link kopieren"**-Button.
+
+- **Es wird keine E-Mail automatisch verschickt.** Du musst den Link selbst kopieren und der Praxis schicken (E-Mail, WhatsApp, wie auch immer).
+- Der Link ist einmalig nutzbar und läuft nach 7 Tagen ab.
+- Über **„Zur Praxis"** kommst du direkt zur neu angelegten Praxis im Portal.
+
+### Schritt 3 – Die Praxis nimmt die Einladung an
+
+Das macht die Praxis selbst, du musst nichts weiter tun:
+
+1. Die Person öffnet den Link, landet auf einer Bestätigungsseite mit Praxisname und Rolle.
+2. Hat sie noch kein Konto: **„Neues Konto mit dieser E-Mail-Adresse erstellen"** → Name eingeben, Passwort selbst festlegen (die E-Mail-Adresse ist durch die Einladung bereits vorgegeben und lässt sich nicht ändern) → Bestätigungsmail von Supabase öffnen und Link anklicken.
+3. Danach (oder direkt, falls schon ein Konto bestand): **„Einladung annehmen"** klicken.
+4. Die Person landet in ihrem eigenen Praxisbereich (`/practice`) – fertig.
+
+Falls der Link abgelaufen/schon benutzt ist, bekommt die Person eine klare Fehlermeldung mit Bitte um eine neue Einladung (du müsstest dann ggf. im Portal eine erneute Einladung für diese Praxis auslösen).
+
+### Schritt 4 – Die Praxis lädt ihre eigenen Mitarbeitenden ein
+
+Das erledigt die Praxis komplett selbst, ohne dich:
+
+1. Praxisadmin geht zu **„Einstellungen"** (`/practice/settings`) → Abschnitt **„Mitarbeitende Ihrer Praxis"**.
+2. Formular **„Mitarbeiter:in einladen"**: Name, E-Mail-Adresse, Rolle (**„Admin"** oder **„Therapeut:in"**) → **„Einladung senden"**.
+3. Auch hier: Der Link wird nur angezeigt (**„Teilen Sie diesen Link mit der Person"**), keine automatische E-Mail – die Praxis muss ihn selbst weitergeben.
+4. Die eingeladene Person durchläuft denselben Ablauf wie in Schritt 3.
+
+Offene Einladungen lassen sich dort auch widerrufen oder erneuern; bestehende Mitarbeitende lassen sich deaktivieren/reaktivieren. Die letzte aktive Admin-Person einer Praxis kann nicht deaktiviert werden (technisch verhindert), damit keine Praxis ohne Admin dasteht.
+
+### Schritt 5 – Bei Bedarf: Status ändern (Testphase → Aktiv, Sperren, Archivieren)
+
+Nur du als Betreiber kannst das (die Praxis selbst hat dort keinen Zugriff):
+
+1. Im Portal zur Praxis navigieren (`/admin/practices/{id}`) → Reiter **„Status"**.
+2. Status wählen: **Testphase** / **Aktiv** / **Gesperrt** / **Archiviert**, optional interne Notiz (nur für dich sichtbar, nie medizinische Inhalte).
+3. **„Status speichern"**.
+
+Der Wechsel von Testphase zu Aktiv passiert **nicht automatisch**, auch nicht nach Ablauf des Testphasen-Datums – das Datum ist nur eine Anzeige/Erinnerung im Portal-Dashboard. Du musst den Status selbst umstellen.
+
 ## Verwandte Dokumente
 
 - `docs/PRIVACY_SECURITY.md` – Sicherheits- und Datenschutzkonzept insgesamt
