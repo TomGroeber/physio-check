@@ -1,5 +1,21 @@
 # PhysioCheck – Datenschutz und Sicherheit
 
+## Ergänzung 2026-07-25/26: Betreiberportal und Nachrichtenfunktion
+
+**Betreiberportal:**
+- Die Plattform-Admin-Rolle ist technisch vollständig von Praxisrollen getrennt (`platform_admins`, keine Client-Policy) und kann nie aus einer Praxismitgliedschaft oder Client-Eingabe hergeleitet werden. Zuweisung/Entzug ausschließlich über `scripts/platform-admin.ts` mit Service Role (`--yes` erforderlich) – kein Weg über die Oberfläche.
+- Jede `/admin`-Route und -Aktion prüft `assertPlatformAdmin()` serverseitig, bevor irgendein Cross-Tenant-Zugriff stattfindet. RLS bleibt als zweite Verteidigungslinie aktiv – ein Plattform-Admin-Konto ohne diese serverseitige Prüfung sähe über die normalen Tabellen trotzdem nur, was seine (fehlende) Praxis-/Patientenverknüpfung erlaubt.
+- Das Portal liest **keine** medizinischen Patientendaten (keine Übungspläne, Termine, Selbstauskünfte, Dokumente, Verordnungen) – nur datensparsame Verwaltungszahlen je Praxis. Es gibt keine „Als andere Person anmelden"-Funktion.
+- Interne Praxisnotizen (`practices.internal_note`) sind ausdrücklich für nicht-medizinische Betriebsinformationen gedacht (z. B. „Testkunde, Vertrag läuft aus") – nie für Patientendaten.
+
+**Nachrichtenfunktion:**
+- Nachrichten sind unveränderlich nach dem Senden (keine Update-/Delete-Policy für Clients) und werden nie automatisch gelöscht – wie bei anderen Behandlungs-/Kommunikationsdaten im Projekt.
+- Absenderrolle und -ID werden nie vom Client übernommen: `send_patient_message()`/`send_practice_reply()` leiten beides serverseitig aus der authentifizierten Sitzung bzw. der bestehenden Unterhaltungszeile her.
+- Benachrichtigungen zu neuen Nachrichten sind datensparsam (kein Nachrichtentext) – wie alle bestehenden Notification-Inhalte im Projekt.
+- Isolationsregel bewusst strenger als bei Behandlungsdokumentation: eine ehemalige Praxis verliert nach einem Praxiswechsel sowohl Schreib- als auch Leserecht auf die Unterhaltung (siehe D-096); die Patientin/der Patient behält die eigene Historie immer.
+- Der patientenseitige Sicherheitshinweis („Nachrichten werden nicht ständig überwacht…") macht deutlich, dass es sich nicht um einen überwachten Notfallkanal handelt.
+- Keine Datei-/Foto-/Audio-/Video-Anhänge (bewusst nicht umgesetzt, siehe `docs/PRODUCT_SPEC.md`) – reduziert die Angriffsfläche (kein zusätzlicher Upload-Pfad für diese Funktion).
+
 ## Ergänzung 2026-07-19: Patienten-Profilbilder
 
 - Profilbilder sind personenbezogene Daten und liegen ausschließlich im privaten Bucket `patient-avatars`; es gibt keine öffentliche URL. Auslieferung nur über kurzlebige signierte URLs, die erst nach serverseitiger Autorisierung (eigene Session bzw. aktive Praxisverbindung) und Pfadprüfung entstehen.
@@ -75,6 +91,8 @@
 | Durchführungsprotokolle | Selbstauskunft, Schmerzangaben 0–10, Notizen | **hoch (Gesundheitsdaten)** |
 | Termine | Zeit, Ort, behandelnde Person | hoch |
 | Erinnerungseinstellungen | freiwillige In-App-Hinweiszeiten (kein Push/E-Mail-Versand implementiert) | niedrig |
+| Nachrichten (Patient ↔ Praxis) | Freitext-Unterhaltung, unveränderlich, kein Notfallkanal (siehe Hinweistext) | hoch (kann Gesundheitsbezug enthalten) |
+| Praxis-Verwaltungsdaten (Betreiberportal) | Praxis-Lebenszyklus, interne nicht-medizinische Notizen, Mitarbeiter-Einladungen | mittel (keine Patientendaten) |
 | Audit-Ereignisse | wer hat wann was geändert (ohne Gesundheitsdetails) | mittel |
 
 Grundsatz **Datenminimierung**: Patientendatensätze starten mit einem Anzeigenamen; keine Geburtsdaten, Adressen oder Diagnosen im MVP. **Keine** Analyse-/Tracking-/Werbe-SDKs, keine Crash-Reporting-Bibliothek, keine Werbekennungen (verifiziert: kein entsprechendes Paket in `package.json` von Web oder App) – vereinfacht die Store-Angaben unten erheblich, weil ganze Kategorien (Tracking, Nutzungsdaten für Werbung, Diagnosedaten) ehrlich mit „nein" beantwortet werden können.
@@ -132,6 +150,9 @@ Supabase (PostgreSQL + Auth + Storage)
 | CSRF | Next.js Server Actions mit Origin-Prüfung; Cookies SameSite (Supabase-Default) | umgesetzt |
 | Unsichere Uploads | eng begrenztes Upload-Ticket; zufälliger Pfad; Bucket-Limit; serverseitige Pfad-, Größen- und Magic-Byte-Prüfung vor Registrierung; Malware-Scan (ClamAV) vor Registrierung, sofern `MALWARE_SCAN_ENABLED=true` | technische Prüfung umgesetzt; Scan-Pipeline implementiert und per E2E verifiziert; produktionsreife Dauerlösung (`clamd`/Cloud-AV) offen (siehe Ergänzung 2026-07-21) |
 | Datenabfluss über Logs | keine Gesundheitsdaten in Logs/Audit-Metadaten (Projektregel); Review in Phase 4 | Regel aktiv |
+| Selbst-Ernennung zum Plattform-Admin | `platform_admins` ohne jede Client-Policy; Zuweisung nur über CLI-Skript mit Service Role | umgesetzt; RLS-Proben Abschnitt F |
+| Ehemalige Praxis liest/schreibt fremde Nachrichten nach Praxiswechsel | RLS prüft bei jedem Zugriff die AKTUELLE Verknüpfung (`patient_currently_linked_to_practice`), nicht nur die Trägerschaft der Zeile | umgesetzt; RLS-Proben Abschnitt F |
+| Manipulierte Praxis-/Patienten-/Absender-ID beim Nachrichtenversand | Alle IDs serverseitig aus Sitzung/bestehender Zeile hergeleitet, nie vom Client übernommen | umgesetzt; RLS-Proben Abschnitt F |
 
 ## 4. Technische Sicherheitsentscheidungen
 
@@ -150,7 +171,7 @@ Supabase (PostgreSQL + Auth + Storage)
 - [ ] ⚖️ Prüfung, ob die App im Zielmarkt als Medizinprodukt gelten könnte (sie trifft bewusst keine Diagnosen/Therapieentscheidungen)
 - [ ] Rate Limiting produktionsreif (Code-Einlösung, Login) und getestet
 - [x] Content-Security-Policy und Security-Header (nonce-basierte CSP, HSTS, X-Frame-Options u. a. in `src/proxy.ts`, siehe D-069)
-- [x] RLS-Testsuite deckt alle Tabellen ab (104 Proben, lokal verifiziert)
+- [x] RLS-Testsuite deckt alle Tabellen ab (125 Proben, lokal verifiziert, inkl. Betreiberportal und Nachrichtenfunktion)
 - [ ] Fehlerüberwachung datensparsam konfigurieren (ohne Patientendaten), falls eingesetzt
 - [ ] Backups/Restore-Prozess des Hosting-Anbieters dokumentieren
 - [ ] TLS erzwungen, HSTS (Deployment)

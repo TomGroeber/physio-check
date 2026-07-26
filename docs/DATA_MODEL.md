@@ -1,5 +1,20 @@
 # PhysioCheck – Datenmodell
 
+## Ergänzung 2026-07-25/26: Betreiberportal und Nachrichtenfunktion
+
+**Betreiberportal (neu, alle ohne Client-Policy außer wo vermerkt):**
+
+- `platform_admins` – `profile_id` (PK/FK auf `profiles`), `granted_at`, `granted_by`. Keine `select`/`insert`/`update`-Policy für `authenticated`/`anon`; nur über `is_platform_admin()` (SECURITY DEFINER) und `scripts/platform-admin.ts` (Service Role) erreichbar.
+- `practices` erhält additive Lebenszyklus-Spalten: `status` (`trial`/`active`/`suspended`/`archived`), `trial_ends_at`, `support_email`, `support_url`, `internal_note` (nicht-medizinisch, nur für den Betreiber sichtbar), `created_by_platform_admin_id`, `status_changed_at`, `status_changed_by`. Ein Trigger (`prevent_practice_lifecycle_self_edit`) verhindert, dass diese Spalten außerhalb einer Plattform-Admin- oder Service-Role-Aktion verändert werden.
+- `staff_invites` – gleiches Hash-only-Muster wie `patient_invites` (`token_hash`, `expires_at`, `revoked_at`, `accepted_at`), zusätzlich `practice_id`, `email`, `role` (`therapist`/`admin`), XOR-Constraint auf den Ersteller (Praxisadmin ODER Plattform-Admin, nie beides/keins). `accept_staff_invite()` bindet das Konto atomar per E-Mail-Abgleich (`auth.jwt()->>'email'`).
+- `platform_config` – Singleton-Zeile (globale Produkteinstellungen: Branding-Texte, Support-Links, Wartungsbanner, Standard-Zeitzone/-Sprache für neue Praxen, Feature Flags als JSONB).
+
+**Nachrichtenfunktion (neu):**
+
+- `conversations` – `practice_id` FK, `patient_profile_id` FK, `created_at`, `last_message_at`, `patient_last_read_at`, `practice_last_read_at`. Unique je (`practice_id`, `patient_profile_id`) – eine Unterhaltung pro Praxis-Patient-Paar, überlebt einen späteren Rückwechsel zur selben Praxis.
+- `messages` – `conversation_id` FK, `sender_profile_id` FK, `sender_role` (`patient`/`practice`, serverseitig gesetzt), `body` (1–2000 Zeichen), `created_at`. Nach dem Einfügen unveränderlich: keine Update-/Delete-Policy, kein direktes Client-Insert (nur über `send_patient_message()`/`send_practice_reply()`).
+- RLS-Besonderheit gegenüber `completion_logs` (D-019): die Praxisseite liest nur, solange die Patientin/der Patient AKTUELL verbunden ist (`patient_currently_linked_to_practice()`), verliert also nach einem Praxiswechsel auch das Leserecht (siehe D-096). Die Patientenseite liest immer die eigene Historie, unabhängig vom Verbindungsstatus.
+
 ## Ergänzung 2026-07-19: Patienten-Profilbild
 
 - `profiles.avatar_path` (nullable) zeigt auf genau ein Objekt im privaten Bucket `patient-avatars` unter `<profile_id>/<uuid>.<ext>`. Kein Name, keine E-Mail im Pfad; kein Base64 in der Datenbank.

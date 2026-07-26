@@ -22,9 +22,10 @@ Die Patientenoberfläche ist konsequent für ältere und technisch unerfahrene M
 |---|---|
 | **Patient** | Nur eigene Daten: Profil, Praxisverknüpfung, Termine, Pläne, Videos, Protokolle, Benachrichtigungen. |
 | **Physiotherapeut** | Nur Daten der eigenen Praxis: Patienten anlegen/einladen, Codes verwalten, Übungsbibliothek pflegen, Pläne zuweisen, Termine verwalten, Absageanfragen bearbeiten, Adhärenz einsehen. |
-| **Praxisadministrator** | Technisch angelegt, UI im MVP minimal: Praxisdaten, Mitarbeitende, Grundeinstellungen. |
+| **Praxisadministrator** | Praxisdaten, Mitarbeitende einladen/verwalten, Grundeinstellungen der eigenen Praxis (Termindauer, Stornofrist, Sicherheitshinweistext, Akzentfarbe). |
+| **Plattform-Admin** (Betreiber, ergänzt 25.07.2026) | Technisch vollständig getrennt von Praxisrollen – keine Praxismitgliedschaft nötig oder ausreichend. Legt Praxen an, lädt deren ersten Praxisadmin ein, setzt den Praxis-Lebenszyklus (Testphase/aktiv/gesperrt/archiviert), pflegt globale Produkteinstellungen. Sieht **keine** medizinischen Patientendaten. Siehe `docs/PLATFORM_ADMIN_GUIDE.md`. |
 
-Rollenzuweisung erfolgt **niemals** durch den Benutzer selbst über das Frontend. Autorisierung wird serverseitig UND per PostgreSQL Row Level Security (RLS) durchgesetzt.
+Rollenzuweisung erfolgt **niemals** durch den Benutzer selbst über das Frontend. Autorisierung wird serverseitig UND per PostgreSQL Row Level Security (RLS) durchgesetzt. Die Plattform-Admin-Rolle wird zusätzlich nie aus einer Praxismitgliedschaft hergeleitet und kann ausschließlich über ein Kommandozeilen-Skript mit Service Role zugewiesen werden (nie über die Oberfläche).
 
 ## 4. MVP-Funktionsumfang mit Akzeptanzkriterien
 
@@ -92,13 +93,33 @@ Beantwortet ohne Scrollen: Was mache ich heute? Wann ist mein Termin? Gibt es Ne
 - Internes Benachrichtigungszentrum (In-App). Architektur erweiterbar für Push/E-Mail: Termin morgen, Plan neu/geändert, Absage bearbeitet, freiwillige Trainingserinnerung.
 - Nicht notwendige Erinnerungen sind abschaltbar. Keine Gesundheitsdaten in Push-Vorschauen/Betreffzeilen.
 
+### F10 – Betreiberportal (ergänzt 25.07.2026)
+- Eigener Bereich `/admin`, nur für Plattform-Admins (siehe Rollenmodell oben, `docs/PLATFORM_ADMIN_GUIDE.md`).
+- Praxis anlegen inkl. erster Admin-Einladung in einem Schritt; Praxis-Lebenszyklus (Testphase/aktiv/gesperrt/archiviert) mit interner, nicht-medizinischer Notiz; nie ein Hard-Delete.
+- Mitarbeiter-Einladungen (Hash-only, kurzlebig, widerrufbar) für Praxen, die das nicht selbst können.
+- Globale Produkteinstellungen (Branding, Support-Kontakt, Wartungsbanner, Feature Flags) getrennt von Praxis-Einstellungen.
+- Zeigt ausschließlich datensparsame Verwaltungszahlen; nie medizinische Patientendaten; keine „Als andere Person anmelden"-Funktion.
+
+**Akzeptanz:** Ein Plattform-Admin kann eine neue Praxis anlegen, deren Admin einladen, und die Praxis kann die App danach sofort produktiv nutzen (Einladungen an Patient:innen erzeugen, alle bestehenden Praxisfunktionen). Kein Konto kann sich selbst zum Plattform-Admin machen.
+
+### F11 – Nachrichtenfunktion Patient ↔ Praxis (ergänzt 26.07.2026)
+- Vierter Patientenbereich „Nachrichten" (siehe UX-Vorgaben unten): eine Unterhaltung mit der aktuell verbundenen Praxis, nur Text.
+- Patient schreibt an die Praxis, nicht an eine einzelne Person; die Praxis sieht intern, wer geantwortet hat.
+- Praxisseite: Unterhaltungen aller aktuell verbundenen Patient:innen, durchsuchbar, filterbar (ungelesen/offen/beantwortet), Sprung zur Patientendetailseite.
+- Nach einem Praxiswechsel: die neue Praxis sieht nur neue Nachrichten, die alte Praxis verliert Lese- UND Schreibrecht auf die Unterhaltung (bewusst strenger als bei Behandlungsdokumentation, siehe D-096).
+- Sichtbarer Hinweis: „Nachrichten werden nicht ständig überwacht. Wenden Sie sich in einem medizinischen Notfall an den zuständigen Notdienst." Keine automatischen Antworten, keine Diagnosen.
+
+**Akzeptanz:** Patient und Praxis können Textnachrichten austauschen, solange die Verbindung aktiv ist; nach einem Praxiswechsel kann die ehemalige Praxis weder mitlesen noch antworten; Fremdpraxen und unverbundene Konten sehen nichts.
+
 ## 5. Nicht im MVP
 
-Automatische Diagnosen/Therapieempfehlungen · KI-Bewegungsanalyse · Patientenvideoaufnahmen · Live-Chat · Bezahlung/Rechnungen · Kalender-Sync mit Drittanbietern · Praxissoftware-Integrationen · Ranglisten/Punkte/Streak-Zwang · jede Behauptung korrekter Ausführung. → Erweiterungen in `docs/ROADMAP.md`.
+Automatische Diagnosen/Therapieempfehlungen · KI-Bewegungsanalyse · Patientenvideoaufnahmen · Datei-/Foto-/Audio-/Video-Anhänge in Nachrichten · Bezahlung/Rechnungen · Kalender-Sync mit Drittanbietern · Praxissoftware-Integrationen · Ranglisten/Punkte/Streak-Zwang · jede Behauptung korrekter Ausführung. → Erweiterungen in `docs/ROADMAP.md`.
+
+> **Nachtrag 26.07.2026:** „Live-Chat" stand hier ursprünglich als bewusst ausgeschlossen. Auf ausdrücklichen, späteren Auftrag hin wurde eine textbasierte Nachrichtenfunktion (F11) doch umgesetzt – siehe D-096/D-097. Was weiterhin NICHT dazugehört: Datei-/Foto-/Audio-/Video-Anhänge (explizit nicht Teil des Auftrags) und Realtime/Push-Zustellung (Polling, siehe D-097).
 
 ## 6. UX-Vorgaben (Kurzfassung)
 
-**Patient:** mobile-first, Deutsch (fr/lb später), Touch-Ziele ≥ 48×48 px, Fließtext ≥ 18 px, WCAG 2.2 AA, Tastatur + Screenreader, vergrößerte Systemschrift, max. 3 Bereiche (**Heute · Termine · Profil**), sichtbare Zurück-Navigation, keine Kernaktionen per Wischgeste, Bestätigung vor folgenreichen Aktionen, klare Erfolgsmeldungen.
+**Patient:** mobile-first, Deutsch (fr/lb später), Touch-Ziele ≥ 48×48 px, Fließtext ≥ 18 px, WCAG 2.2 AA, Tastatur + Screenreader, vergrößerte Systemschrift, max. 4 Bereiche (**Heute · Termine · Nachrichten · Profil**, seit 26.07.2026 – siehe D-098), sichtbare Zurück-Navigation, keine Kernaktionen per Wischgeste, Bestätigung vor folgenreichen Aktionen, klare Erfolgsmeldungen.
 
 **Therapeut:** Desktop/Tablet-optimiert, auf Smartphone nutzbar; Seitenleiste; eindeutige Filter/Status; sensible Daten nur wo nötig.
 

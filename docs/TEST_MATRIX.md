@@ -1,6 +1,37 @@
 # PhysioCheck – Testmatrix
 
-> Stand 19.07.2026. „Grün“ bedeutet tatsächlich lokal ausgeführt (Toms Mac, Supabase/Docker/Mailpit). Letzter vollständiger Lauf: 19.07.2026 auf Branch `claude-patient-exercise-avatar-20260719`.
+> Stand 26.07.2026. „Grün“ bedeutet tatsächlich lokal ausgeführt (Toms Mac, Supabase/Docker/Mailpit). Letzter vollständiger Lauf: 26.07.2026 auf Branch `claude/platform-admin-20260725`.
+
+## Betreiberportal (25.07.2026)
+
+| Anforderung | Automatisierte Abdeckung | Status |
+|---|---|---|
+| Plattform-Admin-Rolle nie selbst zuweisbar, technisch von Praxisrollen getrennt | `platform_admins` ohne Client-Policy; CLI-Skript-Test (`pnpm platform-admin`) manuell verifiziert | Grün (25.07.2026) |
+| Jede `/admin`-Aktion prüft Autorisierung serverseitig | `assertPlatformAdmin()` in jeder Action/Route; manueller Portal-Durchlauf als Nicht-Admin (403/Redirect) | Grün (25.07.2026) |
+| Praxis anlegen + erste Admin-Einladung atomar | Echte RPC-Probe (`create_practice_with_admin_invite`) gegen lokale Supabase | Grün (25.07.2026) |
+| Praxis-Lebenszyklus (Testphase/aktiv/gesperrt/archiviert), kein Hard-Delete | Trigger-Test (`prevent_practice_lifecycle_self_edit`) + manueller Portal-Durchlauf | Grün (25.07.2026) |
+| Mitarbeiter-Einladung: Hash-only, atomare Annahme per E-Mail-Abgleich | Echte RPC-Probe (`accept_staff_invite`) mit realer Supabase-Auth-Sitzung | Grün (25.07.2026) |
+| Globale Konfiguration getrennt von Praxis-Einstellungen | Manueller Portal-Durchlauf (`/admin/config`) | Grün (25.07.2026) |
+| Portal liest keine medizinischen Patientendaten | Code-Review der Betreiber-Services (nur Verwaltungszahlen selektiert) | Grün (25.07.2026) |
+
+## Nachrichtenfunktion Patient ↔ Praxis (26.07.2026)
+
+| Anforderung | Automatisierte Abdeckung | Status |
+|---|---|---|
+| Patient schreibt der aktuell verbundenen Praxis | RLS-Suite Abschnitt F + `e2e/messaging.spec.ts` | Grün (26.07.2026) |
+| Praxis antwortet, sieht wer geantwortet hat | RLS-Suite Abschnitt F + `e2e/messaging.spec.ts` | Grün (26.07.2026) |
+| Beide Seiten sehen ungelesen korrekt (Badges) | `e2e/messaging.spec.ts` (Sidebar-Badge, Listen-Badge, Bottom-Nav-Punkt) | Grün (26.07.2026) |
+| Fremde Praxis hat keinen Zugriff | RLS-Suite Abschnitt F | Grün (26.07.2026) |
+| Fremder Patient hat keinen Zugriff | RLS-Suite Abschnitt F (Patientin liest nur eigene Unterhaltung) | Grün (26.07.2026) |
+| Unverbundenes Konto hat keinen Zugriff | RLS-Suite Abschnitt F + `e2e/messaging.spec.ts` (Redirect nach `/connect`) | Grün (26.07.2026) |
+| Ehemalige Praxis verliert Zugriff nach Praxiswechsel (Lesen UND Schreiben) | RLS-Suite Abschnitt F (Wiederverwendung der Phase-J-Wechsel-Fixture) | Grün (26.07.2026) |
+| Manipulierte IDs (erfundene Unterhaltung, fremde Praxis-ID) werden abgelehnt | RLS-Suite Abschnitt F | Grün (26.07.2026) |
+| Rate-Limit gegen Mehrfachsenden greift | RLS-Suite Abschnitt F (21 Nachrichten in Folge, 21. wird abgelehnt) | Grün (26.07.2026) |
+| Leere/zu lange Nachrichten abgelehnt | RLS-Suite Abschnitt F | Grün (26.07.2026) |
+| Benachrichtigungen datensparsam (kein Nachrichtentext) | Code-Review der RPCs (`send_patient_message`/`send_practice_reply`) | Grün (26.07.2026) |
+| Web und native App bieten dieselbe Funktion | Vierter Tab in beiden Apps, gleiche RPCs; Web per Playwright, mobil per Typecheck/Lint/Jest verifiziert (kein Simulatorlauf in dieser Sitzung) | Grün (Web); mobil strukturell grün, Simulator-Tap offen |
+| Bottom-Nav nicht beschnitten (Safe Areas) | `bottom-nav.tsx`/`tab-bar.tsx` folgen dem bestehenden, bereits verifizierten Safe-Area-Muster (D-063–D-067); kein neuer Simulatorlauf in dieser Sitzung | Strukturell grün; visuelle Nachprüfung am Gerät offen |
+| Bestehende Funktionen bleiben grün | Volle Unit-/RLS-/E2E-Suite nach der Änderung erneut ausgeführt | Grün (26.07.2026) |
 
 ## Video-first-Übungsansicht
 
@@ -210,6 +241,24 @@ Tom hat macOS-Bedienungshilfen für Terminal freigegeben; erster echter Tap-Durc
 | VoiceOver | Bewusst nicht getestet (Toms Entscheidung) |
 
 Vier reale, vorher nie erreichbare Fehler gefunden und behoben – siehe D-089 bis D-092 in `DECISIONS.md`. Zusätzlich: Profilbild oben rechts antippen führt jetzt direkt zu Profil (vorher ohne Tap-Handler).
+
+## Ausgeführte Gesamtprüfungen (26.07.2026, Branch `claude/platform-admin-20260725`)
+
+| Befehl | Ergebnis |
+|---|---|
+| `pnpm db:reset` | Grün: 30 Migrationen (inkl. `20260725100000`–`20260726100000`) |
+| `pnpm seed` | Grün, inkl. neuem `platformadmin`-Demo-Konto |
+| `pnpm typecheck` | Grün |
+| `pnpm lint` | Grün, 0 Warnungen |
+| `pnpm test` | Grün: 23 Dateien, 115 Tests |
+| `pnpm test:rls` | Grün: 125 Proben (104 bestehend + 21 neu, Abschnitt F Nachrichten) |
+| `pnpm e2e` | Grün (Exit 0): 55 bestanden, 0 fehlgeschlagen, 23 planmäßig übersprungen (nach `rm -rf .next` – bekannter Turbopack-Cache-Flake, s. u.) |
+| `pnpm build` | Grün |
+| `pnpm mobile:typecheck` | Grün |
+| `pnpm mobile:lint` | Grün, 0 Fehler |
+| `pnpm mobile:test` | Grün: 5 Dateien, 16 Tests (`tab-bar.test.tsx`/`de.test.ts` auf 4 Tabs aktualisiert) |
+| Manueller Browser-Durchlauf (`pnpm build && pnpm start`, Playwright-Treiberskript) | Patient sendet Nachricht → Praxis sieht Unread-Badge → antwortet → Patient sieht Antwort; Sprung Patientendetail↔Unterhaltung; Screenshots geprüft | Grün (26.07.2026) |
+| Simulator-/Gerätelauf native App | Nicht durchgeführt in dieser Sitzung (kein Xcode-Simulatorstart angestoßen) – strukturelle Parität über Typecheck/Lint/Jest verifiziert, visuelle Verifikation am Gerät bleibt offen | Offen |
 
 ## Bekannte Einschränkungen
 - Nach wiederholten `db:reset`/Seed-Zyklen kann sich der Turbopack-Dev-Cache verkeilen: E2E-Navigationen hängen dann dauerhaft und der WebServer loggt ChunkLoadErrors. Abhilfe: `rm -rf .next` vor dem Lauf. **Neu (20.07.2026):** Ein zusätzlicher, bisher unbekannter Auslöser sind parallel laufende Mobile-Entwicklungsprozesse (Metro-Bundler + gebooteter Simulator) – sie konkurrieren mit dem Next-Dev-Server um lokale Ressourcen und lösten in dieser Sitzung zwei aufeinanderfolgende Fehlschläge trotz Cache-Löschung aus. Vor `pnpm e2e` immer `pnpm mobile:start` beenden und den Simulator herunterfahren.

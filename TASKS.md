@@ -264,3 +264,36 @@ Erster echter Simulatorlauf (iPhone 17 Pro, iOS 26.5, Expo-Tunnel) zeigte: Tab-B
 - [x] Vier hartkodierte Patiententexte nach `src/messages/de.ts` verschoben; vier E2E-Spezifikationsfehler repariert (Login-Race, mehrdeutige Selektoren, Ersetzen-Race, Seed-Doppelwert im Selbstauskunfts-Test).
 - [x] Browser-Durchläufe: Heute-Checkliste, „Geschafft!“ nur bei `completed`, neutrale Rückmeldung bei teilweise/zu schwierig/nicht möglich, Terminübersicht + Absage (5×), Profil, Telefonnummer, Erinnerungen, Passwortänderung mit Mailpit-Recovery-Link, E-Mail-Änderung mit Doppelbestätigung, Redirect-Schutz (`next=//…`), Praxisbereich-Aussperrung, iPhone-Viewport (Touch-Ziele ≥ 48 px, kein horizontales Scrollen).
 - [x] Dokumentation aktualisiert und `pnpm docs:sync` ausgeführt; Commit auf `claude-patient-ui-20260718` gepusht.
+
+## Auftrag vom 25.–26.07.2026 – Betreiber-Admin-Portal, Liquid-Glass-Design, Nachrichtenfunktion (Branch `claude/platform-admin-20260725`)
+
+Betreiber-Portal für Tom als Plattformbetreiber (neue, strikt getrennte `platform_admin`-Rolle – keine Praxisrolle, keine Selbst-Eskalation möglich), während der Auftrag noch lief zweimal um weitere Anforderungen ergänzt: Liquid-Glass-Design für das neue Portal, und eine vollständige Nachrichtenfunktion zwischen Patient:in und Praxis.
+
+**Betreiberportal:**
+- [x] `platform_admins`-Tabelle ohne jede Client-Policy, `is_platform_admin()` SECURITY-DEFINER-Funktion, Zuweisung/Entzug ausschließlich über idempotentes CLI-Skript (`pnpm platform-admin grant/revoke/list`, Service Role, `--yes` erforderlich) – kein Web-Weg zur Selbst-Ernennung.
+- [x] Praxis-Lebenszyklus: `trial/active/suspended/archived`, Testphasenende, interne (nicht-medizinische) Notiz, Zeitstempel + Urheber; Sperren/Archivieren löschen nie Daten (Trigger `prevent_practice_lifecycle_self_edit`, Bypass nur für `is_platform_admin()`/Service Role).
+- [x] Praxis-Onboarding-Assistent: Praxis + erste Admin-Einladung atomar in einer RPC (`create_practice_with_admin_invite`); neu angelegte Praxis kann sofort aktiviert und genutzt werden.
+- [x] Mitarbeiter-Einladungen (`staff_invites`): Hash-only Token (wie Patienteneinladungen), kurzlebig/einmalig/widerrufbar/erneuerbar, atomare Annahme bindet das verifizierte Konto exakt an Praxis+Rolle (E-Mail-Abgleich in der RPC) – nie Klartext-Passwörter.
+- [x] Globale Plattform-Konfiguration (`platform_config`, Singleton) getrennt von Praxis-Einstellungen: Branding/Support-Links/Wartungsbanner/Feature-Flags, schema-validiert, Änderungshistorie über `audit_events`.
+- [x] Dashboard, Praxisliste/-detail, Konfigurationsseite; Praxis-Selbstverwaltung erweitert (`/practice/settings`: Praxisadmin bearbeitet Stammdaten/Einstellungen/Mitarbeitende selbst).
+- [x] Autorisierung: jede `/admin`-Route/Aktion prüft `assertPlatformAdmin()` serverseitig; Cross-Tenant-Lesezugriffe laufen über den Service-Client NACH der Prüfung, Schreibzugriffe über SECURITY-DEFINER-RPCs auf der eigenen Sitzung (wie bestehende Muster) – kein pauschaler Service-Role-Zugriff ohne vorausgehende Prüfung.
+- [x] Betreiberportal liest nie medizinische Patientendaten; keine Impersonation-Funktion.
+- [x] `docs/PLATFORM_ADMIN_GUIDE.md`: dokumentiert die Grenze global/praxis-konfigurierbar vs. NIE per UI editierbar (Secrets, RLS, DB-Schema, native Signierung, rechtsverbindliche Texte).
+
+**Liquid-Glass-Design (Betreiberportal + Praxis-Einstellungen):**
+- [x] Zusätzliche, rein additive Design-Tokens in `globals.css` (`--glass-*`, OKLCH, aus Navy/Teal abgeleitet) + `GlassPanel`-Komponente; `@supports`-Fallback auf deckende Fläche ohne `backdrop-filter`-Unterstützung.
+- [x] `prefers-reduced-motion` respektiert (bestehende Regel deckt neue Elemente mit ab); Tastaturfokus sichtbar, ausreichender Kontrast; keine neue UI-/Animationsbibliothek, keine Apple-Assets.
+- [x] Bewusst nur im Betreiberportal, den Praxis-Einstellungen und (nach Ergänzung 2) der Nachrichtenoberfläche eingesetzt – der ruhige Patientenbereich bleibt sonst unverändert.
+
+**Nachrichtenfunktion (Patient:in ↔ aktuell verbundene Praxis, nur Text):**
+- [x] Vierter Patienten-Navigationspunkt „Nachrichten" zwischen Termine und Profil (Web + native App identisch) – **ändert bewusst CLAUDE.md Regel 9** von „max. 3" auf „max. 4 Navigationsbereiche" (siehe Nachtrag dort).
+- [x] `conversations`/`messages`-Tabellen: eine Unterhaltung je (Praxis, Patient:in); Nachrichten nach dem Senden unveränderlich (kein Update/Delete/direktes Insert für Clients).
+- [x] RLS bewusst enger als beim `completion_logs`-Muster: Praxis verliert nach einem Praxiswechsel Lese- UND Schreibrecht auf die Unterhaltung (nicht nur Schreibrecht); Patientin behält immer Lesezugriff auf die eigene Historie.
+- [x] `send_patient_message()` (keine Praxis-ID vom Client – aus der eigenen aktiven Verknüpfung hergeleitet), `send_practice_reply()`, `mark_conversation_read_as_patient/_practice()`: SECURITY-DEFINER-RPCs, serverseitige Herleitung aller IDs, 20-Nachrichten/Minute-Rate-Limit, Body-Längenprüfung.
+- [x] Praxisseite `/practice/messages`: Liste durchsuchbar/filterbar (alle/ungelesen/offen/beantwortet), Ungelesen-Badge in der Seitenleiste, Sprung zur/von der Patientendetailseite.
+- [x] Datensparsame Benachrichtigungen über das bestehende `notifications`-System (kein Nachrichtentext); kein Realtime (bewusst: erste Realtime-Nutzung im Projekt hätte eigene Autorisierungsprüfung gebraucht) – stattdessen sichtbarkeitsbasiertes Polling (Fokus + 8-s-Intervall).
+- [x] Medizinischer Hinweistext „Nachrichten werden nicht ständig überwacht…" patientenseitig sichtbar.
+- [x] Native App: identische vierte Kachel, gleiche RPCs direkt über den mobilen Supabase-Client (kein neuer API-Weg nötig), Ungelesen-Punkt in der Tab-Leiste.
+- [x] Tests: 21 neue RLS-Proben (Abschnitt F, inkl. Wiederverwendung der Phase-J-Praxiswechsel-Fixture für die Ex-Praxis-Isolationsprobe), `e2e/messaging.spec.ts` (4 Web-Fälle), bestehende Nav-Zähl-Annahmen (3→4) in Web-E2E und mobilen Jest-Tests aktualisiert.
+- [x] Vollständig lokal geprüft: Typecheck, Lint, 115 Unit-Tests, 125 RLS-Proben, volle Playwright-Suite (55 bestanden/0 fehlgeschlagen/23 planmäßig übersprungen), Production Build, mobile Typecheck/Lint/16 Tests.
+- [ ] Offen: finale volle Testmatrix-Bestätigung nach Dokumentationsabschluss, GitHub CI grün auf dem Branch, Draft-PR aktuell halten, Merge erst nach Toms Freigabe.

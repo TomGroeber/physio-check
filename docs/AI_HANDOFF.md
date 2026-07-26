@@ -1,8 +1,40 @@
 # PhysioCheck – AI Handoff
 
-> Stand: 2026-07-21 · `main@9415660` (PR #3 gemergt als `342fba5`, danach Doku-Korrektur `9415660`) enthält ALLE bisherigen Aufträge inkl. der UI-Parität der nativen App · Arbeitszweig für die Store-Release-Vorbereitung: `claude/store-release-readiness-20260721` · GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
+> Stand: 2026-07-26 · `main` enthält den Stand nach der Store-Release-Vorbereitung (21.07.2026) · Aktiver Arbeitszweig: `claude/platform-admin-20260725` (Betreiberportal, Liquid-Glass-Design, Nachrichtenfunktion – noch NICHT gemergt, kein PR bisher eröffnet) · GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
 
-## Aktueller Auftrag (21.07.2026, siebter): Produktions- und Store-Reife
+## Aktueller Auftrag (25.–26.07.2026, achter): Betreiberportal, Liquid-Glass-Design, Nachrichtenfunktion
+
+Ursprünglicher Auftrag: ein sicheres, klares Betreiber-Admin-Interface für PhysioCheck (Praxen anlegen/verwalten, Mitarbeitende einladen, Praxis-Lebenszyklus, globale Konfiguration), mit einer strikt getrennten `platform_admin`-Rolle, die niemals selbst zuweisbar ist. Während der Auftrag noch lief, kamen in derselben Nachricht zwei weitere Anforderungen dazu: ein „Liquid Glass"-Design für das neue Portal, und – als zweite Ergänzung – eine vollständige Textnachrichtenfunktion zwischen Patient:in und aktuell verbundener Praxis. Alle drei Teile sind vollständig umgesetzt und lokal verifiziert.
+
+**Betreiberportal (`/admin`):**
+- `platform_admins` (keine Client-Policy) + `is_platform_admin()`; Zuweisung/Entzug ausschließlich über `scripts/platform-admin.ts` (Service Role, `--yes` erforderlich). Kein Weg zur Selbst-Ernennung.
+- Praxis-Lebenszyklus (`trial`/`active`/`suspended`/`archived`), Testphasenende, interne nicht-medizinische Notiz, Trigger-Schutz gegen Selbstbearbeitung außerhalb des Portals.
+- Onboarding-Assistent: `create_practice_with_admin_invite()` legt Praxis + erste Admin-Einladung atomar an.
+- `staff_invites`: gleiches Hash-only-Muster wie `patient_invites`, atomare Annahme per E-Mail-Abgleich (`accept_staff_invite()`).
+- `platform_config` (Singleton): globale Branding-/Support-/Wartungsbanner-/Feature-Flag-Einstellungen, getrennt von Praxis-Einstellungen.
+- Praxis-Selbstverwaltung erweitert: `/practice/settings` lässt Praxisadmins jetzt Stammdaten/Einstellungen/Mitarbeitende selbst pflegen.
+- Autorisierungsmuster: `assertPlatformAdmin()` vor jedem Zugriff; Cross-Tenant-LESEzugriffe über den Service-Client NACH der Prüfung, SCHREIBzugriffe über SECURITY-DEFINER-RPCs auf der eigenen Admin-Sitzung (D-095) – kein pauschaler Service-Role-Zugriff.
+- Doku: `docs/PLATFORM_ADMIN_GUIDE.md` (neu, Deutsch, für Tom) grenzt global/praxisweit konfigurierbar von NIE-per-UI-editierbar ab.
+
+**Liquid-Glass-Design:** additive `--glass-*`-OKLCH-Tokens + `GlassPanel`-Komponente in `globals.css`, `@supports`-Fallback ohne `backdrop-filter`. Nur im Betreiberportal, den Praxis-Einstellungen und (nach Ergänzung 2) der Nachrichtenoberfläche eingesetzt – der ruhige Patientenbereich bleibt sonst unverändert (D-093).
+
+**Nachrichtenfunktion:** `conversations`/`messages` (unveränderlich, kein Client-Insert/Update/Delete), `send_patient_message()`/`send_practice_reply()`/`mark_conversation_read_as_*()` als SECURITY-DEFINER-RPCs mit serverseitig hergeleiteten IDs, 20/Minute-Rate-Limit. RLS bewusst STRENGER als beim `completion_logs`-Muster: eine ehemalige Praxis verliert nach einem Praxiswechsel Lese- UND Schreibrecht (D-096) – die Patientin behält immer ihre eigene Historie. Vierter Patienten-Navigationspunkt „Nachrichten" (Web + native App identisch, D-098 – ändert CLAUDE.md Regel 9 von 3 auf 4 Bereiche). Kein Realtime, stattdessen sichtbarkeitsbasiertes Polling (D-097). Praxisseite: durchsuchbare/filterbare Inbox, Ungelesen-Badge in der Sidebar, Sprung zur/von der Patientendetailseite. Datensparsame Benachrichtigungen über das bestehende `notifications`-System.
+
+**Reale Fehler in dieser Sitzung gefunden und behoben (nicht nur vermutet):**
+- `hugeicons/core-free-icons` hat kein `Message01Icon`-Äquivalent unter dem zunächst angenommenen Namen für die Web-Sidebar – tatsächlich existiert `Message01Icon` (per `.d.ts`-Grep bestätigt), das anfängliche Fehlurteil kam von einem irreführenden CJS-`require()`-Test gegen ein ESM-Paket.
+- Next.js App Router rendert Layout und Seite NEBENLÄUFIG: `MessagesPage` warf `Cannot read properties of null (reading 'practiceId')`, weil die Seite `session.patientLink!` annahm, während der Layout-Redirect noch nicht griff. Fix: eigene `if (!session.patientLink) redirect(...)`-Prüfung in der Seite selbst statt sich auf die Redirect-Reihenfolge des Layouts zu verlassen – entspricht dem bereits an anderer Stelle (`profile/page.tsx`) verwendeten defensiven Muster.
+- Praxisseite und Patienten-Detailseite hatten beide einen Link mit identischem Text „Nachrichten" (Sidebar-Nav vs. Sprung-Link zur konkreten Unterhaltung) – eine echte, im E2E-Test aufgefallene Bedienungs-Mehrdeutigkeit; der Sprung-Link heißt jetzt „Nachrichten anzeigen".
+- E2E-Testfragilität: bei wiederholten Testläufen ohne DB-Reset akkumulieren Nachrichten in derselben (unveränderlichen) Unterhaltung – ein fixer Nachrichtentext führt dann zu einer Playwright-„strict mode violation" (2 Treffer). Test sendet jetzt einen pro Lauf eindeutigen Text (Zeitstempel-Suffix).
+- Bestehende Tests mit hartkodierter „3 Navigationsbereiche"-Annahme (`e2e/demo-accounts.spec.ts`, mobiles `tab-bar.test.tsx`/`de.test.ts`) mussten auf 4 aktualisiert werden – erwartete Folge der bewussten Nav-Erweiterung, keine Regression.
+- Ein leftover `next-server`-Prozess aus einer früheren Sitzung blockierte Port 3000 beim Start des Produktionsservers für den manuellen Browsertest – Prozess sauber beendet, kein Datenverlust.
+
+**Prüfstand (alles lokal auf Toms Mac, 26.07.2026):** `pnpm db:reset` (30 Migrationen) ✓ · Seed ✓ · Typecheck ✓ · Lint ✓ · 115 Unit-Tests ✓ · 125 RLS-Proben (104 bestehend + 21 neu) ✓ · volle Playwright-Suite Exit 0 (55 bestanden/0 fehlgeschlagen/23 planmäßig übersprungen, nach `rm -rf .next` gegen den bekannten Turbopack-Cache-Flake) ✓ · Build ✓ · `pnpm mobile:typecheck`/`lint`/`test` (16 Tests) ✓ · manueller Playwright-Treiberlauf gegen `pnpm build && pnpm start` mit Screenshots (Patient sendet → Praxis sieht Unread-Badge → antwortet → Patient sieht Antwort) ✓.
+
+**Bewusst nicht in dieser Sitzung gemacht:** kein iOS-Simulator-/Android-Emulator-Lauf für die native App (nur Typecheck/Lint/Jest – strukturelle, keine visuelle Verifikation der mobilen Nachrichtenoberfläche). Datei-/Foto-/Audio-/Video-Anhänge in Nachrichten bewusst NICHT implementiert (expliziter Auftragsteil).
+
+**Nächster konkreter Schritt:** Commits sind auf `claude/platform-admin-20260725` gepusht (noch kein PR eröffnet). Als Nächstes: Draft-PR gegen `main` eröffnen, GitHub-CI-Lauf real verifizieren (`gh run view`), bei Bedarf einen echten Simulatorlauf der mobilen Nachrichtenoberfläche nachholen, dann Merge erst nach Toms ausdrücklicher Freigabe.
+
+## Vorheriger Auftrag (21.07.2026, siebter): Produktions- und Store-Reife
 
 Vollständiger Audit gegen den tatsächlichen Repository-Zustand (nicht gegen frühere Berichte) durchgeführt – alle acht im Auftrag genannten Verdachtsstellen bestätigt plus zusätzliche Funde (fehlende Security-Header, fehlendes Engines-Pinning, keine Malware-Scan-Pipeline). Vollständige, belegte Matrix: `docs/RELEASE_READINESS.md`. Diese Sitzung arbeitet die dort als „IMPLEMENTIERBAR – JETZT AUSFÜHREN" markierten Punkte ab und dokumentiert alle Konto-/Zahlungs-/Rechtsblocker exakt, ohne sie zu erfinden oder zu umgehen.
 
