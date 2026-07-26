@@ -29,10 +29,10 @@ test("Patientin landet auf 'Heute' und sieht Übungen und Termin", async ({
   await expect(
     page.getByRole("heading", { name: "Ihr nächster Termin" })
   ).toBeVisible();
-  // Untere Navigation: genau die drei Hauptbereiche
+  // Untere Navigation: die vier Hauptbereiche (Heute/Termine/Nachrichten/Profil)
   await expect(
     page.getByRole("navigation", { name: "Hauptnavigation" }).getByRole("link")
-  ).toHaveCount(3);
+  ).toHaveCount(4);
 });
 
 test("Patientenprofil trennt persönliche Daten, Sicherheit und Einstellungen", async ({ page }) => {

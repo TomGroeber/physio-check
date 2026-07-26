@@ -1191,6 +1191,152 @@ async function main() {
     check("aktuell verbundene Praxis sieht das Bild nach dem Rückwechsel", !error && Boolean(data));
   }
 
+  // ---------- F) Nachrichten (Patient <-> aktuell verbundene Praxis) ----------
+  console.log("\nF) Nachrichten: Mandantentrennung und Schreibrechte");
+  {
+    const { data: sendData, error: sendError } = await patient.rpc("send_patient_message", {
+      p_body: "Hallo, ich habe eine Frage zu meinem Plan.",
+    });
+    check("Patientin kann der aktuell verbundenen Praxis schreiben", !sendError && Boolean(sendData?.[0]));
+    const petraConversationId = sendData?.[0]?.out_conversation_id as string;
+
+    {
+      const { data } = await patient.from("conversations").select("id").eq("id", petraConversationId);
+      check("Patientin liest die eigene Unterhaltung", (data ?? []).length === 1);
+    }
+    {
+      const { data } = await therapist.from("conversations").select("id").eq("id", petraConversationId);
+      check("aktuell verbundene Praxis liest die Unterhaltung", (data ?? []).length === 1);
+    }
+    {
+      const { data } = await foreign.from("conversations").select("id").eq("id", petraConversationId);
+      check("fremde Praxis sieht die Unterhaltung nicht", (data ?? []).length === 0);
+    }
+    {
+      const { data } = await unconnected.from("conversations").select("id").eq("id", petraConversationId);
+      check("unverbundenes Konto sieht die Unterhaltung nicht", (data ?? []).length === 0);
+    }
+    {
+      const { error } = await foreign.rpc("send_practice_reply", {
+        p_conversation_id: petraConversationId,
+        p_body: "Unerlaubter Antwortversuch",
+      });
+      check("fremde Praxis kann nicht antworten", Boolean(error));
+    }
+    {
+      const { error } = await therapist.rpc("send_practice_reply", {
+        p_conversation_id: petraConversationId,
+        p_body: "Klar, wie kann ich helfen?",
+      });
+      check("aktuell verbundene Praxis kann antworten", !error);
+    }
+    {
+      const { data } = await patient
+        .from("messages")
+        .select("id, sender_role, body")
+        .eq("conversation_id", petraConversationId)
+        .order("created_at", { ascending: true });
+      check(
+        "Patientin sieht die Antwort der Praxis",
+        (data ?? []).some((m) => m.sender_role === "practice" && m.body === "Klar, wie kann ich helfen?")
+      );
+    }
+    {
+      const { error: patientDirectInsert } = await patient.from("messages").insert({
+        conversation_id: petraConversationId,
+        sender_profile_id: petraId,
+        sender_role: "patient",
+        body: "Direkter Insert-Versuch",
+      });
+      check("direktes Client-Insert in messages ist gesperrt", Boolean(patientDirectInsert));
+    }
+    {
+      const { error: patientDirectUpdate } = await patient
+        .from("conversations")
+        .update({ practice_id: foreignPracticeId })
+        .eq("id", petraConversationId);
+      const { data: stillOwn } = await service
+        .from("conversations")
+        .select("practice_id")
+        .eq("id", petraConversationId)
+        .single();
+      check(
+        "Patientin kann die Ziel-Praxis einer Unterhaltung nicht manipulieren",
+        Boolean(patientDirectUpdate) && stillOwn?.practice_id === practiceAId
+      );
+    }
+    {
+      const { error } = await patient.rpc("send_patient_message", { p_body: "   " });
+      check("leere Nachricht wird abgelehnt", Boolean(error));
+    }
+    {
+      const { error } = await patient.rpc("send_patient_message", { p_body: "x".repeat(2001) });
+      check("zu lange Nachricht wird abgelehnt", Boolean(error));
+    }
+    {
+      const { error } = await therapist.rpc("send_practice_reply", {
+        p_conversation_id: "00000000-0000-0000-0000-000000000000",
+        p_body: "Hallo",
+      });
+      check("erfundene Unterhaltungs-ID wird abgelehnt", Boolean(error));
+    }
+    {
+      const { error } = await foreign.rpc("mark_conversation_read_as_practice", {
+        p_conversation_id: petraConversationId,
+      });
+      check("fremde Praxis kann Unterhaltung nicht als gelesen markieren", Boolean(error));
+    }
+    {
+      const { error } = await therapist.rpc("mark_conversation_read_as_practice", {
+        p_conversation_id: petraConversationId,
+      });
+      check("aktuell verbundene Praxis markiert Unterhaltung als gelesen", !error);
+    }
+    {
+      let rateLimited = false;
+      for (let i = 0; i < 21; i += 1) {
+        const { error } = await patient.rpc("send_patient_message", { p_body: `Nachricht ${i}` });
+        if (error) {
+          rateLimited = /rate_limited/.test(error.message);
+          break;
+        }
+      }
+      check("Rate-Limit greift bei zu vielen Nachrichten pro Minute", rateLimited);
+    }
+  }
+
+  // Isolation nach Praxiswechsel: die Phase-J-Patientin ist nach dem
+  // C2-Ablauf aktiv mit der Demo-Praxis verbunden, die Fremdpraxis ist
+  // eine EHEMALIGE Praxis für sie (siehe Abschnitt E oben).
+  {
+    const { data: sendData, error: sendError } = await phaseJPatient.rpc("send_patient_message", {
+      p_body: "Frage nach dem Praxiswechsel.",
+    });
+    check("Phase-J-Patientin schreibt der aktuell verbundenen Praxis", !sendError && Boolean(sendData?.[0]));
+    const conversationId = sendData?.[0]?.out_conversation_id as string;
+    const { data } = await service.from("conversations").select("practice_id").eq("id", conversationId).single();
+    check("Unterhaltung gehört der aktuell verbundenen (nicht der ehemaligen) Praxis", data?.practice_id === practiceAId);
+
+    {
+      const { data: foreignRead } = await foreign.from("conversations").select("id").eq("id", conversationId);
+      check(
+        "ehemalige Praxis sieht die neue Unterhaltung nach dem Praxiswechsel nicht",
+        (foreignRead ?? []).length === 0
+      );
+    }
+    {
+      const { error } = await foreign.rpc("send_practice_reply", {
+        p_conversation_id: conversationId,
+        p_body: "Antwort einer ehemaligen Praxis",
+      });
+      check("ehemalige Praxis kann nach dem Praxiswechsel nicht mehr antworten", Boolean(error));
+    }
+    {
+      const { data: therapistRead } = await therapist.from("conversations").select("id").eq("id", conversationId);
+      check("aktuell verbundene Praxis sieht die Unterhaltung", (therapistRead ?? []).length === 1);
+    }
+  }
+
   // ---------- Echte Kontolöschung (Master-Prompt Phase 4, 21.07.2026) ----------
   // Eigener, wegwerfbarer Testpatient statt Petra: die Funktion löscht
   // echte Daten (Telefon, Profilbild-Verweis, Erinnerungen,
