@@ -140,7 +140,23 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 3. **Docker Desktop** (für die lokale Datenbank): [docker.com](https://www.docker.com/products/docker-desktop/) – muss laufen.
 4. **Supabase CLI**: `brew install supabase/tap/supabase`
 
+## Schnellstart zum Ausprobieren (nur lokal, zum Testen)
+
+Für jeden, der nur schnell reinschauen will: nach den [Voraussetzungen](#voraussetzungen) reicht ein einzelner Befehl.
+
+```bash
+git clone https://github.com/TomGroeber/physio-check.git
+cd physio-check
+pnpm quickstart
+```
+
+Das erledigt automatisch: Abhängigkeiten installieren, lokale Datenbank/Auth/Storage starten (Docker), `.env.local` aus der laufenden lokalen Supabase-Instanz selbst befüllen (falls noch nicht vorhanden), Migrationen anwenden, Demodaten anlegen und den Server starten. Am Ende läuft die App unter http://localhost:3000 – Demo-Logins siehe unten.
+
+Kein produktives Deployment, keine echten Daten – ausschließlich für den lokalen Test gedacht.
+
 ## Lokale Entwicklung starten
+
+Für alle, die die einzelnen Schritte selbst steuern wollen (z. B. um sie zu verstehen oder anzupassen), statt `pnpm quickstart`:
 
 ```bash
 pnpm install          # Abhängigkeiten installieren
