@@ -28,11 +28,14 @@ permissions:
   contents: read
 
 env:
-  # Muss >=22.13.0 sein: pnpm 11.11.0 verlangt das (22.12.0 schlägt in CI
+  # Muss >=22.13.0 sein: pnpm 11.x verlangt das (22.12.0 schlägt in CI
   # fehl, auch wenn es lokal wegen einer neueren installierten Node-
   # Version nie auffällt) – 22.23.1 spiegelt Toms lokale Version.
   NODE_VERSION: "22.23.1"
-  PNPM_VERSION: "11.17.0"
+  # pnpm-Version bewusst NICHT hier gepinnt: pnpm/action-setup@v4 liest
+  # sie aus package.json "packageManager" und bricht mit einem klaren
+  # Fehler ab, wenn beide Quellen gleichzeitig gesetzt sind (per echtem
+  # CI-Lauf gefunden, s. D-101) – eine einzige Quelle der Wahrheit.
   # Platzhalter für den Build-Schritt ohne laufende Datenbank – kein
   # echtes Geheimnis, nur ein syntaktisch gültiger Wert.
   BUILD_PLACEHOLDER_SUPABASE_URL: "http://127.0.0.1:54321"
@@ -47,8 +50,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -74,8 +75,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -211,8 +210,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -258,8 +255,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
       - uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
