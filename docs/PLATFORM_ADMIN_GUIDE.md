@@ -122,6 +122,18 @@ Nur du als Betreiber kannst das (die Praxis selbst hat dort keinen Zugriff):
 
 Der Wechsel von Testphase zu Aktiv passiert **nicht automatisch**, auch nicht nach Ablauf des Testphasen-Datums – das Datum ist nur eine Anzeige/Erinnerung im Portal-Dashboard. Du musst den Status selbst umstellen.
 
+### Schritt 6 – Wenn jemand Passwort UND E-Mail-Adresse vergisst
+
+Der normale „Passwort vergessen"-Weg setzt voraus, dass die Person noch auf ihre alte E-Mail-Adresse zugreifen kann. Falls nicht (altes Postfach existiert nicht mehr, Person weiß nicht mehr, welche E-Mail-Adresse sie benutzt hat), kannst nur du als Betreiber das zurücksetzen – die Praxis selbst hat dafür keinen Zugriff:
+
+1. Im Portal zur Praxis navigieren (`/admin/practices/{id}`) → Reiter **„Mitarbeitende"**.
+2. Bei der betroffenen Person auf **„Zugang zurücksetzen"** klicken.
+3. Neue E-Mail-Adresse eingeben (die, mit der sich die Person künftig anmelden soll) → **„Wiederherstellungslink erzeugen"**.
+4. Den angezeigten Link **selbst weitergeben** (kein automatischer Versand) – gleiches Prinzip wie bei den Einladungslinks.
+5. Die Person öffnet den Link, vergibt ein neues Passwort, meldet sich danach mit der neuen E-Mail-Adresse und dem neuen Passwort an.
+
+Wichtig: Rolle, Praxiszugehörigkeit und sämtliche mit der Person verknüpften Praxisdaten bleiben dabei vollständig erhalten – es wird nur das Konto (E-Mail/Passwort) ausgetauscht, nicht die Mitgliedschaft selbst. Der Link ist einmalig nutzbar und läuft nach 7 Tagen ab; eine neue Anfrage für dieselbe Person widerruft automatisch eine vorherige offene Anfrage.
+
 ## Verwandte Dokumente
 
 - `docs/PRIVACY_SECURITY.md` – Sicherheits- und Datenschutzkonzept insgesamt

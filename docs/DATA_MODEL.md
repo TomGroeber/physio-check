@@ -1,5 +1,9 @@
 # PhysioCheck – Datenmodell
 
+## Ergänzung 2026-07-26: Zugangs-Wiederherstellung für Praxismitglieder (D-113 ff.)
+
+- `practice_member_recovery` – keine Client-Policy (wie `platform_admins`), nur über SECURITY-DEFINER-RPCs erreichbar. `practice_member_id` (FK auf `practice_members`), `new_email`, `token_hash` (Hash-only, wie `staff_invites`), `created_by_platform_admin_id`, `expires_at`, `used_at`, `revoked_at`. Eine neue Anfrage widerruft automatisch eine vorherige offene Anfrage desselben Mitglieds. `redeem_practice_member_recovery()` hängt die BESTEHENDE `practice_members`-Zeile (Rolle, Praxiszugehörigkeit, `id`, Historie unverändert) auf ein neues `profile_id` um – anders als `staff_invites`, das eine neue Mitgliedschaft erzeugt.
+
 ## Ergänzung 2026-07-25/26: Betreiberportal und Nachrichtenfunktion
 
 **Betreiberportal (neu, alle ohne Client-Policy außer wo vermerkt):**

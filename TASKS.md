@@ -320,7 +320,19 @@ Auf Toms Wunsch: die untere Navigation der nativen Patienten-App soll wie eine e
 - [x] Nach Verstärken der Deckkraft (Kanten/Highlights) per Screenshot-Vergleich deutlich sichtbar: Kapsel wirkt jetzt spürbar rund/dimensional mit erkennbarem kühlem oberen und warmen unteren Farbton statt flacher Kreisfläche (`/tmp/lens-strong1.png`, Termine-Tab, heller Modus).
 - [x] Falsche Fährte gefunden und ausgeräumt: eine verschachtelte `LiquidGlassView` innerhalb der äußeren Balken-`LiquidGlassView` sah nach unscharfen Tab-Beschriftungen aus – testweise deaktiviert, Unschärfe blieb identisch. Ursache war tatsächlich der native Glaseffekt, der ECHTEN, hinter dem Balken durchscrollenden Inhalt (z. B. einen Button-Text) korrekt weichzeichnet – kein Rendering-Fehler.
 - [x] Reduce Motion (Feder-Einrasten + Schimmer werden übersprungen, sofortige Positionierung) und Reduce Transparency (deckender, kontrastreicher Ersatz statt transluzentem Material) über einen neuen gemeinsamen Hook (`src/lib/accessibility-preferences.ts`) angebunden – noch nicht am Gerät mit aktiven Systemeinstellungen verifiziert (nur Code-Pfad vorhanden).
-- [ ] Von Tom selbst live am Simulator erneut bestätigt (nach der Verstärkung) – bisher nur die ERSTE Fassung wurde live geprüft und ausdrücklich abgelehnt.
-- [ ] Vollständige Testmatrix (kleiner/großer Viewport, Dark Mode – Achtung: App hat einen EIGENEN In-App-Dunkelmodus-Schalter, NICHT über `simctl ui … appearance dark` erreichbar, Dynamic Type, Reduce Motion/Transparency, VoiceOver, Android-Fallback) – weiterhin offen.
-- [ ] Vorher-/Nachher-Vergleichsscreenshots und Simulator-Aufnahme in Bewegung – von Tom explizit als Abnahmekriterium verlangt, noch nicht als fertiges Vergleichsbild erstellt (nur Einzel-Screenshots vorhanden).
-- [ ] Commit/Push/PR – vier bzw. inzwischen fünf Commits lokal auf dem Branch, **weiterhin nicht gepusht, kein PR**, wartet auf Toms erneute Bestätigung des visuellen Ergebnisses nach der Verstärkung.
+- [x] Von Tom selbst live bestätigt nach Verstärken der Kanten/Highlights, funktionierender Zieh-Geste und durchlässigerer Kapsel („ok passt alles!").
+- [x] PR #6 gepusht, alle 4 CI-Jobs grün, mit Toms ausdrücklicher Freigabe nach `main` gemergt (`ffaae507`, 26.07.2026), CI auf `main` erneut grün verifiziert.
+- [ ] Vollständige Testmatrix (kleiner/großer Viewport, Dark Mode, Dynamic Type, Reduce Motion/Transparency, VoiceOver, Android-Fallback) – weiterhin nur die Kernfunktion + Typecheck/Lint/Tests verifiziert, nicht die vollständige Zusatzliste. Offen, kein aktueller Auftrag dazu.
+
+## Auftrag vom 26.07.2026 – Zugangs-Wiederherstellung für Praxismitglieder (Branch `claude/practice-member-recovery-20260726`)
+
+Toms Szenario: Praxismitglied verliert Passwort UND Zugriff auf die alte E-Mail-Adresse. Tom will das als Plattformadmin zurücksetzen können, ohne dass Praxisdaten verloren gehen.
+
+- [x] Design-Rückfrage gestellt und beantwortet: neue E-Mail-Adresse beim Zurücksetzen möglich (nicht nur „Passwort vergessen" bei erreichbarer alter E-Mail), auslösbar ausschließlich durch den Plattformadmin (nicht durch die Praxis selbst).
+- [x] Migration `20260726210000_practice_member_recovery.sql`: neue Tabelle `practice_member_recovery` (keine Client-Policies) + drei SECURITY-DEFINER-RPCs (`create_practice_member_recovery`, `inspect_practice_member_recovery`, `redeem_practice_member_recovery`) – s. D-113 bis D-116.
+- [x] Server-Services/-Actions: `src/server/services/practice-member-recovery.ts`, Trigger-Action in `src/server/actions/platform-admin.ts`, öffentliche Einlöse-Action `src/server/actions/practice-recovery.ts`.
+- [x] UI: „Zugang zurücksetzen"-Knopf je Mitglied im Betreiberportal (`/admin/practices/[id]` → Mitarbeitende), öffentliche Seiten `/practice-recovery/[token]` und `/practice-recovery/invalid`.
+- [x] Vollständig lokal geprüft: Typecheck, Lint, 115 Unit-Tests, 136 RLS-Proben (11 neue, Abschnitt G – gegen ein eigenes Wegwerf-Testmitglied, nie gegen echte Demo-Konten, s. D-116), Production Build, und ein echter Playwright-Durchlauf der gesamten Kette (Admin erzeugt Link über die echte Oberfläche → Link öffnen → neues Passwort setzen → mit neuen Zugangsdaten anmelden → landet in `/practice` → DB bestätigt: Rolle/Praxis unverändert, nur `profile_id` umgehängt).
+- [x] Dabei einen echten, unabhängigen Fehler gefunden und behoben: ein monatealter, hängengebliebener `next start`-Prozess belegte Port 3000 und lieferte einen 500-Fehler auf der Betreiberportal-Praxisdetailseite – Ursache war der veraltete Prozess, nicht der neue Code.
+- [x] Dokumentation: `docs/DATA_MODEL.md`, `docs/TEST_MATRIX.md`, `docs/PLATFORM_ADMIN_GUIDE.md` (neuer Schritt „Zugang zurücksetzen").
+- [ ] Commit/Push/PR – noch nicht angelegt.
