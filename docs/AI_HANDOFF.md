@@ -32,7 +32,9 @@ Ursprünglicher Auftrag: ein sicheres, klares Betreiber-Admin-Interface für Phy
 
 **Bewusst nicht in dieser Sitzung gemacht:** kein iOS-Simulator-/Android-Emulator-Lauf für die native App (nur Typecheck/Lint/Jest – strukturelle, keine visuelle Verifikation der mobilen Nachrichtenoberfläche). Datei-/Foto-/Audio-/Video-Anhänge in Nachrichten bewusst NICHT implementiert (expliziter Auftragsteil).
 
-**Nächster konkreter Schritt:** Commits sind auf `claude/platform-admin-20260725` gepusht (noch kein PR eröffnet). Als Nächstes: Draft-PR gegen `main` eröffnen, GitHub-CI-Lauf real verifizieren (`gh run view`), bei Bedarf einen echten Simulatorlauf der mobilen Nachrichtenoberfläche nachholen, dann Merge erst nach Toms ausdrücklicher Freigabe.
+**GitHub-CI-Status (26.07.2026, Draft-PR #5):** 3 von 4 Jobs grün (Web Typecheck/Lint/Tests/Build, Web RLS+E2E, Mobile). Der vierte Job (`Sicherheit · Secret-Scan + Dependency-Audit`) scheitert an einem EXTERNEN Problem, nicht an diesem PR: `pnpm audit` bekommt vom npm-Registry-Audit-Endpunkt wiederholt eine defekte gzip-Antwort (`ERR_PNPM_AUDIT_BAD_RESPONSE`). Secret-Scan (gitleaks) im selben Job läuft durch und findet nichts. Der letzte CI-Lauf auf `main` (25.07.2026, identische Toolchain) war vollständig grün – das Problem ist neu und liegt bei npmjs.org, nicht im Code. Ein Retry-Mechanismus wurde ergänzt (`.github/workflows/ci.yml`, Commit `c7fc720`, mit Toms ausdrücklicher Zustimmung – CI-Workflow-Änderungen gelten als sensibel), fängt eine anhaltende Registry-Störung aber naturgemäß nicht ab (mehrere manuelle Re-Runs im Abstand von Minuten scheiterten weiterhin identisch).
+
+**Nächster konkreter Schritt:** (1) Job „Sicherheit" zu einem späteren Zeitpunkt erneut laufen lassen (`gh run rerun <run-id> --job <job-id>` oder `gh pr checks 5`), sobald sich die npm-Registry erholt hat; (2) optional einen echten Simulatorlauf der mobilen Nachrichtenoberfläche nachholen; (3) Merge erst nach Toms ausdrücklicher Freigabe, PR #5 ist bewusst noch als Draft markiert.
 
 ## Vorheriger Auftrag (21.07.2026, siebter): Produktions- und Store-Reife
 
