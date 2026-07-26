@@ -146,6 +146,7 @@ export const de = {
     nav: {
       today: "Heute",
       appointments: "Termine",
+      messages: "Nachrichten",
       profile: "Profil",
     },
     today: {
@@ -411,6 +412,20 @@ export const de = {
       markRead: "Als gelesen markieren",
       readError: "Der Hinweis konnte nicht als gelesen markiert werden.",
     },
+    messages: {
+      title: "Nachrichten",
+      emptyState:
+        "Noch keine Nachrichten. Schreiben Sie Ihrer Praxis, wenn Sie eine Frage haben.",
+      noPracticeConnected: "Sie sind aktuell mit keiner Praxis verbunden.",
+      placeholder: "Ihre Nachricht …",
+      send: "Senden",
+      sending: "Wird gesendet …",
+      sendError: "Die Nachricht konnte nicht gesendet werden.",
+      resend: "Erneut senden",
+      sentAt: (time: string) => `Gesendet um ${time}`,
+      safetyNotice:
+        "Nachrichten werden nicht ständig überwacht. Wenden Sie sich in einem medizinischen Notfall an den zuständigen Notdienst.",
+    },
   },
 
   practice: {
@@ -421,6 +436,7 @@ export const de = {
       appointments: "Termine",
       calendar: "Kalender",
       waitlist: "Warteliste",
+      messages: "Nachrichten",
       settings: "Einstellungen",
     },
     dashboard: {
@@ -833,6 +849,24 @@ export const de = {
       editProfile: "Praxisdaten bearbeiten",
       membersHeading: "Mitarbeitende Ihrer Praxis",
       onlyAdminsCanManage: "Nur Praxisadmins können Mitarbeitende verwalten und einladen.",
+    },
+    messages: {
+      title: "Nachrichten",
+      searchPlaceholder: "Patient:in suchen …",
+      filterAll: "Alle",
+      filterUnread: "Ungelesen",
+      filterOpen: "Offen",
+      filterAnswered: "Beantwortet",
+      emptyList: "Keine Unterhaltungen gefunden.",
+      openPatientDetail: "Zum Patientenprofil",
+      backToList: "Zur Liste",
+      placeholder: "Antwort schreiben …",
+      send: "Senden",
+      sending: "Wird gesendet …",
+      sendError: "Die Nachricht konnte nicht gesendet werden.",
+      resend: "Erneut senden",
+      sentAt: (time: string) => `Gesendet um ${time}`,
+      openConversation: "Nachrichten anzeigen",
     },
   },
 

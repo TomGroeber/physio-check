@@ -11,10 +11,12 @@ function GlassPanel({
   className,
   strong = false,
   tinted = false,
+  ref,
   ...props
 }: React.ComponentProps<"div"> & { strong?: boolean; tinted?: boolean }) {
   return (
     <div
+      ref={ref}
       data-slot="glass-panel"
       className={cn(
         strong ? "glass-panel-strong" : "glass-panel",

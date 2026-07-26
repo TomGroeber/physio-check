@@ -6,6 +6,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Home01Icon,
   Calendar03Icon,
+  Message01Icon,
   UserCircleIcon,
 } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
@@ -14,14 +15,15 @@ import { de } from "@/messages/de";
 const items = [
   { href: "/today", label: de.patient.nav.today, icon: Home01Icon },
   { href: "/appointments", label: de.patient.nav.appointments, icon: Calendar03Icon },
+  { href: "/messages", label: de.patient.nav.messages, icon: Message01Icon },
   { href: "/profile", label: de.patient.nav.profile, icon: UserCircleIcon },
 ] as const;
 
 /**
- * Untere Hauptnavigation der Patientenoberfläche: genau drei große,
+ * Untere Hauptnavigation der Patientenoberfläche: vier große,
  * beschriftete Ziele (Touch-Fläche deutlich über 48×48 px).
  */
-export function BottomNav() {
+export function BottomNav({ unreadMessages = false }: { unreadMessages?: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -51,11 +53,17 @@ export function BottomNav() {
               >
                 <span
                   className={cn(
-                    "flex h-8 w-14 items-center justify-center rounded-full",
+                    "relative flex h-8 w-14 items-center justify-center rounded-full",
                     active && "bg-accent"
                   )}
                 >
                   <HugeiconsIcon icon={item.icon} strokeWidth={2} className="size-7" />
+                  {item.href === "/messages" && unreadMessages && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute top-0.5 right-2.5 size-2.5 rounded-full bg-destructive"
+                    />
+                  )}
                 </span>
                 {item.label}
               </Link>

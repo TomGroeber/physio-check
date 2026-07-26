@@ -27,6 +27,7 @@ import { InternalProfileForm } from "@/components/practice/internal-profile-form
 import { getPinnedPatient } from "@/server/services/pinned-patients";
 import { PinPatientForm } from "@/components/practice/pin-patient-form";
 import { getPatientCalendarColor } from "@/server/services/patient-calendar-colors";
+import { findConversationId } from "@/server/services/messages";
 import { PatientColorPicker } from "@/components/practice/patient-color-picker";
 import { ExercisePlanBuilder } from "@/components/practice/exercise-plan-builder";
 import { getPlanEditorData } from "@/server/services/plans";
@@ -64,7 +65,7 @@ export default async function PatientDetailPage({
   const link = await getPatientDetail(practiceId, patientId);
   if (!link) notFound();
 
-  const [logs, planEditor, nextAppointment, authorizations, documents, unitStatus, internalProfile, pinned, analytics, calendarColor] =
+  const [logs, planEditor, nextAppointment, authorizations, documents, unitStatus, internalProfile, pinned, analytics, calendarColor, conversationId] =
     await Promise.all([
       getPatientCompletionLogs(practiceId, patientId, days),
       getPlanEditorData(practiceId, patientId),
@@ -76,6 +77,7 @@ export default async function PatientDetailPage({
       getPinnedPatient(practiceId, patientId),
       getPatientAdherenceAnalytics(practiceId, patientId, days),
       getPatientCalendarColor(practiceId, patientId),
+      findConversationId(practiceId, patientId),
     ]);
   const warnings = unitStatus
     ? evaluateAuthorizationWarnings({
@@ -108,6 +110,14 @@ export default async function PatientDetailPage({
             )}
           </p>
         </div>
+        {conversationId && (
+          <Link
+            href={`/practice/messages/${conversationId}`}
+            className="ml-auto text-base font-semibold text-primary underline"
+          >
+            {de.practice.messages.openConversation}
+          </Link>
+        )}
       </div>
 
       <section aria-labelledby="contact-heading" className="flex flex-col gap-3">
