@@ -2,7 +2,7 @@
 
 App für Physiotherapiepraxen und ihre Patientinnen und Patienten: Heimübungspläne mit Videos, Termine, verordnete Sitzungen und selbst dokumentierte Durchführung (Adhärenz).
 
-> **Stand 26.07.2026 (Branch `claude/platform-admin-20260725`):** Neues Betreiberportal (`/admin`, strikt getrennte `platform_admin`-Rolle) zum Anlegen/Verwalten von Praxen, ein Liquid-Glass-Design für Portal/Praxis-Einstellungen/Nachrichten, und eine vollständige Textnachrichtenfunktion zwischen Patient:in und aktuell verbundener Praxis (vierter Patienten-Navigationspunkt, Web + native App). Alle Prüfungen lokal grün: Typecheck, Lint, 115 Tests, 125 RLS-Proben, volle Playwright-Suite (55 bestanden/0 fehlgeschlagen), Build, mobile Typecheck/Lint/16 Tests. Produktumfang: `docs/PRODUCT_SPEC.md` · Betreiberportal: `docs/PLATFORM_ADMIN_GUIDE.md` · Testmatrix: `docs/TEST_MATRIX.md` · Übergabe: `docs/AI_HANDOFF.md`.
+> **Stand 26.07.2026 (`main`, PR #5 gemergt):** Neues Betreiberportal (`/admin`, strikt getrennte `platform_admin`-Rolle) zum Anlegen/Verwalten von Praxen, ein Liquid-Glass-Design für Portal/Praxis-Einstellungen/Nachrichten, und eine vollständige Textnachrichtenfunktion zwischen Patient:in und aktuell verbundener Praxis (vierter Patienten-Navigationspunkt, Web + native App, von Tom im iOS-Simulator und Android-Emulator bestätigt). Alle Prüfungen lokal und in CI grün: Typecheck, Lint, 115 Tests, 125 RLS-Proben, volle Playwright-Suite (55 bestanden/0 fehlgeschlagen), Build, mobile Typecheck/Lint/16 Tests, alle 4 GitHub-CI-Jobs. Produktumfang: `docs/PRODUCT_SPEC.md` · Betreiberportal: `docs/PLATFORM_ADMIN_GUIDE.md` · Testmatrix: `docs/TEST_MATRIX.md` · Übergabe: `docs/AI_HANDOFF.md`.
 
 ## Funktionsübersicht
 
