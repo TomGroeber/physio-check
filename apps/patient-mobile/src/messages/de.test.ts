@@ -26,6 +26,7 @@ describe("Sprachhygiene der App-Texte", () => {
     expect(web.patient.nav).toEqual({
       today: "Heute",
       appointments: "Termine",
+      messages: "Nachrichten",
       profile: "Profil",
     });
   });
