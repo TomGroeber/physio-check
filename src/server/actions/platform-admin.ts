@@ -12,6 +12,7 @@ import {
   updatePracticeProfileAsPlatformAdmin,
 } from "@/server/services/platform-admin";
 import { assertPlatformAdmin } from "@/server/services/platform-admin-auth";
+import { createPracticeMemberRecovery } from "@/server/services/practice-member-recovery";
 import {
   createStaffInviteAsPlatformAdmin,
   hashInviteToken,
@@ -22,6 +23,7 @@ import {
   FEATURE_FLAG_KEYS,
   featureFlagsSchema,
   practiceLifecycleSchema,
+  practiceMemberRecoverySchema,
   practiceOnboardingSchema,
   practiceProfileSchema,
   practiceSettingsSchema,
@@ -193,6 +195,33 @@ export async function setPracticeMemberStatusAction(formData: FormData): Promise
   await assertPlatformAdmin();
   await setPracticeMemberStatus(memberId, role, isActive);
   if (typeof practiceId === "string") revalidatePath(`/admin/practices/${practiceId}`);
+}
+
+export type PracticeMemberRecoveryActionState = { error?: string; recoveryLink?: string };
+
+/**
+ * Zugangs-Wiederherstellung (D-113): für ein Mitglied, das sowohl
+ * Passwort als auch Zugriff auf die alte E-Mail-Adresse verloren hat.
+ * Erzeugt einen Link, der beim Einlösen ein neues Konto anlegt und mit
+ * der BESTEHENDEN Mitgliedschaft verknüpft - keine Praxisdaten gehen
+ * verloren.
+ */
+export async function createPracticeMemberRecoveryAction(
+  practiceId: string,
+  _previousState: PracticeMemberRecoveryActionState,
+  formData: FormData
+): Promise<PracticeMemberRecoveryActionState> {
+  await assertPlatformAdmin();
+  const parsed = practiceMemberRecoverySchema.safeParse({
+    practiceMemberId: formData.get("practiceMemberId"),
+    newEmail: formData.get("newEmail"),
+  });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Ungültige Eingabe." };
+
+  const result = await createPracticeMemberRecovery(parsed.data.practiceMemberId, parsed.data.newEmail);
+  if ("error" in result) return { error: "Der Wiederherstellungslink konnte nicht erstellt werden." };
+  revalidatePath(`/admin/practices/${practiceId}`);
+  return { recoveryLink: result.link };
 }
 
 export type StaffInviteActionState = { error?: string; inviteLink?: string; email?: string };
