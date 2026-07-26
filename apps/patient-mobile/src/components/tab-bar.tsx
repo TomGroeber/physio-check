@@ -19,16 +19,18 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { maxContentWidth, radius, spacing, type } from "@/config/branding";
 import { hasUnreadReply } from "@/data/messages";
 import { web } from "@/messages/de";
+import { useReduceMotion } from "@/lib/accessibility-preferences";
 import { useSession } from "@/lib/session";
 import { useTheme, useThemeSetting } from "@/lib/theme";
+import { LiquidLens } from "./liquid-lens";
 
 /** Sichtbare Mindesthöhe der Navigationsfläche (Touch-Ziel ≥ 48 px). */
 export const TAB_BAR_CONTENT_HEIGHT = 64;
 
 /** Größe/Position der schwebenden Hervorhebung hinter dem aktiven Icon. */
-const HIGHLIGHT_WIDTH = 44;
-const HIGHLIGHT_HEIGHT = 32;
-const HIGHLIGHT_TOP = 10;
+const HIGHLIGHT_WIDTH = 52;
+const HIGHLIGHT_HEIGHT = 40;
+const HIGHLIGHT_TOP = 6;
 
 const icons = {
   today: Home01Icon,
@@ -72,6 +74,7 @@ export function PatientTabBar({ state, navigation }: TabBarProps) {
   const theme = useTheme();
   const { theme: mode } = useThemeSetting();
   const insets = useSafeAreaInsets();
+  const reduceMotion = useReduceMotion();
   const { link } = useSession();
   const practiceId = link?.practiceId ?? "";
   const [unread, setUnread] = useState(false);
@@ -119,8 +122,13 @@ export function PatientTabBar({ state, navigation }: TabBarProps) {
   };
 
   const settleTo = (index: number) => {
+    const toValue = highlightLeftForIndex(index);
+    if (reduceMotion) {
+      highlightX.setValue(toValue);
+      return;
+    }
     Animated.spring(highlightX, {
-      toValue: highlightLeftForIndex(index),
+      toValue,
       useNativeDriver: true,
       damping: 20,
       stiffness: 220,
@@ -233,25 +241,17 @@ export function PatientTabBar({ state, navigation }: TabBarProps) {
       style={{
         position: "absolute",
         top: HIGHLIGHT_TOP,
-        width: HIGHLIGHT_WIDTH,
-        height: HIGHLIGHT_HEIGHT,
         left: 0,
         transform: [{ translateX: highlightX }],
       }}
     >
-      {isLiquidGlassSupported ? (
-        <LiquidGlassView
-          effect="regular"
-          colorScheme={mode}
-          interactive
-          tintColor={theme.glassAccent}
-          style={{ flex: 1, borderRadius: radius.full }}
-        />
-      ) : (
-        <View
-          style={{ flex: 1, borderRadius: radius.full, backgroundColor: theme.accent }}
-        />
-      )}
+      <LiquidLens
+        width={HIGHLIGHT_WIDTH}
+        height={HIGHLIGHT_HEIGHT}
+        colorScheme={mode}
+        interactive
+        shimmerTrigger={activeName}
+      />
     </Animated.View>
   );
 
