@@ -1,17 +1,16 @@
-import { BlurView } from "expo-blur";
-import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
-import { radius, spacing, type } from "@/config/branding";
+import { LiquidGlassView, isLiquidGlassSupported } from "@callstack/liquid-glass";
+import { View, type StyleProp, type ViewStyle } from "react-native";
+import { radius, spacing } from "@/config/branding";
 import { useTheme, useThemeSetting } from "@/lib/theme";
 
 /**
- * Natives Gegenstück zu `GlassPanel` der Website (Nachrichten-Screen,
- * s. DECISIONS.md): halbtransparente, weiche Fläche mit Blur, feiner
- * Lichtkante und Schatten. `expo-blur` (BlurView) übernimmt den
- * eigentlichen Weichzeichner-Effekt, ergänzt um denselben rgba-
- * Farbton wie die Website, damit die Fläche auch auf Android (wo der
- * native Blur schwächer/uneinheitlicher wirkt) konsistent lesbar
- * bleibt. Bewusst zurückhaltend (mittlere Blur-Intensität) - Text muss
- * immer gut lesbar bleiben.
+ * Natives Gegenstück zu `GlassPanel` der Website: echtes Apple-
+ * Liquid-Glass-Material über `@callstack/liquid-glass` (native
+ * iOS-26-API, kein Shader-Nachbau). Auf nicht unterstützten Geräten
+ * (Android, ältere iOS-Versionen) rendert die Bibliothek selbst einen
+ * einfachen View ohne Effekt - dafür sorgt zusätzlich eine eigene
+ * Fallback-Fläche (Farbe wie die Web-Glass-Tokens), damit die Karte
+ * dort trotzdem als Fläche erkennbar bleibt statt unsichtbar zu sein.
  */
 export function GlassCard({
   children,
@@ -24,48 +23,49 @@ export function GlassCard({
 }) {
   const theme = useTheme();
   const { theme: mode } = useThemeSetting();
+
+  if (!isLiquidGlassSupported) {
+    return (
+      <View
+        style={[
+          {
+            borderRadius: radius.glass,
+            borderWidth: 1,
+            borderColor: theme.glassBorder,
+            backgroundColor: strong ? theme.glassBgStrong : theme.glassBg,
+            padding: spacing.md,
+            shadowColor: theme.glassShadow,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 1,
+            shadowRadius: 20,
+            elevation: 3,
+          },
+          style,
+        ]}
+      >
+        {children}
+      </View>
+    );
+  }
+
   return (
-    <View
+    <LiquidGlassView
+      effect={strong ? "regular" : "clear"}
+      colorScheme={mode}
+      tintColor={strong ? theme.glassBgStrong : undefined}
       style={[
         {
           borderRadius: radius.glass,
-          borderWidth: 1,
-          borderColor: theme.glassBorder,
+          overflow: "hidden",
           shadowColor: theme.glassShadow,
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 1,
           shadowRadius: 20,
-          elevation: 3,
-          overflow: "hidden",
         },
         style,
       ]}
     >
-      <BlurView
-        intensity={strong ? 55 : 40}
-        tint={mode === "dark" ? "dark" : "light"}
-        style={[
-          StyleSheet.absoluteFill,
-          { backgroundColor: strong ? theme.glassBgStrong : theme.glassBg },
-        ]}
-      />
       <View style={{ padding: spacing.md }}>{children}</View>
-    </View>
-  );
-}
-
-export function GlassCardTitle({ children }: { children: string }) {
-  const theme = useTheme();
-  return (
-    <Text
-      style={{
-        fontSize: type.lg,
-        fontWeight: "700",
-        color: theme.foreground,
-        marginBottom: spacing.sm,
-      }}
-    >
-      {children}
-    </Text>
+    </LiquidGlassView>
   );
 }
