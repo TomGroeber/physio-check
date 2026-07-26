@@ -266,4 +266,18 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - name: Dependency-Audit (informativ, bricht bei „critical" ab)
-        run: pnpm audit --audit-level critical
+        # Der npm-Registry-Audit-Endpunkt liefert vereinzelt eine defekte
+        # gzip-Antwort (ERR_PNPM_AUDIT_BAD_RESPONSE, kein echter Fund) –
+        # das ist ein Registry-/Transportfehler, keine gefundene
+        # Schwachstelle. Drei Versuche mit kurzer Pause fangen das ab,
+        # ohne den eigentlichen Zweck (bei „critical" abbrechen) zu
+        # verlieren.
+        run: |
+          for attempt in 1 2 3; do
+            if pnpm audit --audit-level critical; then
+              exit 0
+            fi
+            echo "Versuch $attempt fehlgeschlagen, erneuter Versuch in 5s …"
+            sleep 5
+          done
+          exit 1
