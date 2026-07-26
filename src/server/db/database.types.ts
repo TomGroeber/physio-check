@@ -515,6 +515,51 @@ export type Database = {
           },
         ]
       }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string
+          patient_last_read_at: string | null
+          patient_profile_id: string
+          practice_id: string
+          practice_last_read_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          patient_last_read_at?: string | null
+          patient_profile_id: string
+          practice_id: string
+          practice_last_read_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          patient_last_read_at?: string | null
+          patient_profile_id?: string
+          practice_id?: string
+          practice_last_read_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_patient_profile_id_fkey"
+            columns: ["patient_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercise_media: {
         Row: {
           created_at: string
@@ -830,6 +875,48 @@ export type Database = {
           successful?: boolean
         }
         Relationships: []
+      }
+      messages: {
+        Row: {
+          body: string
+          conversation_id: string
+          created_at: string
+          id: string
+          sender_profile_id: string
+          sender_role: string
+        }
+        Insert: {
+          body: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender_profile_id: string
+          sender_role: string
+        }
+        Update: {
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender_profile_id?: string
+          sender_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_profile_id_fkey"
+            columns: ["sender_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -1831,6 +1918,11 @@ export type Database = {
         Args: { p_log_id: string }
         Returns: boolean
       }
+      mark_conversation_read_as_patient: { Args: never; Returns: undefined }
+      mark_conversation_read_as_practice: {
+        Args: { p_conversation_id: string }
+        Returns: undefined
+      }
       mark_notification_read: {
         Args: { p_notification_id: string }
         Returns: undefined
@@ -1841,6 +1933,10 @@ export type Database = {
       }
       patient_can_view_exercise: {
         Args: { p_exercise_id: string }
+        Returns: boolean
+      }
+      patient_currently_linked_to_practice: {
+        Args: { p_patient_profile_id: string; p_practice_id: string }
         Returns: boolean
       }
       primary_authorization_for_patient: {
@@ -1899,6 +1995,21 @@ export type Database = {
       reverse_appointment_completion: {
         Args: { p_appointment_id: string }
         Returns: boolean
+      }
+      send_patient_message: {
+        Args: { p_body: string }
+        Returns: {
+          out_conversation_id: string
+          out_created_at: string
+          out_message_id: string
+        }[]
+      }
+      send_practice_reply: {
+        Args: { p_body: string; p_conversation_id: string }
+        Returns: {
+          out_created_at: string
+          out_message_id: string
+        }[]
       }
       set_patient_phone: {
         Args: { new_phone: string; target_patient_id: string }
