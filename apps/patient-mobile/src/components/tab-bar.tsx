@@ -5,17 +5,30 @@ import {
   Message01Icon,
   UserCircleIcon,
 } from "@hugeicons/core-free-icons";
-import { useEffect, useState } from "react";
-import { AppState, Pressable, StyleSheet, Text, View } from "react-native";
+import { LiquidGlassView, isLiquidGlassSupported } from "@callstack/liquid-glass";
+import { useEffect, useRef, useState } from "react";
+import {
+  Animated,
+  AppState,
+  PanResponder,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { maxContentWidth, radius, spacing, type } from "@/config/branding";
 import { hasUnreadReply } from "@/data/messages";
 import { web } from "@/messages/de";
 import { useSession } from "@/lib/session";
-import { useTheme } from "@/lib/theme";
+import { useTheme, useThemeSetting } from "@/lib/theme";
 
-/** Sichtbare Mindesthöhe der Navigationsfläche (Web: min-h-18 = 72px). */
-export const TAB_BAR_CONTENT_HEIGHT = 72;
+/** Sichtbare Mindesthöhe der Navigationsfläche (Touch-Ziel ≥ 48 px). */
+export const TAB_BAR_CONTENT_HEIGHT = 64;
+
+/** Größe/Position der schwebenden Hervorhebung hinter dem aktiven Icon. */
+const HIGHLIGHT_WIDTH = 44;
+const HIGHLIGHT_HEIGHT = 32;
+const HIGHLIGHT_TOP = 10;
 
 const icons = {
   today: Home01Icon,
@@ -33,10 +46,14 @@ const labels: Record<string, string> = {
 
 /**
  * Untere Hauptnavigation wie die Web-Referenz (bottom-nav.tsx): vier
- * gleich breite, beschriftete Ziele; aktives Ziel mit Akzent-Pille
- * um das Icon und fetter Schrift. Die Höhe entsteht aus Inhalt +
- * dynamischem Home-Indicator-Inset – KEINE feste Gesamthöhe (die feste
- * 64-pt-Höhe war die Ursache der abgeschnittenen Navigation).
+ * gleich breite, beschriftete Ziele. Eine einzelne, durchgehend
+ * animierte Glas-Hervorhebung gleitet zwischen den Icons – beim
+ * Antippen sanft (Spring), beim Ziehen über die Leiste (ohne
+ * loszulassen) direkt unter dem Finger, wie bei Apples eigener
+ * iOS-26-Tab-Bar. Echtes Apple-Liquid-Glass-Material
+ * (`@callstack/liquid-glass`, iOS 26+); auf anderen Plattformen/
+ * Systemversionen bleibt es eine deckende Fläche ohne Animation der
+ * Hervorhebungsfarbe.
  */
 const visibleTabs = ["today", "appointments", "messages", "profile"] as const;
 
@@ -53,6 +70,7 @@ type TabBarProps = {
 
 export function PatientTabBar({ state, navigation }: TabBarProps) {
   const theme = useTheme();
+  const { theme: mode } = useThemeSetting();
   const insets = useSafeAreaInsets();
   const { link } = useSession();
   const practiceId = link?.practiceId ?? "";
@@ -62,6 +80,113 @@ export function PatientTabBar({ state, navigation }: TabBarProps) {
   const activeName = visibleTabs.includes(currentName as (typeof visibleTabs)[number])
     ? currentName
     : "today";
+
+  const filteredRoutes = state.routes.filter((route) =>
+    visibleTabs.includes(route.name as (typeof visibleTabs)[number])
+  );
+  const activeIndex = filteredRoutes.findIndex((route) => route.name === activeName);
+
+  const navigateToRoute = (route: { key: string; name: string }) => {
+    if (route.name === activeName) return;
+    const event = navigation.emit({
+      type: "tabPress",
+      target: route.key,
+      canPreventDefault: true,
+    });
+    if (!event.defaultPrevented) {
+      navigation.navigate(route.name);
+    }
+  };
+
+  // Waagerechte Verschiebung der Hervorhebung (0 = unter dem ersten
+  // Ziel). `useRef(new Animated.Value(...)).current` ist Reacts eigenes,
+  // offizielles Muster für so ein dauerhaftes, animiertes Objekt (s.
+  // React-Native-Doku zu `Animated`) – der Wert selbst ändert sich nie
+  // während des Renderns, nur über `.setValue()`/`Animated.spring()`
+  // außerhalb davon.
+  // eslint-disable-next-line react-hooks/refs
+  const highlightX = useRef(new Animated.Value(0)).current;
+  const rowWidthRef = useRef(0);
+  const draggingRef = useRef(false);
+  const lastDragIndexRef = useRef<number | null>(null);
+
+  // Linke Kante der Hervorhebung, damit ihre Mitte exakt auf der Mitte
+  // von Ziel `index` liegt (Basis-`left` ist 0, es wird nur über
+  // `transform: translateX` verschoben).
+  const highlightLeftForIndex = (index: number) => {
+    const itemWidth = rowWidthRef.current / (filteredRoutes.length || 1);
+    return index * itemWidth + itemWidth / 2 - HIGHLIGHT_WIDTH / 2;
+  };
+
+  const settleTo = (index: number) => {
+    Animated.spring(highlightX, {
+      toValue: highlightLeftForIndex(index),
+      useNativeDriver: true,
+      damping: 20,
+      stiffness: 220,
+      mass: 0.8,
+    }).start();
+  };
+
+  useEffect(() => {
+    if (draggingRef.current) return;
+    if (activeIndex < 0) return;
+    settleTo(activeIndex);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeName]);
+
+  const handleDragX = (x: number) => {
+    const width = rowWidthRef.current;
+    const count = filteredRoutes.length;
+    if (!width || count === 0) return;
+    // Die Hervorhebung folgt direkt dem Finger (wie ein Tropfen), nicht
+    // erst nach dem Erreichen einer Ziel-Mitte.
+    const half = HIGHLIGHT_WIDTH / 2;
+    const center = Math.min(width - half, Math.max(half, x));
+    highlightX.setValue(center - half);
+
+    const index = Math.min(count - 1, Math.max(0, Math.floor((x / width) * count)));
+    if (lastDragIndexRef.current === index) return;
+    lastDragIndexRef.current = index;
+    const route = filteredRoutes[index];
+    if (route) navigateToRoute(route);
+  };
+
+  // Wie bei Apple: Auf einem Ziel andrücken und ohne loszulassen zu
+  // einem anderen gleiten wechselt live den Tab. Die Capture-Variante
+  // entscheidet VOR den <Pressable>-Kindern, ob eine echte waagerechte
+  // Ziehbewegung vorliegt – mit der Bubble-Variante (onMoveShouldSet...
+  // ohne Capture) beanspruchte das schon aktive <Pressable> die Geste
+  // zuerst, wodurch das Gleiten nie ausgelöst wurde.
+  //
+  // Bewusst OHNE useRef/useMemo: PanResponder.create() ist billig, eine
+  // neu erzeugte Instanz pro Render vermeidet veraltete Closures
+  // (activeName/filteredRoutes vom ersten Render). React Natives
+  // eigenes offizielles Muster für PanResponder liest dabei zwangsläufig
+  // Refs innerhalb der Callback-Objekte – die neue react-hooks/refs-
+  // Regel erkennt das fälschlich als Render-Zugriff, obwohl die Refs
+  // erst beim tatsächlichen Touch-Event gelesen werden, nie synchron
+  // während dieses Renders.
+  // eslint-disable-next-line react-hooks/refs
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponderCapture: () => false,
+    onMoveShouldSetPanResponderCapture: (_evt, gestureState) => Math.abs(gestureState.dx) > 6,
+    onPanResponderGrant: (evt) => {
+      draggingRef.current = true;
+      handleDragX(evt.nativeEvent.locationX);
+    },
+    onPanResponderMove: (evt) => handleDragX(evt.nativeEvent.locationX),
+    onPanResponderRelease: () => {
+      draggingRef.current = false;
+      lastDragIndexRef.current = null;
+      if (activeIndex >= 0) settleTo(activeIndex);
+    },
+    onPanResponderTerminate: () => {
+      draggingRef.current = false;
+      lastDragIndexRef.current = null;
+      if (activeIndex >= 0) settleTo(activeIndex);
+    },
+  });
 
   useEffect(() => {
     if (!practiceId) return;
@@ -83,101 +208,175 @@ export function PatientTabBar({ state, navigation }: TabBarProps) {
     };
   }, [practiceId, activeName]);
 
-  return (
-    <View
-      accessibilityRole="tablist"
+  // Schwebende Kapsel wie Apples eigene iOS-26-Tab-Bar: rundum vom
+  // Bildschirmrand abgesetzt (nicht randlos), volle Kapselform, Tiefe
+  // über Schatten statt Trennlinie. Inhalte scrollen darunter hindurch
+  // und machen den Glaseffekt sichtbar. Die Screens reservieren dafür
+  // bereits über `Screen`'s bottomInset={TAB_BAR_CONTENT_HEIGHT} Platz.
+  const barBorderStyle = {
+    position: "absolute" as const,
+    left: spacing.md,
+    right: spacing.md,
+    bottom: Math.max(insets.bottom, spacing.md) + spacing.xs,
+    borderRadius: radius.full,
+    overflow: "hidden" as const,
+    shadowColor: theme.glassShadow,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 18,
+    elevation: 8,
+  };
+
+  const highlight = (
+    <Animated.View
+      pointerEvents="none"
       style={{
-        backgroundColor: theme.card,
-        borderTopWidth: StyleSheet.hairlineWidth,
-        borderTopColor: theme.border,
-        paddingBottom: insets.bottom,
+        position: "absolute",
+        top: HIGHLIGHT_TOP,
+        width: HIGHLIGHT_WIDTH,
+        height: HIGHLIGHT_HEIGHT,
+        left: 0,
+        transform: [{ translateX: highlightX }],
       }}
     >
-      <View
-        style={{
-          alignSelf: "center",
-          width: "100%",
-          maxWidth: maxContentWidth,
-          flexDirection: "row",
-        }}
-      >
-        {state.routes
-          .filter((route) =>
-            visibleTabs.includes(route.name as (typeof visibleTabs)[number])
-          )
-          .map((route) => {
-          const active = route.name === activeName;
-          const label = labels[route.name] ?? route.name;
-          const icon = icons[route.name as keyof typeof icons] ?? Home01Icon;
-          return (
-            <Pressable
-              key={route.key}
-              accessibilityRole="tab"
-              accessibilityLabel={label}
-              accessibilityState={{ selected: active }}
-              onPress={() => {
-                const event = navigation.emit({
-                  type: "tabPress",
-                  target: route.key,
-                  canPreventDefault: true,
-                });
-                if (!active && !event.defaultPrevented) {
-                  navigation.navigate(route.name);
-                }
-              }}
+      {isLiquidGlassSupported ? (
+        <LiquidGlassView
+          effect="regular"
+          colorScheme={mode}
+          interactive
+          tintColor={theme.glassAccent}
+          style={{ flex: 1, borderRadius: radius.full }}
+        />
+      ) : (
+        <View
+          style={{ flex: 1, borderRadius: radius.full, backgroundColor: theme.accent }}
+        />
+      )}
+    </Animated.View>
+  );
+
+  const items = (
+    <View
+      onLayout={(e) => {
+        rowWidthRef.current = e.nativeEvent.layout.width;
+        if (activeIndex >= 0) {
+          highlightX.setValue(highlightLeftForIndex(activeIndex));
+        }
+      }}
+      style={{
+        alignSelf: "center",
+        width: "100%",
+        maxWidth: maxContentWidth,
+        flexDirection: "row",
+      }}
+      {...panResponder.panHandlers}
+    >
+      {highlight}
+      {filteredRoutes.map((route) => {
+        const active = route.name === activeName;
+        const label = labels[route.name] ?? route.name;
+        const icon = icons[route.name as keyof typeof icons] ?? Home01Icon;
+        return (
+          <Pressable
+            key={route.key}
+            accessibilityRole="tab"
+            accessibilityLabel={label}
+            accessibilityState={{ selected: active }}
+            onPress={() => navigateToRoute(route)}
+            style={{
+              flex: 1,
+              minHeight: TAB_BAR_CONTENT_HEIGHT,
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 2,
+              paddingVertical: spacing.xs,
+            }}
+          >
+            <View
               style={{
-                flex: 1,
-                minHeight: TAB_BAR_CONTENT_HEIGHT,
+                width: HIGHLIGHT_WIDTH,
+                height: HIGHLIGHT_HEIGHT,
                 alignItems: "center",
                 justifyContent: "center",
-                gap: spacing.xs,
-                paddingVertical: spacing.sm,
               }}
             >
-              <View
-                style={{
-                  width: 56,
-                  height: 32,
-                  borderRadius: radius.full,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: active ? theme.accent : "transparent",
-                }}
-              >
-                <HugeiconsIcon
-                  icon={icon}
-                  size={26}
-                  strokeWidth={2}
-                  color={active ? theme.accentForeground : theme.mutedForeground}
-                />
-                {route.name === "messages" && unread && (
-                  <View
-                    accessibilityLabel={`${label} – ungelesen`}
-                    style={{
-                      position: "absolute",
-                      top: 2,
-                      right: 10,
-                      width: 10,
-                      height: 10,
-                      borderRadius: radius.full,
-                      backgroundColor: theme.destructive,
-                    }}
-                  />
-                )}
-              </View>
-              <Text
-                style={{
-                  fontSize: type.small,
-                  fontWeight: active ? "700" : "400",
-                  color: active ? theme.accentForeground : theme.mutedForeground,
-                }}
-              >
-                {label}
-              </Text>
-            </Pressable>
-          );
-          })}
-      </View>
+              <TabIcon
+                icon={icon}
+                active={active}
+                size={active ? 24 : 20}
+                label={label}
+                theme={theme}
+                unread={route.name === "messages" && unread}
+              />
+            </View>
+            <Text
+              numberOfLines={1}
+              style={{
+                fontSize: type.small,
+                color: active ? theme.accentForeground : theme.mutedForeground,
+              }}
+            >
+              {label}
+            </Text>
+          </Pressable>
+        );
+      })}
     </View>
+  );
+
+  return isLiquidGlassSupported ? (
+    <LiquidGlassView
+      accessibilityRole="tablist"
+      effect="clear"
+      colorScheme={mode}
+      style={barBorderStyle}
+    >
+      {items}
+    </LiquidGlassView>
+  ) : (
+    <View accessibilityRole="tablist" style={[{ backgroundColor: theme.glassBgStrong }, barBorderStyle]}>
+      {items}
+    </View>
+  );
+}
+
+function TabIcon({
+  icon,
+  active,
+  size,
+  label,
+  theme,
+  unread,
+}: {
+  icon: Parameters<typeof HugeiconsIcon>[0]["icon"];
+  active: boolean;
+  size: number;
+  label: string;
+  theme: ReturnType<typeof useTheme>;
+  unread: boolean;
+}) {
+  return (
+    <>
+      <HugeiconsIcon
+        icon={icon}
+        size={size}
+        strokeWidth={2}
+        color={active ? theme.accentForeground : theme.mutedForeground}
+      />
+      {unread && (
+        <View
+          accessibilityLabel={`${label} – ungelesen`}
+          style={{
+            position: "absolute",
+            top: 2,
+            right: 10,
+            width: 10,
+            height: 10,
+            borderRadius: radius.full,
+            backgroundColor: theme.destructive,
+          }}
+        />
+      )}
+    </>
   );
 }

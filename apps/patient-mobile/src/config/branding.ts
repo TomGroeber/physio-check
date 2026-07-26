@@ -40,6 +40,10 @@ export const colors = {
     glassBgStrong: "rgba(255,255,255,0.82)",
     glassBorder: "rgba(255,255,255,0.7)",
     glassShadow: "rgba(24,38,63,0.16)",
+    // Durchscheinender Teal-Tint fürs aktive Tab-Icon (LiquidGlassView
+    // tintColor): bewusst transluzent, ein deckender Farbwert würde den
+    // Glaseffekt (Unschärfe/Lichtbrechung) einfach übermalen.
+    glassAccent: "rgba(23,106,110,0.3)",
   },
   dark: {
     background: "#111b2b",
@@ -67,6 +71,7 @@ export const colors = {
     glassBgStrong: "rgba(27,39,58,0.8)",
     glassBorder: "rgba(255,255,255,0.16)",
     glassShadow: "rgba(0,0,0,0.4)",
+    glassAccent: "rgba(80,169,168,0.32)",
   },
 } as const;
 
