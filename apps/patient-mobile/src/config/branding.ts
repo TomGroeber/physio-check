@@ -34,6 +34,12 @@ export const colors = {
     border: "#e1ded5",
     input: "#e1ded5",
     ring: "#176a6e",
+    // Liquid-Glass-Werte (Nachrichten-Screen, s. DECISIONS.md) - exakte
+    // rgba-Entsprechungen der Web-Tokens (--glass-* in globals.css).
+    glassBg: "rgba(255,255,255,0.62)",
+    glassBgStrong: "rgba(255,255,255,0.82)",
+    glassBorder: "rgba(255,255,255,0.7)",
+    glassShadow: "rgba(24,38,63,0.16)",
   },
   dark: {
     background: "#111b2b",
@@ -57,6 +63,10 @@ export const colors = {
     border: "rgba(255,255,255,0.12)",
     input: "rgba(255,255,255,0.16)",
     ring: "#50a9a8",
+    glassBg: "rgba(27,39,58,0.55)",
+    glassBgStrong: "rgba(27,39,58,0.8)",
+    glassBorder: "rgba(255,255,255,0.16)",
+    glassShadow: "rgba(0,0,0,0.4)",
   },
 } as const;
 
@@ -79,6 +89,7 @@ export const radius = {
   md: 10, // rounded-lg
   lg: 12, // rounded-xl (Karten)
   xl: 17, // rounded-2xl
+  glass: 24, // rounded-3xl, wie die Web-GlassPanel-Komponente
   full: 999,
 } as const;
 
