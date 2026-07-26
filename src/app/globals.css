@@ -50,6 +50,11 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-glass-bg: var(--glass-bg);
+  --color-glass-bg-strong: var(--glass-bg-strong);
+  --color-glass-border: var(--glass-border);
+  --color-glass-highlight: var(--glass-highlight);
+  --color-glass-tint: var(--glass-tint);
 }
 
 /*
@@ -120,6 +125,19 @@
   --sidebar-accent-foreground: oklch(0.97 0.006 90);
   --sidebar-border: oklch(1 0 0 / 12%);
   --sidebar-ring: oklch(0.62 0.08 195);
+
+  /*
+   * Liquid-Glass-Tokens (Betreiberportal + Praxis-Einstellungen, s.
+   * DECISIONS.md). Bewusst additiv und nur dort verwendet - der
+   * ruhige Patientenbereich bleibt unverändert. Farbwerte leiten sich
+   * aus Navy/Teal ab, nicht aus neuen, ungeprüften Farben.
+   */
+  --glass-bg: oklch(1 0 0 / 62%);
+  --glass-bg-strong: oklch(1 0 0 / 82%);
+  --glass-border: oklch(1 0 0 / 55%);
+  --glass-highlight: oklch(1 0 0 / 85%);
+  --glass-shadow: oklch(0.27 0.05 260 / 14%);
+  --glass-tint: oklch(0.48 0.075 200 / 8%);
 }
 
 /*
@@ -162,6 +180,13 @@
   --sidebar-accent-foreground: oklch(0.95 0.008 90);
   --sidebar-border: oklch(1 0 0 / 12%);
   --sidebar-ring: oklch(0.68 0.085 195);
+
+  --glass-bg: oklch(0.27 0.04 260 / 55%);
+  --glass-bg-strong: oklch(0.27 0.04 260 / 78%);
+  --glass-border: oklch(1 0 0 / 14%);
+  --glass-highlight: oklch(1 0 0 / 20%);
+  --glass-shadow: oklch(0 0 0 / 35%);
+  --glass-tint: oklch(0.68 0.085 195 / 10%);
 }
 
 @layer base {
@@ -201,5 +226,47 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+
+  /*
+   * Liquid-Glass-Oberflächen (Betreiberportal, Praxis-Einstellungen).
+   * `.glass-panel` ist die Grundfläche: halbtransparent, Blur, feine
+   * Lichtkante oben, weicher Schatten. `.glass-panel-strong` für
+   * Elemente, die mehr Kontrast brauchen (Dialoge, Formulare).
+   * Fallback: Browser ohne backdrop-filter-Unterstützung erhalten eine
+   * deckende Fläche statt eines durchsichtigen, unlesbaren Panels.
+   */
+  .glass-panel {
+    position: relative;
+    background-color: var(--glass-bg-strong);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-3xl);
+    box-shadow:
+      0 1px 0 0 var(--glass-highlight) inset,
+      0 1px 24px 0 var(--glass-shadow);
+  }
+  .glass-panel-strong {
+    position: relative;
+    background-color: var(--glass-bg-strong);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-3xl);
+    box-shadow:
+      0 1px 0 0 var(--glass-highlight) inset,
+      0 4px 32px 0 var(--glass-shadow);
+  }
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .glass-panel {
+      background-color: var(--glass-bg);
+      backdrop-filter: blur(20px) saturate(1.4);
+      -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    }
+    .glass-panel-strong {
+      background-color: var(--glass-bg-strong);
+      backdrop-filter: blur(28px) saturate(1.5);
+      -webkit-backdrop-filter: blur(28px) saturate(1.5);
+    }
+  }
+  .glass-tint {
+    background-image: linear-gradient(160deg, var(--glass-tint), transparent 60%);
   }
 }

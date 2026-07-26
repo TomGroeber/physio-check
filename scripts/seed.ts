@@ -17,6 +17,7 @@ const DEMO_USERS = [
   { email: "admin@demo.physiocheck.test", fullName: "Paul Muster", kind: "admin" as const },
   { email: "patientin@demo.physiocheck.test", fullName: "Petra Beispielfrau", kind: "patient" as const },
   { email: "eingeladen@demo.physiocheck.test", fullName: "Erika Einladung", kind: "invitee" as const },
+  { email: "betreiber@demo.physiocheck.test", fullName: "Beate Betreiberin", kind: "platformadmin" as const },
 ];
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -137,12 +138,22 @@ async function main() {
   await removeExistingDemoData();
 
   console.log("Lege Demo-Benutzer an …");
-  const [therapistId, adminId, patientId] = [
+  const [therapistId, adminId, patientId, , platformAdminUserId] = [
     await createUser(DEMO_USERS[0].email, DEMO_USERS[0].fullName),
     await createUser(DEMO_USERS[1].email, DEMO_USERS[1].fullName),
     await createUser(DEMO_USERS[2].email, DEMO_USERS[2].fullName),
     await createUser(DEMO_USERS[3].email, DEMO_USERS[3].fullName),
+    await createUser(DEMO_USERS[4].email, DEMO_USERS[4].fullName),
   ];
+
+  // Betreiberrolle: NIEMALS über practice_members - eigene, getrennte
+  // Tabelle (siehe DECISIONS.md). Fürs lokale Testen direkt vergeben;
+  // in einer echten Umgebung läuft das ausschließlich über
+  // `pnpm platform-admin grant <email> --yes` (scripts/platform-admin.ts).
+  const { error: platformAdminError } = await db
+    .from("platform_admins")
+    .insert({ profile_id: platformAdminUserId, granted_by: "seed-script", note: "Demo-Betreiberkonto" });
+  if (platformAdminError) throw new Error(`platform_admins: ${platformAdminError.message}`);
 
   console.log("Lege Demo-Praxis an …");
   const { data: practice, error: practiceError } = await db

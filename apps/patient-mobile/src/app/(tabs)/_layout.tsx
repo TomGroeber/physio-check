@@ -7,9 +7,10 @@ import { useSession } from "@/lib/session";
 
 /**
  * Patientenbereich wie das Web-Layout: Kopfzeile mit Marke + Avatar,
- * Inhalt, untere 3-Ziele-Navigation. `session` und `exercise/*` liegen
- * bewusst IN der Tab-Gruppe (Web: Navigation bleibt sichtbar, „Heute"
- * bleibt aktiv), sind aber keine eigenen Tabs.
+ * Inhalt, untere 4-Ziele-Navigation (Heute/Termine/Nachrichten/Profil).
+ * `session` und `exercise/*` liegen bewusst IN der Tab-Gruppe (Web:
+ * Navigation bleibt sichtbar, „Heute" bleibt aktiv), sind aber keine
+ * eigenen Tabs.
  */
 export default function TabsLayout() {
   const { initializing, session, isPracticeMember, link } = useSession();
@@ -34,6 +35,7 @@ export default function TabsLayout() {
         name="appointments"
         options={{ title: web.patient.nav.appointments }}
       />
+      <Tabs.Screen name="messages" options={{ title: web.patient.nav.messages }} />
       <Tabs.Screen name="profile" options={{ title: web.patient.nav.profile }} />
       {/* Unterseiten des Heute-Bereichs – kein eigener Tab (href: null). */}
       <Tabs.Screen name="session" options={{ href: null, title: web.patient.session.title }} />

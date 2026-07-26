@@ -7,6 +7,16 @@ jest.mock("@/lib/supabase", () => ({
   apiBaseUrl: "http://test",
 }));
 
+jest.mock("@/lib/session", () => ({
+  useSession: () => ({
+    link: { practiceId: "test-practice", practiceName: "Testpraxis" },
+  }),
+}));
+
+jest.mock("@/data/messages", () => ({
+  hasUnreadReply: jest.fn().mockResolvedValue(false),
+}));
+
 const navigation = {
   emit: jest.fn(() => ({ defaultPrevented: false })),
   navigate: jest.fn(),
@@ -17,6 +27,7 @@ const makeState = (index: number) => ({
   routes: [
     { key: "today-1", name: "today" },
     { key: "appointments-1", name: "appointments" },
+    { key: "messages-1", name: "messages" },
     { key: "profile-1", name: "profile" },
     { key: "session-1", name: "session" },
     { key: "exercise-1", name: "exercise/[planItemId]" },
@@ -31,11 +42,12 @@ const renderBar = (index: number) =>
   );
 
 describe("Untere Navigation (Web-Parität + Safe Area)", () => {
-  it("zeigt genau drei beschriftete Ziele – nie icon-only", async () => {
+  it("zeigt genau vier beschriftete Ziele – nie icon-only", async () => {
     await renderBar(0);
-    expect(screen.getAllByRole("tab")).toHaveLength(3);
+    expect(screen.getAllByRole("tab")).toHaveLength(4);
     expect(screen.getByText("Heute")).toBeTruthy();
     expect(screen.getByText("Termine")).toBeTruthy();
+    expect(screen.getByText("Nachrichten")).toBeTruthy();
     expect(screen.getByText("Profil")).toBeTruthy();
   });
 
@@ -47,14 +59,14 @@ describe("Untere Navigation (Web-Parität + Safe Area)", () => {
   });
 
   it("ordnet Unterseiten (Session/Übung) dem Ziel „Heute“ zu", async () => {
-    await renderBar(3); // session
+    await renderBar(4); // session
     const tabs = screen.getAllByRole("tab");
     expect(tabs[0].props.accessibilityState.selected).toBe(true);
   });
 
   it("navigiert beim Tippen auf ein inaktives Ziel", async () => {
     await renderBar(0);
-    fireEvent.press(screen.getAllByRole("tab")[2]);
+    fireEvent.press(screen.getAllByRole("tab")[3]);
     expect(navigation.navigate).toHaveBeenCalledWith("profile");
   });
 });

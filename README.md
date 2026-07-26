@@ -2,7 +2,7 @@
 
 App für Physiotherapiepraxen und ihre Patientinnen und Patienten: Heimübungspläne mit Videos, Termine, verordnete Sitzungen und selbst dokumentierte Durchführung (Adhärenz).
 
-> **Stand 19.07.2026 (Branch `claude-patient-exercise-avatar-20260719`):** Die Patienten-Übungsansicht ist jetzt „video-first“: großes 16:9-Video (auf Mobilgeräten randlos), kompakte Vorgaben-Chips, keine beschreibenden Langtexte mehr in der Patientenansicht (Daten bleiben in der Übungsbibliothek erhalten). Zusätzlich können Patienten ein Profilbild sicher hochladen, ersetzen und entfernen (privater Bucket, signierte URLs, Magic-Byte-Prüfung); die aktuell verbundene Praxis sieht es in Patientenliste und -detail. Alle Prüfungen lokal grün: db:reset (21 Migrationen), Seed, Typecheck, Lint, 114 Tests, 88 RLS-Proben, E2E (43 bestanden/16 planmäßig übersprungen), Build, mobiler Browserlauf. Produktumfang: `docs/PRODUCT_SPEC.md` · Testmatrix: `docs/TEST_MATRIX.md` · Übergabe: `docs/AI_HANDOFF.md`.
+> **Stand 26.07.2026 (Branch `claude/platform-admin-20260725`):** Neues Betreiberportal (`/admin`, strikt getrennte `platform_admin`-Rolle) zum Anlegen/Verwalten von Praxen, ein Liquid-Glass-Design für Portal/Praxis-Einstellungen/Nachrichten, und eine vollständige Textnachrichtenfunktion zwischen Patient:in und aktuell verbundener Praxis (vierter Patienten-Navigationspunkt, Web + native App). Alle Prüfungen lokal grün: Typecheck, Lint, 115 Tests, 125 RLS-Proben, volle Playwright-Suite (55 bestanden/0 fehlgeschlagen), Build, mobile Typecheck/Lint/16 Tests. Produktumfang: `docs/PRODUCT_SPEC.md` · Betreiberportal: `docs/PLATFORM_ADMIN_GUIDE.md` · Testmatrix: `docs/TEST_MATRIX.md` · Übergabe: `docs/AI_HANDOFF.md`.
 
 ## Funktionsübersicht
 
@@ -43,9 +43,11 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 | Markierte Patienten | Anheften mit Notiz, Badge, Filter, Dashboard-Karte | ✅ | UI-Durchlauf + RLS-Proben (12.07.2026) | Intern; Patienten sehen die Markierung nie (eigene Tabelle ohne Patienten-Policy) |
 | Warteliste | Eigene Seite: Wunschzeiten, Priorität, Notiz, erledigen/löschen | ✅ | UI-Durchlauf + RLS-Proben (12.07.2026) | Intern (Patienten sehen sie nicht); max. 1 offener Eintrag pro Patient |
 | Freie Termine | Frei gewordene Zeitfenster + Terminangebote (annehmen/ablehnen/zurückziehen) | ✅ | UI-Durchlauf inkl. Konfliktfall (12.07.2026) | Annahme bucht atomar; Doppelbuchung durch DB-Überlappungsschutz ausgeschlossen |
+| Betreiberportal | Praxen anlegen/verwalten (Lebenszyklus, Einstellungen, Mitarbeitende), globale Konfiguration | ✅ | Manueller Portal-Durchlauf (25.07.2026) | Eigene `platform_admin`-Rolle, nie selbst zuweisbar; keine medizinischen Patientendaten sichtbar |
+| Nachrichten | Textnachrichten Patient ↔ aktuell verbundene Praxis | ✅ | 21 RLS-Proben + `e2e/messaging.spec.ts` (26.07.2026) | Vierter Patienten-Tab; ehemalige Praxis verliert nach Wechsel Lese- und Schreibrecht; kein Realtime (Polling) |
 | PWA | Installierbares Manifest | 🟡 | manuell (frühere Phase) | Kein Offline-Modus, keine Push-Benachrichtigungen |
-| Sicherheit | RLS auf allen Patiententabellen, serverseitige Autorisierung, private Buckets | ✅ | 36 RLS-Proben `pnpm test:rls` (12.07.2026) | Patient/Fremdpraxis/Selbst-Eskalation/Storage negativ getestet; Virenscan vor Pilot weiterhin offen |
-| Tests | Typecheck, Lint, 114 Unit-/Komponententests, Playwright-E2E (43 bestanden/16 planmäßig übersprungen), 88 RLS-Proben, Build | ✅ | Vollständig lokal ausgeführt (19.07.2026) | 4 Worker + 15-s-Expect gegen Parallellast-Flakes; einzelne bekannte Latenz-Flakes fängt der eingebaute Retry |
+| Sicherheit | RLS auf allen Patiententabellen, serverseitige Autorisierung, private Buckets, strikt getrennte Plattform-Admin-Rolle | ✅ | 125 RLS-Proben `pnpm test:rls` (26.07.2026) | Patient/Fremdpraxis/Selbst-Eskalation/Storage/Betreiberportal/Nachrichten negativ getestet; Virenscan vor Pilot weiterhin offen |
+| Tests | Typecheck, Lint, 115 Unit-/Komponententests, Playwright-E2E (55 bestanden/0 fehlgeschlagen/23 planmäßig übersprungen), 125 RLS-Proben, Build | ✅ | Vollständig lokal ausgeführt (26.07.2026) | 4 Worker + 15-s-Expect gegen Parallellast-Flakes; einzelne bekannte Latenz-Flakes fängt der eingebaute Retry |
 | Deployment | Produktivbetrieb/Hosting | ❌ | – | Nur mit ausdrücklicher Zustimmung von Tom |
 
 ## Was funktioniert aktuell?
@@ -75,6 +77,8 @@ Statuswerte: ✅ Funktioniert und getestet · 🟡 Teilweise umgesetzt · 🧪 I
 - **Benachrichtigungszentrum:** Planänderungen sind patientenseitig gelesen/ungelesen sichtbar; eine gemeinsame Übersicht für alle Notification-Arten und ein Badge fehlen noch.
 
 ## Letzte Änderungen
+
+- **25.–26.07.2026 – Betreiberportal, Liquid-Glass-Design, Nachrichtenfunktion (Branch `claude/platform-admin-20260725`).** Neues Betreiber-Admin-Interface unter `/admin`: eigene `platform_admins`-Rolle ohne jede Client-Policy (Zuweisung nur per CLI-Skript mit Service Role, `pnpm platform-admin`), Praxen anlegen inkl. erster Admin-Einladung in einem Schritt, Praxis-Lebenszyklus (Testphase/aktiv/gesperrt/archiviert, nie Hard-Delete), Mitarbeiter-Einladungen nach dem bewährten Hash-only-Muster, globale Produkteinstellungen getrennt von Praxis-Einstellungen. Während der Auftrag noch lief, kamen zwei weitere Anforderungen dazu: ein Liquid-Glass-Design (halbtransparente, additive Tokens, nur im Portal/den Praxis-Einstellungen/der Nachrichtenoberfläche) und eine vollständige Textnachrichtenfunktion zwischen Patient:in und aktuell verbundener Praxis – vierter Patienten-Navigationspunkt „Nachrichten" (bewusste, dokumentierte Abweichung von der bisherigen „max. 3 Bereiche"-Regel, D-098), identisch in Web und nativer App, unveränderliche Nachrichten, striktere Mandantentrennung als bei Behandlungsdokumentation (eine ehemalige Praxis verliert nach einem Wechsel Lese- UND Schreibrecht, D-096), kein Realtime (Polling, D-097). 21 neue RLS-Proben, neuer `e2e/messaging.spec.ts`, neues `docs/PLATFORM_ADMIN_GUIDE.md`. Vollständig lokal geprüft: Typecheck, Lint, 115 Tests, 125 RLS-Proben, volle Playwright-Suite (55/0/23), Build, mobile Typecheck/Lint/16 Tests.
 
 - **20.07.2026 – UI-Parität der nativen App mit der Patienten-Weboberfläche (mit Toms Freigabe per PR #3 `342fba5` in `main` gemergt).** Erster echter Simulatorlauf (iPhone 17 Pro, iOS 26.5, Expo-Tunnel) zeigte eine abgeschnittene untere Navigation und ein stark abweichendes Design. Ursache des Croppings: `(tabs)/_layout.tsx` setzte die Tab-Bar-Höhe fest auf 64 pt statt sie aus Home-Indicator-Inset + Inhalt zu berechnen (D-063); die neue `PatientTabBar` behebt das dynamisch. Die App übernimmt jetzt die Design-Tokens, Informationsarchitektur und Texte der Patienten-Weboberfläche 1:1 für alle 13 Patientenstrecken (D-064); deutsche Texte, Erinnerungslogik und Dokumentationsvalidierung liegen dafür jetzt gemeinsam in `packages/shared` (D-065). Dunkelmodus folgt wie im Web dem Systemschema mit persistenter Gerätewahl (D-066), verifiziert per `xcrun simctl ui booted appearance dark/light`. Beim Simulatorlauf zusätzlich einen echten Funktionslücken-Fund behoben: Der native Code-Bildschirm hatte keinen Kontoabschnitt (Name/E-Mail/Abmelden) wie der Web-Verbindungsbereich – ohne ihn gab es keinen Ausweg bei ungültiger Sitzung. Xcode/Simulator-Blocker aus der letzten Sitzung ist überholt: Simulator ist installiert, die App lädt über Metro/Tunnel, Patientenanmeldung funktioniert (verifiziert). Bekannte Einschränkung: GUI-Tap-Automatisierung im Simulator blockiert ohne manuelle macOS-Accessibility-Freigabe – Verifikation erfolgte über Deep-Links, Systemappearance-Umschaltung und einen temporären, nie committeten Test-Login-Screen. Nebenfund: Die zwei bekannten flakenden Mobile-E2E-Fälle hatten eine konkrete Mitursache (Metro+Simulator liefen parallel zum Next-Dev-Server, D-067) – nach deren Beenden lief die Suite sofort grün.
 
@@ -157,6 +161,7 @@ Werte für `.env.local`: `supabase status` zeigt `API URL` (→ `NEXT_PUBLIC_SUP
 | Therapeutin | `therapeutin@demo.physiocheck.test` | `PhysioDemo2026!` |
 | Praxis-Admin | `admin@demo.physiocheck.test` | `PhysioDemo2026!` |
 | Eingeladene Patientin | `eingeladen@demo.physiocheck.test` | `PhysioDemo2026!` |
+| Plattform-Admin (Betreiber) | `betreiber@demo.physiocheck.test` | `PhysioDemo2026!` |
 
 Demo-Einladungscode: `DEMA-PHYS-2326`
 
@@ -220,6 +225,7 @@ Alternativ funktioniert weiterhin der Einladungslink: Startseite → „Ich habe
 
 - `CLAUDE.md` – verbindliche Projektregeln
 - `docs/PRODUCT_SPEC.md` – Produktumfang und Akzeptanzkriterien
+- `docs/PLATFORM_ADMIN_GUIDE.md` – Betreiberportal für Tom: was global/praxisweit konfigurierbar ist, was nie per UI editierbar sein darf
 - `docs/ARCHITECTURE.md` – Architektur und Sicherheitsentscheidungen
 - `docs/DATA_MODEL.md` – Datenmodell (ER-Diagramm)
 - `docs/PRIVACY_SECURITY.md` – Datenschutz und Sicherheit

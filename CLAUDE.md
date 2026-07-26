@@ -6,7 +6,7 @@ Verbindliche Projektregeln. Der Masterprompt (Produkt- und Arbeitsgrundlage) ist
 
 App für Physiotherapiepraxen (Therapeuten-Dashboard) und Patienten (Heimübungspläne mit Videos, Termine, Adhärenz-Dokumentation). Vorläufiger Name **PhysioCheck** – Name/Logo/Farben liegen zentral in `src/config/branding.ts` und Design-Tokens; niemals hartkodieren.
 
-**Aktueller Stand:** Phasen A–I des Auftrags vom 13.07.2026 sind implementiert; Phase J deckt den geforderten Testkatalog durch Unit-, RLS- und Playwright-Spezifikationen ab. Typecheck, Lint, 101 Tests, Playwright-Testliste (42) und Build sind grün. Lokale DB-/RLS-/Browserausführung der Phasen C–J steht aus (`docs/TEST_MATRIX.md`). Remote `origin` ist `TomGroeber/physio-check` (aktuell öffentlich, keine Secrets oder echten Patientendaten). Etappe 9 synchronisiert Projektdoku auf Toms Mac per `pnpm docs:sync`. Details: `docs/AI_HANDOFF.md`.
+**Aktueller Stand:** Web- und native Patientenoberfläche stehen in UI-Parität (Auftrag 19.–20.07.2026, in `main` gemergt). Branch `claude/platform-admin-20260725` ergänzt ein strikt getrenntes Betreiberportal (`platform_admin`-Rolle, nie eine Praxisrolle), ein Liquid-Glass-Design für Portal/Praxis-Einstellungen/Nachrichten sowie eine vollständige Nachrichtenfunktion Patient:in ↔ Praxis (Web + nativ). Typecheck, Lint, 115 Unit-Tests, 125 RLS-Proben und die volle Playwright-Suite sind lokal grün; Details/Testmatrix: `docs/TEST_MATRIX.md`, `docs/AI_HANDOFF.md`. Remote `origin` ist `TomGroeber/physio-check` (öffentlich, keine Secrets oder echten Patientendaten). `pnpm docs:sync` synchronisiert die Projektdoku auf Toms Mac.
 
 ## Kommunikation
 
@@ -29,7 +29,7 @@ Next.js 16 (App Router, TS strict) · Tailwind v4 · shadcn/ui · Supabase (`@su
 6. **Zeit:** `timestamptz` (UTC) + IANA-Zeitzone; Formatierung nur über `src/lib/datetime.ts`.
 7. **Planintegrität:** Pläne versioniert; Protokolle mit `prescription_snapshot` – nie rückwirkend verfälschen.
 8. **Qualität:** kein `any` ohne Not, keine Platzhalter, die Erfolg vortäuschen; Fehler-/Lade-/Leerzustände für jede datenabhängige Seite; Fehler offen melden, Prüfungen nie abschalten.
-9. **UX Patient:** mobile-first, Deutsch, Touch-Ziele ≥ 48 px, Text ≥ 18 px, WCAG 2.2 AA, max. 3 Navigationsbereiche (Heute/Termine/Profil). Alle UI-Texte über `src/messages/de.ts`.
+9. **UX Patient:** mobile-first, Deutsch, Touch-Ziele ≥ 48 px, Text ≥ 18 px, WCAG 2.2 AA, max. 4 Navigationsbereiche (Heute/Termine/Nachrichten/Profil – seit 26.07.2026 auf ausdrücklichen Auftrag hin von 3 auf 4 erweitert, Nachrichtenfunktion). Alle UI-Texte über `src/messages/de.ts`.
 10. **Git/Extern:** Commits nur mit Toms Erlaubnis. Keine Deployments, externen Registrierungen, Veröffentlichungen oder produktiven DB-Änderungen ohne ausdrückliche Zustimmung.
 
 ## Befehle (ab Phase 1, nach Projekterstellung)
@@ -38,4 +38,4 @@ Next.js 16 (App Router, TS strict) · Tailwind v4 · shadcn/ui · Supabase (`@su
 
 ## Dokumente
 
-`docs/PRODUCT_SPEC.md` (Umfang + Akzeptanz) · `docs/ARCHITECTURE.md` · `docs/DATA_MODEL.md` · `docs/PRIVACY_SECURITY.md` (ab Phase 1) · `docs/CUSTOMIZATION_GUIDE.md` (Phase 4, Deutsch, für Nicht-Programmierer) · `docs/ROADMAP.md` · `TASKS.md` · `DECISIONS.md`.
+`docs/PRODUCT_SPEC.md` (Umfang + Akzeptanz) · `docs/ARCHITECTURE.md` · `docs/DATA_MODEL.md` · `docs/PRIVACY_SECURITY.md` (ab Phase 1) · `docs/CUSTOMIZATION_GUIDE.md` (Phase 4, Deutsch, für Nicht-Programmierer) · `docs/PLATFORM_ADMIN_GUIDE.md` (Betreiberportal: was global/praxisweit konfigurierbar ist und was nie per UI editierbar sein darf) · `docs/ROADMAP.md` · `TASKS.md` · `DECISIONS.md`.

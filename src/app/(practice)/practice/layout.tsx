@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionContext } from "@/server/services/session";
 import { signOutAction } from "@/server/actions/auth";
+import { countUnreadPracticeConversations } from "@/server/services/messages";
 import { branding } from "@/config/branding";
 import { SidebarNav } from "@/components/practice/sidebar-nav";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -24,6 +25,7 @@ export default async function PracticeLayout({
   }
 
   const practiceName = session.memberships[0].practiceName;
+  const unreadMessages = await countUnreadPracticeConversations(session.memberships[0].practiceId);
 
   return (
     <div className="flex min-h-dvh flex-col md:flex-row">
@@ -36,7 +38,7 @@ export default async function PracticeLayout({
           <span className="text-lg font-bold">{branding.appName}</span>
         </Link>
         <p className="px-1 text-sm text-sidebar-foreground/70">{practiceName}</p>
-        <SidebarNav />
+        <SidebarNav unreadMessages={unreadMessages} />
         <div className="mt-auto flex flex-col gap-2 border-t border-sidebar-border pt-3">
           <p className="truncate px-1 text-sm text-sidebar-foreground/70">
             {session.fullName}

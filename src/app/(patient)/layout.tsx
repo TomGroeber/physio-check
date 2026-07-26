@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getSessionContext } from "@/server/services/session";
 import { getOwnAvatarUrl } from "@/server/services/patient-avatar";
+import { hasUnreadPracticeReply } from "@/server/services/messages";
 import { branding } from "@/config/branding";
 import { THEME_COOKIE, parsePatientTheme } from "@/lib/theme";
 import { BottomNav } from "@/components/patient/bottom-nav";
@@ -21,7 +22,10 @@ export default async function PatientLayout({
   if (!session) redirect("/login");
   if (session.memberships.length > 0) redirect("/practice");
   if (!session.patientLink) redirect("/connect");
-  const avatarUrl = await getOwnAvatarUrl(session.userId);
+  const [avatarUrl, unreadMessages] = await Promise.all([
+    getOwnAvatarUrl(session.userId),
+    hasUnreadPracticeReply(session.patientLink.practiceId),
+  ]);
   // Dunkelmodus gilt nur für die Patientenoberfläche: die .dark-Klasse
   // liegt auf diesem Wrapper (nicht auf <html>), der Praxisbereich liest
   // das Cookie nie und bleibt hell (D-056).
@@ -45,7 +49,7 @@ export default async function PatientLayout({
       <main className="mx-auto w-full max-w-lg flex-1 px-4 py-6 pb-28 text-lg">
         {children}
       </main>
-      <BottomNav />
+      <BottomNav unreadMessages={unreadMessages} />
     </div>
   );
 }
