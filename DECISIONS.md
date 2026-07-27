@@ -2,6 +2,16 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-07-26 – Zugangs-Wiederherstellung für Praxismitglieder (Branch `claude/practice-member-recovery-20260726`)
+
+**D-113 · Neue, vom Plattformadmin ausgelöste Zugangs-Wiederherstellung statt normalem Passwort-Reset.** Toms Szenario: eine Praxismitgliedsperson verliert sowohl Passwort ALS AUCH den Zugriff auf ihre alte E-Mail-Adresse (z. B. Postfach existiert nicht mehr) – der normale Supabase-Passwort-Reset setzt Zugriff auf die alte E-Mail voraus und deckt das nicht ab. Bewusst NUR der Plattformadmin darf das auslösen (nicht die Praxis selbst) – Identitäts-Umschaltung ist ein sensibler Vorgang, kein Alltagsvorgang, den man an eine Praxis-Selbstverwaltung delegiert (Tom hat das nach Rückfrage explizit so entschieden, statt der praktikableren, aber riskanteren Alternative, dass auch Praxisadmins das für eigene Mitarbeitende auslösen können).
+
+**D-114 · Neue Tabelle `practice_member_recovery` statt Wiederverwendung von `staff_invites`.** Eine Einladung erzeugt eine NEUE Mitgliedschaft; eine Wiederherstellung haengt eine BESTEHENDE `practice_members`-Zeile auf ein neues Konto um (Rolle, Praxiszugehörigkeit, `id` und jede damit verknüpfte Historie bleiben unverändert – nur `profile_id` wird ersetzt). Diese Semantik unterscheidet sich genug von `staff_invites`, dass eine eigene Tabelle klarer ist als ein Sonderfall-Flag in der bestehenden.
+
+**D-115 · Einlösen läuft über Service-Role, nicht über die Sitzung der einlösenden Person.** Anders als `accept_staff_invite` (prüft `auth.uid()` der bereits angemeldeten Person) hat die Person beim Einlösen einer Wiederherstellung noch KEINE Sitzung – das neue Konto existiert ja erst in diesem Moment. Die RPC `redeem_practice_member_recovery` ist deshalb ausschließlich an `service_role` vergeben (nicht an `authenticated`), aufgerufen von einer Server Action, die zuerst per Supabase-Admin-API (`auth.admin.createUser`, bereits bestätigt) das neue Konto anlegt und danach die Mitgliedschaft umhängt. Schlägt das Umhängen fehl, wird das gerade erst angelegte Konto wieder gelöscht (kein verwaistes, mitgliedschaftsloses Konto).
+
+**D-116 · RLS-Proben laufen gegen ein eigenes Wegwerf-Mitglied, nie gegen die echten Demo-Konten.** Ein echtes Einlösen hängt `profile_id` endgültig um; würde man das gegen `therapeutin@`/`admin@demo.physiocheck.test` testen, wären diese Demo-Logins nach dem Testlauf dauerhaft von ihrem Konto getrennt (bis zum nächsten `db:reset`). Die neuen Proben (Abschnitt G, 11 neue) legen dafür ein eigenes, hinterher wieder gelöschtes Testmitglied auf der Demo-Praxis an.
+
 ## 2026-07-26 – Native Liquid-Glass-Tab-Leiste (Branch `claude/mobile-liquid-glass-tabbar-20260726`)
 
 **D-106 · Kein Umstieg auf Expo Routers `unstable-native-tabs`.** Auf Toms ausdrücklichen Wunsch geprüft (technisch vorhanden in der installierten `expo-router@57.0.8`), aber bewusst NICHT umgesetzt: Der Umstieg hätte die komplette, bereits getestete eigene `tab-bar.tsx` (Zieh-Geste, wachsendes aktives Icon, Ungelesen-Punkt, Feintuning) verworfen und durch Expo Routers eigenes, als instabil gekennzeichnetes natives Tab-Bridging ersetzt – mit ungewissem Ausgang und deutlich kleinerem Anpassungsspielraum (kein beliebiger JSX-Inhalt pro Tab). Toms Entscheidung: bei der eigenen Komponente bleiben und dort weiter verfeinern.

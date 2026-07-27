@@ -228,6 +228,12 @@ export const memberRoleChangeSchema = z.object({
   role: z.enum(["admin", "therapist"]),
 });
 
+/** Zugangs-Wiederherstellung: Plattformadmin legt die neue E-Mail-Adresse fest (s. D-113). */
+export const practiceMemberRecoverySchema = z.object({
+  practiceMemberId: z.uuid(),
+  newEmail: emailSchema,
+});
+
 export const practiceSearchSchema = z.object({
   query: z.string().trim().max(200).optional().default(""),
   status: z.enum(["trial", "active", "suspended", "archived", "all"]).default("all"),

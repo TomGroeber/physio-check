@@ -1417,6 +1417,57 @@ export type Database = {
           },
         ]
       }
+      practice_member_recovery: {
+        Row: {
+          created_at: string
+          created_by_platform_admin_id: string
+          expires_at: string
+          id: string
+          new_email: string
+          practice_member_id: string
+          revoked_at: string | null
+          token_hash: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by_platform_admin_id: string
+          expires_at: string
+          id?: string
+          new_email: string
+          practice_member_id: string
+          revoked_at?: string | null
+          token_hash: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by_platform_admin_id?: string
+          expires_at?: string
+          id?: string
+          new_email?: string
+          practice_member_id?: string
+          revoked_at?: string | null
+          token_hash?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_member_recovery_created_by_platform_admin_id_fkey"
+            columns: ["created_by_platform_admin_id"]
+            isOneToOne: false
+            referencedRelation: "platform_admins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "practice_member_recovery_practice_member_id_fkey"
+            columns: ["practice_member_id"]
+            isOneToOne: false
+            referencedRelation: "practice_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       practice_members: {
         Row: {
           created_at: string
@@ -1860,6 +1911,15 @@ export type Database = {
         Args: { p_appointment_id: string }
         Returns: string
       }
+      create_practice_member_recovery: {
+        Args: {
+          p_expires_at: string
+          p_new_email: string
+          p_practice_member_id: string
+          p_token_hash: string
+        }
+        Returns: string
+      }
       create_practice_with_admin_invite: {
         Args: {
           p_address_city: string
@@ -1894,6 +1954,16 @@ export type Database = {
       decline_appointment_offer: {
         Args: { p_offer_id: string }
         Returns: undefined
+      }
+      inspect_practice_member_recovery: {
+        Args: { p_token_hash: string }
+        Returns: {
+          out_new_email: string
+          out_practice_id: string
+          out_practice_member_id: string
+          out_practice_name: string
+          out_role: Database["public"]["Enums"]["practice_role"]
+        }[]
       }
       is_linked_patient: { Args: { p_practice_id: string }; Returns: boolean }
       is_platform_admin: { Args: never; Returns: boolean }
@@ -1969,6 +2039,13 @@ export type Database = {
       redeem_patient_invite: {
         Args: { p_code_hash: string; p_invite_id: string }
         Returns: string
+      }
+      redeem_practice_member_recovery: {
+        Args: { p_new_profile_id: string; p_token_hash: string }
+        Returns: {
+          out_practice_id: string
+          out_role: Database["public"]["Enums"]["practice_role"]
+        }[]
       }
       renew_patient_invite: {
         Args: { p_code_hash: string; p_expires_at: string; p_invite_id: string }

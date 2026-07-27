@@ -14,6 +14,7 @@ import { FormMessage } from "@/components/auth/form-message";
 import { CALENDAR_COLORS, colorStyle } from "@/lib/calendar-colors";
 import { de } from "@/messages/de";
 import {
+  createPracticeMemberRecoveryAction,
   createStaffInviteAsPlatformAdminAction,
   renewStaffInviteAsPlatformAdminAction,
   revokeStaffInviteAsPlatformAdminAction,
@@ -21,6 +22,7 @@ import {
   setPracticeMemberStatusAction,
   updatePracticeProfileAsPlatformAdminAction,
   updatePracticeSettingsAsPlatformAdminAction,
+  type PracticeMemberRecoveryActionState,
   type SimpleActionState,
   type StaffInviteActionState,
 } from "@/server/actions/platform-admin";
@@ -159,6 +161,63 @@ function RenewInviteButton({ practiceId, inviteId }: { practiceId: string; invit
   );
 }
 
+/**
+ * Zugangs-Wiederherstellung (D-113): für Mitglieder, die sowohl
+ * Passwort als auch Zugriff auf die alte E-Mail-Adresse verloren
+ * haben. Zusammenklappbares Inline-Formular statt eigenem Dialog, wie
+ * der Rest dieser Seite (kein neues UI-Muster).
+ */
+function MemberRecoveryButton({ practiceId, memberId }: { practiceId: string; memberId: string }) {
+  const [open, setOpen] = useState(false);
+  const [state, formAction] = useActionState<PracticeMemberRecoveryActionState, FormData>(
+    createPracticeMemberRecoveryAction.bind(null, practiceId),
+    {}
+  );
+
+  if (!open) {
+    return (
+      <Button type="button" variant="outline" size="sm" onClick={() => setOpen(true)}>
+        {t.resetAccess}
+      </Button>
+    );
+  }
+
+  return (
+    <form action={formAction} className="flex w-full flex-col gap-2 rounded-xl bg-white/10 p-3">
+      <input type="hidden" name="practiceMemberId" value={memberId} />
+      <p className="text-xs text-muted-foreground">{t.resetAccessDialogHint}</p>
+      <FormMessage error={state.error} />
+      {state.recoveryLink ? (
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-medium">{t.resetAccessLinkCreated}</p>
+          <Input readOnly value={state.recoveryLink} className="font-mono text-sm" />
+          <p className="text-xs text-muted-foreground">{t.resetAccessHint}</p>
+        </div>
+      ) : (
+        <div className="flex flex-wrap items-end gap-2">
+          <div className="flex flex-col gap-1">
+            <Label htmlFor={`recovery-email-${memberId}`} className="text-xs">
+              {t.resetAccessNewEmail}
+            </Label>
+            <Input
+              id={`recovery-email-${memberId}`}
+              name="newEmail"
+              type="email"
+              required
+              maxLength={200}
+              className="h-9"
+            />
+          </div>
+          <SubmitButton>{t.resetAccessSubmit}</SubmitButton>
+        </div>
+      )}
+      <Button type="button" variant="ghost" size="sm" className="self-start" onClick={() => setOpen(false)}>
+        {de.common.close}
+      </Button>
+    </form>
+  );
+}
+
 function MembersTab({ practice }: { practice: PracticeDetailForAdmin }) {
   const [inviteState, inviteAction] = useActionState<StaffInviteActionState, FormData>(
     createStaffInviteAsPlatformAdminAction.bind(null, practice.id),
@@ -186,15 +245,18 @@ function MembersTab({ practice }: { practice: PracticeDetailForAdmin }) {
                     {member.isActive ? t.statusActiveLabel : t.statusInactiveLabel}
                   </Badge>
                 </div>
-                <form action={setPracticeMemberStatusAction} className="flex gap-2">
-                  <input type="hidden" name="memberId" value={member.id} />
-                  <input type="hidden" name="practiceId" value={practice.id} />
-                  <input type="hidden" name="role" value={member.role} />
-                  <input type="hidden" name="isActive" value={(!member.isActive).toString()} />
-                  <Button type="submit" variant="outline" size="sm">
-                    {member.isActive ? t.deactivate : t.reactivate}
-                  </Button>
-                </form>
+                <div className="flex flex-wrap items-center gap-2">
+                  <form action={setPracticeMemberStatusAction} className="flex gap-2">
+                    <input type="hidden" name="memberId" value={member.id} />
+                    <input type="hidden" name="practiceId" value={practice.id} />
+                    <input type="hidden" name="role" value={member.role} />
+                    <input type="hidden" name="isActive" value={(!member.isActive).toString()} />
+                    <Button type="submit" variant="outline" size="sm">
+                      {member.isActive ? t.deactivate : t.reactivate}
+                    </Button>
+                  </form>
+                  <MemberRecoveryButton practiceId={practice.id} memberId={member.id} />
+                </div>
               </li>
             ))}
           </ul>

@@ -2,6 +2,17 @@
 
 > Stand 26.07.2026. „Grün“ bedeutet tatsächlich lokal ausgeführt (Toms Mac, Supabase/Docker/Mailpit). Letzter vollständiger Lauf: 26.07.2026 auf Branch `claude/platform-admin-20260725`.
 
+## Zugangs-Wiederherstellung für Praxismitglieder (26.07.2026, D-113 ff.)
+
+| Anforderung | Automatisierte Abdeckung | Status |
+|---|---|---|
+| Nur Plattformadmin darf eine Wiederherstellung erzeugen | RLS-Probe (Abschnitt G): Praxismitglied-Sitzung wird abgelehnt (`not_authorized`) | Grün (26.07.2026) |
+| Neue Anfrage widerruft automatisch eine vorherige offene Anfrage desselben Mitglieds | RLS-Probe: erste Anfrage nach zweiter nicht mehr über den Token sichtbar | Grün (26.07.2026) |
+| Einlösen ausschließlich per Service-Role erreichbar (keine normale Sitzung) | RLS-Probe: `authenticated`-Sitzung ohne `service_role`-Grant abgelehnt | Grün (26.07.2026) |
+| Bestehende Mitgliedschaft (Rolle, Praxis, Historie) bleibt beim Umhängen unverändert | RLS-Probe + Playwright-Durchlauf: `practice_members`-Zeile nach Einlösen identisch bis auf `profile_id` | Grün (26.07.2026) |
+| Token einmalig einlösbar | RLS-Probe: zweiter Einlöseversuch desselben Tokens abgelehnt | Grün (26.07.2026) |
+| Vollständiger Ablauf über die echte Oberfläche (Admin erzeugt Link → Person löst ein → meldet sich mit neuen Zugangsdaten an) | Echter Playwright-Durchlauf gegen Production-Build (`pnpm build && pnpm start`), gegen ein eigenes Wegwerf-Testmitglied (nie die echten Demo-Konten, s. D-116) | Grün (26.07.2026) |
+
 ## Betreiberportal (25.07.2026)
 
 | Anforderung | Automatisierte Abdeckung | Status |

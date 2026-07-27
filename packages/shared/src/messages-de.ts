@@ -1064,6 +1064,16 @@ export const de = {
       reactivate: "Reaktivieren",
       changeRole: "Rolle ändern",
       lastAdminProtected: "Der letzte aktive Admin einer Praxis kann nicht entfernt oder herabgestuft werden.",
+      resetAccess: "Zugang zurücksetzen",
+      resetAccessDialogHeading: "Zugang zurücksetzen",
+      resetAccessDialogHint:
+        "Für den Fall, dass diese Person sowohl Passwort als auch Zugriff auf die bisherige E-Mail-Adresse verloren hat. Rolle und sämtliche Praxisdaten bleiben unverändert erhalten.",
+      resetAccessNewEmail: "Neue E-Mail-Adresse",
+      resetAccessSubmit: "Wiederherstellungslink erzeugen",
+      resetAccessLinkCreated: "Wiederherstellungslink erstellt. Teilen Sie diesen Link mit der Person:",
+      resetAccessHint:
+        "Kein automatischer Versand – Link selbst weitergeben. Beim Einlösen wird ein neues Konto mit dieser E-Mail-Adresse angelegt und mit der bestehenden Mitgliedschaft verknüpft.",
+      resetAccessError: "Der Wiederherstellungslink konnte nicht erstellt werden.",
       openInvitesHeading: "Offene Einladungen",
       openInvitesEmpty: "Keine offenen Einladungen.",
       inviteNewAdmin: "Weitere Einladung senden (Ausnahmefall)",
@@ -1128,6 +1138,23 @@ export const de = {
       inviteSubmit: "Einladung senden",
       inviteLinkCreated: "Einladung erstellt. Teilen Sie diesen Link mit der Person:",
       inviteHint: "Jede Person erhält ein eigenes Konto und legt ihr eigenes Passwort fest.",
+    },
+    practiceRecovery: {
+      title: "Zugang wiederherstellen",
+      practiceLabel: "Praxis",
+      roleLabel: "Rolle",
+      newEmailLabel: "Neue E-Mail-Adresse",
+      passwordLabel: "Neues Passwort",
+      passwordHint: "Mindestens 10 Zeichen.",
+      submitCta: "Zugang wiederherstellen",
+      invalidHeading: "Dieser Link ist nicht mehr gültig",
+      invalidBody:
+        "Der Link ist abgelaufen, wurde bereits verwendet oder widerrufen. Bitten Sie um einen neuen Wiederherstellungslink.",
+      emailInUse:
+        "Diese E-Mail-Adresse wird bereits verwendet. Bitte um einen neuen Link mit einer anderen E-Mail-Adresse bitten.",
+      error: "Der Zugang konnte nicht wiederhergestellt werden. Bitte versuchen Sie es erneut.",
+      successLoginPrompt: "Zugang wiederhergestellt. Bitte melden Sie sich jetzt mit Ihrer neuen E-Mail-Adresse an.",
+      loginCta: "Anmelden",
     },
   },
 } as const;
