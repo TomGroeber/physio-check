@@ -33,7 +33,10 @@ export async function markPatientConversationReadAction(): Promise<void> {
   const session = await getSessionContext();
   if (!session?.patientLink) return;
   await markPatientConversationRead();
-  revalidatePath("/messages");
+  // "layout" statt "page": der Ungelesen-Punkt in der BottomNav wird im
+  // (patient)-Layout berechnet, nicht auf der /messages-Seite selbst –
+  // ohne "layout" blieb der Punkt bis zum vollständigen Neuladen sichtbar.
+  revalidatePath("/messages", "layout");
 }
 
 export async function sendPracticeReplyAction(

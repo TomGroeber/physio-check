@@ -51,12 +51,16 @@ export async function logCompletionAction(
     }
   }
 
-  revalidatePath("/today");
   const painHint = shouldShowPainHint({
     painBefore: parsed.data.painBefore,
     painAfter: parsed.data.painAfter,
   });
   const target = parsed.data.mode === "guided" ? "/session" : "/today";
+  // Immer beide revalidieren: nur das Redirect-Ziel zu revalidieren
+  // reicht nicht, da /today auch später in derselben Sitzung wieder
+  // besucht werden kann und dann den neuen Stand zeigen soll.
+  revalidatePath("/today");
+  revalidatePath("/session");
   const loggedStatus = encodeURIComponent(parsed.data.status);
   redirect(
     painHint
