@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Einmaliger lokaler Schnellstart zum Ausprobieren von PhysioCheck.
-# Voraussetzungen (einmalig, siehe README.md „Voraussetzungen"):
+# Voraussetzungen (einmalig, siehe README.md "Voraussetzungen"):
 # Node 22, pnpm, Docker Desktop (muss laufen), Supabase-CLI.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -10,7 +10,7 @@ echo ""
 
 for tool in node pnpm docker supabase; do
   if ! command -v "$tool" >/dev/null 2>&1; then
-    echo "Fehlt: $tool. Siehe README.md, Abschnitt „Voraussetzungen"."
+    echo "Fehlt: $tool. Siehe README.md, Abschnitt \"Voraussetzungen\"."
     exit 1
   fi
 done
@@ -40,6 +40,6 @@ pnpm db:reset
 pnpm seed
 
 echo "5/5 Entwicklungsserver wird gestartet – http://localhost:3000"
-echo "Demo-Logins/Einladungscode: siehe README.md, Abschnitt „Demo-Konten"."
+echo "Demo-Logins/Einladungscode: siehe README.md, Abschnitt \"Demo-Konten\"."
 echo ""
 exec pnpm dev

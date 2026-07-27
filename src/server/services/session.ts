@@ -21,6 +21,8 @@ export type SessionContext = {
     practiceId: string;
     practiceName: string;
   } | null;
+  /** Betreiber-Rolle (s. platform-admin-auth.ts) – strikt getrennt von Praxisrollen (D-094). */
+  isPlatformAdmin: boolean;
 };
 
 /**
@@ -39,7 +41,7 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const [profileResult, membershipResult, linkResult] = await Promise.all([
+  const [profileResult, membershipResult, linkResult, platformAdminResult] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", user.id).single(),
     supabase
       .from("practice_members")
@@ -53,6 +55,7 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
       .eq("status", "active")
       .limit(1)
       .maybeSingle(),
+    supabase.rpc("is_platform_admin"),
   ]);
 
   const memberships = (membershipResult.data ?? []).map((m) => ({
@@ -75,14 +78,9 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
     fullName: profileResult.data?.full_name ?? "",
     memberships,
     patientLink,
+    isPlatformAdmin: Boolean(platformAdminResult.data),
   };
 });
 
-/** Zielroute nach Login, abhängig von der Rolle. */
-export function homeRouteFor(session: SessionContext): string {
-  if (session.memberships.length > 0) return "/practice";
-  if (session.patientLink) return "/today";
-  // Angemeldet, aber ohne Praxisverknüpfung: Codeeingabe im
-  // geschützten Verbindungsbereich (kein Zugriff auf Patientendaten).
-  return "/connect";
-}
+/** Zielroute nach Login – reine Logik, s. src/lib/session-routing.ts. */
+export { homeRouteFor } from "@/lib/session-routing";

@@ -51,7 +51,7 @@ export async function onboardPracticeAction(
     addressCity: formData.get("addressCity"),
     country: formData.get("country"),
     timezone: formData.get("timezone"),
-    locale: formData.get("locale"),
+    locale: formData.get("locale") ?? undefined,
     phone: formData.get("phone"),
     supportEmail: formData.get("supportEmail"),
     website: formData.get("website"),
