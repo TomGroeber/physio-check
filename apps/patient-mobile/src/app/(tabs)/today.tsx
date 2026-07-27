@@ -1,6 +1,7 @@
 import { HugeiconsIcon } from "@hugeicons/react-native";
 import { ArrowRight02Icon } from "@hugeicons/core-free-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useRef } from "react";
 import { Pressable, View } from "react-native";
 import { AppointmentCard } from "@/components/appointment-card";
 import { SuccessCelebration } from "@/components/success-celebration";
@@ -54,6 +55,22 @@ export default function Today() {
     ]);
     return { today, reminders, authorization };
   }, [userId]);
+
+  // Übung abhaken navigiert per router.replace zurück auf diesen (bereits
+  // gemounteten) Tab – ohne Refresh hier bliebe der Stand bis zum nächsten
+  // App-Vordergrund-Wechsel veraltet (erster Fokus übersprungen, das erledigt
+  // schon der Ladeeffekt oben).
+  const isFirstFocus = useRef(true);
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+        return;
+      }
+      state.refresh();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+  );
 
   if (state.loading && !state.data)
     return (

@@ -11,6 +11,9 @@ jest.mock("@/lib/supabase", () => ({
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
   useLocalSearchParams: () => ({}),
+  // Testet nur den ersten (Mount-)Fokus, keinen Rückkehr-Fokus – ein
+  // No-Op deckt das ab, da Today den ersten Fokus ohnehin überspringt.
+  useFocusEffect: () => {},
 }));
 jest.mock("@/lib/session", () => ({
   useSession: () => ({
