@@ -1,6 +1,12 @@
 # PhysioCheck – AI Handoff
 
-> Stand: 2026-07-26 · `main@be94192` ist der letzte GEMERGTE Stand (s. vorheriger Auftrag unten). **Aktuell IN ARBEIT, NICHT gemergt/gepusht:** Branch `claude/mobile-liquid-glass-tabbar-20260726`, native Liquid-Glass-Tab-Leiste – s. Abschnitt direkt unten für exakten Zwischenstand. GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
+> Stand: 2026-07-31 · `main@167033f` ist der letzte GEMERGTE Stand. Seit dem 26.07.-Eintrag unten wurden PR #6 (Liquid-Glass-Tabbar), PR #7 (Zugangs-Wiederherstellung), das Quickstart-Skript, die README-Vereinfachung und drei weitere Bugfix-Commits (Betreiber-Login-Routing, Praxis-anlegen-Formular, sofortiger Übungsfortschritt/Ungelesen-Punkt, natives „Heute"-Fokus-Refresh) gemergt/gepusht – dieser Kopf war zuvor mehrere Commits veraltet, jetzt korrigiert. **Aktuell IN ARBEIT (nicht gemergt):** Branch `claude/full-review-and-appointment-fix-20260731` – Terminfehler behoben (D-117/D-118), Bestandsaufnahme abgeschlossen, s. TASKS.md/DECISIONS.md für Details. GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
+
+## Aktueller Auftrag (31.07.2026, IN ARBEIT, Branch `claude/full-review-and-appointment-fix-20260731`)
+
+Toms Auftrag ist sehr groß (18 Abschnitte: Architektur, Terminfehler, Hosting/AWS, Sicherheit, neue Features, volle Testmatrix, Doku, Obsidian). Priorität laut Tom: Terminfehler zuerst. Umgesetzt: Phase A (Bestandsaufnahme) + Phase B/C (Terminfehler + Regressionstests), s. TASKS.md für den vollständigen Stand. Die übrigen Phasen (D–P) sind bewusst noch nicht begonnen – zu groß/sicherheitskritisch für einen unbeaufsichtigten Durchlauf, Vorschlag an Tom: eine Phase pro Sitzung.
+
+**Für eine andere KI, die hier übernimmt:** Lies zuerst `TASKS.md` (Abschnitt „Auftrag vom 31.07.2026") und `DECISIONS.md` (D-117–D-119) für den exakten Stand, dann diesen Auftrag mit Tom fortsetzen – als Nächstes würde Phase D (Datenflüsse/API-Doku) oder eine von Tom gewählte andere Phase folgen.
 
 ## AKTUELLER Auftrag (26.07.2026, IN ARBEIT, Branch `claude/mobile-liquid-glass-tabbar-20260726`): Native Liquid-Glass-Tab-Leiste
 

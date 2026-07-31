@@ -87,6 +87,12 @@ export async function createAppointmentAction(
     parsed.data.startTime,
     parties.options.practice.timezone
   );
+  if (startsAt.getTime() <= Date.now()) {
+    return {
+      error:
+        "Der gewählte Zeitpunkt liegt in der Vergangenheit. Bitte wählen Sie ein zukünftiges Datum und eine zukünftige Uhrzeit.",
+    };
+  }
   const endsAt = new Date(startsAt.getTime() + parsed.data.durationMinutes * 60_000);
   const address = [
     parties.options.practice.address_street,
@@ -114,6 +120,8 @@ export async function createAppointmentAction(
 
   await auditAppointment(context.session.userId, practiceId, data.id, "appointment_created");
   revalidatePath("/practice/calendar");
+  revalidatePath("/appointments");
+  revalidatePath("/today");
   redirect(`/practice/calendar/${data.id}`);
 }
 
@@ -140,6 +148,12 @@ export async function updateAppointmentAction(
     return { error: "Patient oder behandelnde Person gehört nicht zu dieser Praxis." };
   }
   const startsAt = zonedTimeToUtc(parsed.data.date, parsed.data.startTime, parties.options.practice.timezone);
+  if (startsAt.getTime() <= Date.now()) {
+    return {
+      error:
+        "Der gewählte Zeitpunkt liegt in der Vergangenheit. Bitte wählen Sie ein zukünftiges Datum und eine zukünftige Uhrzeit.",
+    };
+  }
   const endsAt = new Date(startsAt.getTime() + parsed.data.durationMinutes * 60_000);
 
   const supabase = await createSupabaseServerClient();
@@ -160,6 +174,8 @@ export async function updateAppointmentAction(
   await auditAppointment(context.session.userId, practiceId, parsed.data.appointmentId, "appointment_updated");
   revalidatePath("/practice/calendar");
   revalidatePath(`/practice/calendar/${parsed.data.appointmentId}`);
+  revalidatePath("/appointments");
+  revalidatePath("/today");
   return { success: "Änderungen gespeichert." };
 }
 
