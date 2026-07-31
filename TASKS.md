@@ -2,6 +2,26 @@
 
 > Status: `[ ]` offen · `[~]` in Arbeit · `[x]` erledigt. Jede Aufgabe hat eine Definition of Done (DoD). Aktualisierung nach jeder Etappe.
 
+## Auftrag vom 31.07.2026 – Umfassender Review + Terminfehler (Branch `claude/full-review-and-appointment-fix-20260731`)
+
+Toms Auftrag umfasst 18 Abschnitte (Architektur-Konsolidierung, Terminfehler, Hosting/AWS-Vergleich, Nachrichten-/Akten-Sicherheit, Plattform-Admin-Grenzen, Video-Upload beim Übung-Anlegen, globale Suche, Hilfecenter, volle Playwright-Matrix, native iOS/Android-Tests, bebilderte Doku, Obsidian-Sync). Priorität laut Tom: Terminfehler zuerst, unabhängig von Hosting/Sicherheitskonzepten.
+
+### Phase A – Bestandsaufnahme ✅ (31.07.2026)
+- [x] Git-Status/Branches/Stashes/PRs/CI geprüft: `main` sauber, alle 10 lokalen Feature-Branches bereits vollständig gemerged (0 Commits Unterschied zu `main`), keine verlorene Arbeit, keine offenen PRs, CI grün.
+- [x] Vollständige Dokumenten-/Code-Bestandsaufnahme (README, CLAUDE.md, TASKS.md, DECISIONS.md, NEXT_TASK.md, alle docs/*.md, Migrationen, RLS-Proben, Playwright-Specs, Workflows) – Ergebnis: solide, technisch reife MVP-Basis, aber mehrere Dokumente (`docs/AI_HANDOFF.md`, `docs/NEXT_TASK.md`, `docs/TEST_MATRIX.md`, `docs/FEATURE_STATUS.md`) waren inkonsistent zueinander und hinter `git log` zurück – teilweise in dieser Etappe korrigiert, Rest bleibt offen (s. Abschlussbericht an Tom).
+- [x] 31 Supabase-Migrationen, 136 RLS-Proben, 8 (jetzt 9) Playwright-Spec-Dateien, 1 CI-Workflow mit 4 Jobs bestätigt.
+
+### Phase B/C – Terminfehler behoben + Regressionstests ✅ (31.07.2026)
+- [x] **Ursache gefunden (D-117):** `createAppointmentAction`/`updateAppointmentAction` prüften nie, ob der gewählte Zeitpunkt in der Zukunft liegt. Die Neu-Anlage-Seite füllt Datum/Uhrzeit standardmäßig mit „heute, 09:00" vor – ein nach 9 Uhr angelegter Termin ohne Uhrzeit-Änderung landete lautlos in der Vergangenheit.
+- [x] Fehler zuerst mit einem fehlschlagenden Playwright-Test bestätigt (`e2e/appointments.spec.ts`), dann behoben: serverseitige Prüfung `startsAt <= jetzt` mit klarer deutscher Fehlermeldung, in beiden Actions (Anlegen UND Bearbeiten).
+- [x] Fehlende `revalidatePath("/appointments")`/`revalidatePath("/today")` beim Anlegen/Bearbeiten ergänzt (Konsistenz mit Stornieren/Abschließen, s. D-118).
+- [x] Neue Playwright-Regressionstests (`e2e/appointments.spec.ts`, 2 Fälle): Termin in der Vergangenheit wird abgelehnt; ein fest gebuchter zukünftiger Termin erscheint sofort (ohne Neuladen) beim Patienten unter „Kommende Termine", nicht bei „Vergangene Termine".
+- [x] Vollständig lokal geprüft: Typecheck, Lint, 120 Unit-Tests, 136 RLS-Proben, volle Playwright-Suite (41 Tests, chromium) – alle grün (1 bereits vorher bekannter, unabhängiger Flake bei `messaging.spec.ts` bestand beim automatischen Playwright-Retry).
+- [ ] Restliche, im Auftrag genannte Terminszenarien (Terminangebote annehmen/ablehnen/zurückziehen, Konfliktprüfung, Mitternacht/Sommerzeit/Winterzeit als eigene Testfälle, native App) – noch nicht als eigene Tests umgesetzt, s. Abschlussbericht.
+
+### Phase D–P – noch nicht begonnen
+Hosting/AWS-Dokumentation, Nachrichten-/Akten-Sicherheitsvertiefung, Plattform-Admin-Datentrennung, Übung-mit-Video-Assistent, globale Suche, Hilfecenter, volle Playwright-/native Testmatrix, bebilderte GitHub-Doku: bewusst noch nicht begonnen – zu groß und teils zu sicherheits-/kostenkritisch (AWS-Konten, E2E-Verschlüsselung) für einen unbeaufsichtigten Durchlauf in einer Sitzung. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
+
 ## Phase 0 – Bestand und Planung
 
 - [x] Projektverzeichnis, Git-Status, Laufzeitversionen geprüft (Node v22.12.0 ✓, pnpm ✗, Supabase CLI ✗)

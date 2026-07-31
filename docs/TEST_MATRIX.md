@@ -1,6 +1,15 @@
 # PhysioCheck – Testmatrix
 
-> Stand 26.07.2026. „Grün“ bedeutet tatsächlich lokal ausgeführt (Toms Mac, Supabase/Docker/Mailpit). Letzter vollständiger Lauf: 26.07.2026 auf Branch `claude/platform-admin-20260725`.
+> Stand 31.07.2026. „Grün“ bedeutet tatsächlich lokal ausgeführt (Toms Mac, Supabase/Docker/Mailpit). Letzter vollständiger Lauf: 31.07.2026 auf Branch `claude/full-review-and-appointment-fix-20260731` (Typecheck/Lint/120 Unit-Tests/136 RLS-Proben/41 Playwright-Tests, alle grün).
+
+## Terminfehler behoben (31.07.2026, D-117/D-118)
+
+| Anforderung | Automatisierte Abdeckung | Status |
+|---|---|---|
+| Praxis kann keinen Termin in der Vergangenheit fest buchen (weder Anlegen noch Bearbeiten) | `e2e/appointments.spec.ts` + Server-Prüfung `startsAt <= jetzt` in `createAppointmentAction`/`updateAppointmentAction` | Grün (31.07.2026) |
+| Ein fest gebuchter zukünftiger Termin erscheint sofort (ohne Neuladen) beim Patienten unter „Kommende Termine" | `e2e/appointments.spec.ts` (zwei getrennte Sitzungen: Praxis legt an, Patient prüft) | Grün (31.07.2026) |
+| Zeitzonenumrechnung (`zonedTimeToUtc`, sommerzeitsicher) | Code-Review + bestehende Unit-Tests in `packages/shared` | Grün (bereits vorher) |
+| Terminangebote annehmen/ablehnen/zurückziehen, Konfliktprüfung, Mitternacht/DST als eigene Fälle, native App | Noch nicht als eigene Tests umgesetzt | Offen |
 
 ## Zugangs-Wiederherstellung für Praxismitglieder (26.07.2026, D-113 ff.)
 
