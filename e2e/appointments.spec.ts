@@ -10,6 +10,13 @@ import { expect, test, type Page } from "@playwright/test";
 
 test.describe.configure({ mode: "serial" });
 
+test.beforeEach(async ({}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== "chromium",
+    "Mutierender Ablauf (echte Termine) läuft nur einmal."
+  );
+});
+
 const PASSWORD = "PhysioDemo2026!";
 const PRACTICE_TZ = "Europe/Luxembourg";
 
