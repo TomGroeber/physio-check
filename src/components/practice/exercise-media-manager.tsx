@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   discardExerciseMediaUploadAction,
@@ -45,17 +45,21 @@ function normalizedMimeType(kind: UploadableMediaKind, file: File) {
   return file.type;
 }
 
-/** Direkter Upload zum eng begrenzten Supabase-Ticket mit echtem Fortschritt. */
+/**
+ * Direkter Upload zum eng begrenzten Supabase-Ticket mit echtem
+ * Fortschritt. Gibt zusätzlich das laufende Request-Objekt zurück,
+ * damit ein „Abbrechen“-Knopf es per `abort()` stoppen kann.
+ */
 function uploadWithProgress(
   signedUrl: string,
   file: File,
   onProgress: (progress: number) => void
-) {
-  return new Promise<void>((resolve, reject) => {
-    const body = new FormData();
-    body.append("cacheControl", "3600");
-    body.append("", file);
-    const request = new XMLHttpRequest();
+): { request: XMLHttpRequest; done: Promise<void> } {
+  const body = new FormData();
+  body.append("cacheControl", "3600");
+  body.append("", file);
+  const request = new XMLHttpRequest();
+  const done = new Promise<void>((resolve, reject) => {
     request.open("PUT", signedUrl);
     request.setRequestHeader("x-upsert", "false");
     request.upload.addEventListener("progress", (event) => {
@@ -68,9 +72,10 @@ function uploadWithProgress(
       else reject(new Error("Der Upload zum Speicher ist fehlgeschlagen."));
     });
     request.addEventListener("error", () => reject(new Error("Netzwerkfehler beim Upload.")));
-    request.addEventListener("abort", () => reject(new Error("Der Upload wurde abgebrochen.")));
+    request.addEventListener("abort", () => reject(new Error("abgebrochen")));
     request.send(body);
   });
+  return { request, done };
 }
 
 function ExistingPreview({
@@ -133,6 +138,8 @@ function MediaCard({
   const [message, setMessage] = useState<{ error?: string; success?: string }>({});
   const [pending, startTransition] = useTransition();
   const previewUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
+  const activeRequest = useRef<XMLHttpRequest | null>(null);
+  const cancelledByUser = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -166,6 +173,7 @@ function MediaCard({
 
   function upload() {
     if (!file) return;
+    cancelledByUser.current = false;
     startTransition(async () => {
       setMessage({});
       setProgress(0);
@@ -180,8 +188,18 @@ function MediaCard({
         setMessage({ error: ticket.error });
         return;
       }
+      // Abbrechen kann schon während dieses Server-Roundtrips passieren,
+      // bevor der XHR unten überhaupt existiert – ohne diese Prüfung wäre
+      // ein Klick auf „Abbrechen“ in diesem Fenster wirkungslos.
+      if (cancelledByUser.current) {
+        await discardExerciseMediaUploadAction({ exerciseId, storagePath: ticket.storagePath });
+        setMessage({ error: copy.uploadCancelled });
+        return;
+      }
+      const { request, done } = uploadWithProgress(ticket.signedUrl, file, setProgress);
+      activeRequest.current = request;
       try {
-        await uploadWithProgress(ticket.signedUrl, file, setProgress);
+        await done;
         const result = await finalizeExerciseMediaUploadAction({
           exerciseId,
           kind,
@@ -198,9 +216,20 @@ function MediaCard({
         router.refresh();
       } catch (error) {
         await discardExerciseMediaUploadAction({ exerciseId, storagePath: ticket.storagePath });
-        setMessage({ error: error instanceof Error ? error.message : copy.uploadFailed });
+        if (cancelledByUser.current) {
+          setMessage({ error: copy.uploadCancelled });
+        } else {
+          setMessage({ error: error instanceof Error ? error.message : copy.uploadFailed });
+        }
+      } finally {
+        activeRequest.current = null;
       }
     });
+  }
+
+  function cancelUpload() {
+    cancelledByUser.current = true;
+    activeRequest.current?.abort();
   }
 
   function remove() {
@@ -243,6 +272,11 @@ function MediaCard({
           <Button type="button" onClick={upload} disabled={!file || pending}>
             {pending ? de.common.loading : existing ? copy.replace : copy.upload}
           </Button>
+          {pending ? (
+            <Button type="button" variant="outline" onClick={cancelUpload}>
+              {copy.cancelUpload}
+            </Button>
+          ) : null}
           {existing ? (
             <Button type="button" variant="outline" onClick={remove} disabled={pending}>
               {copy.remove}

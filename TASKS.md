@@ -52,8 +52,16 @@ Toms Auftrag umfasst 18 Abschnitte (Architektur-Konsolidierung, Terminfehler, Ho
 - [x] Vollständig geprüft: Typecheck (Web + Mobile), Lint (Web), 120 Unit-Tests (Web), 16 Unit-Tests (Mobile), 136 RLS-Proben, volle Playwright-Suite (43/43, keine Flakes).
 - [ ] Ein vorbestehender, unabhängiger ESLint-Fehler in `apps/patient-mobile/jest.setup.js` gefunden (D-131) – bewusst nicht mitbehoben (außerhalb des Phasenumfangs), hier nur vermerkt.
 
-### Phase I–P – noch nicht begonnen
-Hosting/AWS-Dokumentation, Nachrichten-/Akten-Sicherheitsvertiefung, Plattform-Admin-Datentrennung, Übung-mit-Video-Assistent, globale Suche, Hilfecenter, volle Playwright-/native Testmatrix, bebilderte GitHub-Doku: bewusst noch nicht begonnen – zu groß und teils zu sicherheits-/kostenkritisch (AWS-Konten, E2E-Verschlüsselung) für einen unbeaufsichtigten Durchlauf in einer Sitzung. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
+### Phase I – Übung anlegen + Video-Upload ✅ (01.08.2026, Branch `claude/exercise-video-creation-20260801`)
+- [x] Ursprüngliches Problem live mit Playwright nachgestellt statt angenommen: Übungsanlegen führt bereits direkt zur vollständigen Medienverwaltung (D-132) – Tom entschied sich für kleine, gezielte Verbesserungen statt eines neuen Assistenten.
+- [x] Abbrechen-Knopf beim Medien-Upload (D-133). Beim Testen mit künstlich verzögertem Upload einen echten Fehler gefunden und behoben: Abbrechen während des Server-Roundtrips vor Existenz des XHR war zuvor wirkungslos.
+- [x] Bestätigungsbanner direkt nach dem Anlegen einer Übung (D-134).
+- [x] Patientenvorschau (Video/Bild + Standard-Dosierungs-Chips) auf der Bearbeitungsseite ergänzt (D-135).
+- [x] Neue Playwright-Regressionstests in `e2e/phase-j-exercise-management.spec.ts`: Abbrechen-Knopf (mit künstlich verzögertem Upload via `page.route`, prüft auch, dass das bestehende Medium bei Abbruch erhalten bleibt), Bestätigungsbanner + Patientenvorschau nach dem Anlegen. Bestehender Test auf den neuen `?created=1`-Parameter angepasst.
+- [x] Vollständig geprüft: Typecheck, Lint, 120 Unit-Tests, 136 RLS-Proben, volle Playwright-Suite. Ein bekannter, umgebungsbedingter Flake bestätigt (Turbopack-Dev-Server wird nach vielen Neustarts/DB-Resets in derselben Sitzung langsam, s. `.claude/skills/verify/SKILL.md`) – per `git stash`-Vergleich als vorbestehend/unabhängig von dieser Phase bestätigt, betrifft `phase-j-exercise-management.spec.ts` („Getarnte…“, unverändert) und `demo-accounts.spec.ts` (unberührte Datei); in Isolation laufen alle betroffenen Tests grün.
+
+### Phase J–P – noch nicht begonnen
+Globale Suche, Hilfecenter, volle Playwright-/native Testmatrix, bebilderte GitHub-Doku: bewusst noch nicht begonnen. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
 
 ## Phase 0 – Bestand und Planung
 
