@@ -25,7 +25,15 @@ export function OfferResponse({ offers }: { offers: PatientOffer[] }) {
   const [acceptState, acceptAction, accepting] = useActionState<OfferActionState, FormData>(acceptOfferAction, {});
   const [declineState, declineAction, declining] = useActionState<OfferActionState, FormData>(declineOfferAction, {});
 
-  if (!offers.length && !acceptState.success && !acceptState.error) return null;
+  if (
+    !offers.length &&
+    !acceptState.success &&
+    !acceptState.error &&
+    !declineState.success &&
+    !declineState.error
+  ) {
+    return null;
+  }
 
   return (
     <section aria-labelledby="offers-heading" className="flex flex-col gap-3">

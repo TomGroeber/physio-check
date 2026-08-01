@@ -17,7 +17,7 @@ Toms Auftrag umfasst 18 Abschnitte (Architektur-Konsolidierung, Terminfehler, Ho
 - [x] Fehlende `revalidatePath("/appointments")`/`revalidatePath("/today")` beim Anlegen/Bearbeiten ergänzt (Konsistenz mit Stornieren/Abschließen, s. D-118).
 - [x] Neue Playwright-Regressionstests (`e2e/appointments.spec.ts`, 2 Fälle): Termin in der Vergangenheit wird abgelehnt; ein fest gebuchter zukünftiger Termin erscheint sofort (ohne Neuladen) beim Patienten unter „Kommende Termine", nicht bei „Vergangene Termine".
 - [x] Vollständig lokal geprüft: Typecheck, Lint, 120 Unit-Tests, 136 RLS-Proben, volle Playwright-Suite (41 Tests, chromium) – alle grün (1 bereits vorher bekannter, unabhängiger Flake bei `messaging.spec.ts` bestand beim automatischen Playwright-Retry).
-- [ ] Restliche, im Auftrag genannte Terminszenarien (Terminangebote annehmen/ablehnen/zurückziehen, Konfliktprüfung, Mitternacht/Sommerzeit/Winterzeit als eigene Testfälle, native App) – noch nicht als eigene Tests umgesetzt, s. Abschlussbericht.
+- [x] Terminangebote annehmen/ablehnen/zurückziehen, Konfliktprüfung, Mitternacht/Sommerzeit/Winterzeit als eigene Testfälle: umgesetzt in Phase M (01.08.2026). Native-App-Tests bleiben eigene Phase N.
 
 ### Phase D – Datenfluss-/API-Dokumentation ✅ (01.08.2026, Branch `claude/data-flow-docs-20260801`)
 - [x] Tatsächlichen Datenfluss im Code recherchiert (nicht angenommen): Website-Schicht (Server Actions → Services → DB-Client), native App (Direktzugriff mit RLS + Datenbankfunktionen für Schreibvorgänge, `/api/mobile/*`-Routen der Website für Service-Role-pflichtige Vorgänge), Auth (gemeinsame Supabase-Auth-Instanz, getrennte Sitzungen), Storage (private Buckets, signierte Adressen 60s–10min).
@@ -77,8 +77,17 @@ Toms Auftrag umfasst 18 Abschnitte (Architektur-Konsolidierung, Terminfehler, Ho
 - [x] Vollständig geprüft: Typecheck, Lint, 120 Unit-Tests, 136 RLS-Proben, neue Tests auf chromium und mobile grün.
 - [x] CI-`expect`-Timeout für die brandneue, umfangreiche `/practice/help`-Route auf 25s angehoben, nur in CI (D-144) – nach ausführlicher lokaler Gegenprüfung (kein Logikfehler gefunden, s. D-144) statt vorschnell auf Ressourcenknappheit geschoben.
 
-### Phase M–P – noch nicht begonnen
-Volle Playwright-/native Testmatrix, bebilderte GitHub-Doku, Abschlussbericht: bewusst noch nicht begonnen. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
+### Phase M – Testlücken Terminangebote/Konfliktprüfung/DST ✅ (01.08.2026, Branch `claude/full-test-matrix-20260801`)
+- [x] Umfang: die in Phase B/C offen gelassenen Terminszenarien (Terminangebote annehmen/ablehnen/zurückziehen, Konfliktprüfung, Mitternacht/Sommerzeit/Winterzeit). Native App bleibt bewusst Phase N.
+- [x] Neue Datei `e2e/appointment-offers.spec.ts` (4 Fälle): Angebot senden → annehmen (echter Termin entsteht), Angebot senden → ablehnen, Angebot senden → zurückziehen, doppelte feste Buchung im selben Zeitfenster wird abgelehnt.
+- [x] **Echter Fehler gefunden und behoben (D-145):** Die Ablehnen-Bestätigung eines Terminangebots wurde der Patientin/dem Patienten nie angezeigt – `OfferResponse` gab sich selbst `null` zurück, sobald die Angebotsliste nach dem Ablehnen leer war, weil die entsprechende Prüfung nur den Annehmen-, nie den Ablehnen-Zustand berücksichtigte. Die Ablehnung selbst funktionierte; nur die Rückmeldung fehlte.
+- [x] Neue Datei `e2e/appointment-timezone-edge-cases.spec.ts` (3 Fälle): Termin über den Sommerzeit-Beginn (28.03.2027, nächster künftiger Übergang), über den Winterzeit-Beginn (25.10.2026) und kurz vor Mitternacht hinweg – alle zeigen die richtige Uhrzeit (D-146, kein Fehler gefunden).
+- [x] Konfliktprüfung war bereits korrekt implementiert (D-147) – jetzt zusätzlich per E2E abgesichert statt nur durch die Datenbank-Constraint.
+- [x] Lehre aus der Testentwicklung dokumentiert (D-148): feste Uhrzeiten in mutierenden E2E-Tests kollidieren zwischen Testläufen/Retries – auf pro Lauf abgeleitete Minuten umgestellt (bestehendes Muster aus `appointments.spec.ts`).
+- [x] Vollständig geprüft: Typecheck, Lint, 120 Unit-Tests, 136 RLS-Proben, neue Tests auf chromium grün (mobile bewusst übersprungen, gleiches „mutierender Ablauf läuft nur einmal"-Muster wie `appointments.spec.ts`); zusammen mit den bestehenden Terminfehler-Tests erneut grün geprüft.
+
+### Phase N–P – noch nicht begonnen
+Native iOS/Android-Tests, bebilderte GitHub-Doku, Abschlussbericht: bewusst noch nicht begonnen. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
 
 ## Phase 0 – Bestand und Planung
 
