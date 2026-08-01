@@ -19,7 +19,14 @@ Toms Auftrag umfasst 18 Abschnitte (Architektur-Konsolidierung, Terminfehler, Ho
 - [x] Vollständig lokal geprüft: Typecheck, Lint, 120 Unit-Tests, 136 RLS-Proben, volle Playwright-Suite (41 Tests, chromium) – alle grün (1 bereits vorher bekannter, unabhängiger Flake bei `messaging.spec.ts` bestand beim automatischen Playwright-Retry).
 - [ ] Restliche, im Auftrag genannte Terminszenarien (Terminangebote annehmen/ablehnen/zurückziehen, Konfliktprüfung, Mitternacht/Sommerzeit/Winterzeit als eigene Testfälle, native App) – noch nicht als eigene Tests umgesetzt, s. Abschlussbericht.
 
-### Phase D–P – noch nicht begonnen
+### Phase D – Datenfluss-/API-Dokumentation ✅ (01.08.2026, Branch `claude/data-flow-docs-20260801`)
+- [x] Tatsächlichen Datenfluss im Code recherchiert (nicht angenommen): Website-Schicht (Server Actions → Services → DB-Client), native App (Direktzugriff mit RLS + Datenbankfunktionen für Schreibvorgänge, `/api/mobile/*`-Routen der Website für Service-Role-pflichtige Vorgänge), Auth (gemeinsame Supabase-Auth-Instanz, getrennte Sitzungen), Storage (private Buckets, signierte Adressen 60s–10min).
+- [x] `docs/DATA_FLOW.md`, `docs/API_ARCHITECTURE.md`, `docs/WEB_MOBILE_SYNC.md` erstellt (D-120/D-121).
+- [x] Audit „greift die App unnötig direkt auf heikle Tabellen zu?": nein, aktuelles Muster ist angemessen, kein Umbau nötig.
+- [x] Ehrlich dokumentiert statt beschönigt: kein Realtime (Nachfragen-Muster), keine Offline-Warteschlange in der nativen App.
+- [x] Typecheck/Lint erneut grün nach den Doku-Änderungen (keine Code-Änderungen in dieser Phase).
+
+### Phase E–P – noch nicht begonnen
 Hosting/AWS-Dokumentation, Nachrichten-/Akten-Sicherheitsvertiefung, Plattform-Admin-Datentrennung, Übung-mit-Video-Assistent, globale Suche, Hilfecenter, volle Playwright-/native Testmatrix, bebilderte GitHub-Doku: bewusst noch nicht begonnen – zu groß und teils zu sicherheits-/kostenkritisch (AWS-Konten, E2E-Verschlüsselung) für einen unbeaufsichtigten Durchlauf in einer Sitzung. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
 
 ## Phase 0 – Bestand und Planung

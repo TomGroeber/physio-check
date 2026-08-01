@@ -1,12 +1,14 @@
 # PhysioCheck – AI Handoff
 
-> Stand: 2026-07-31 · `main@167033f` ist der letzte GEMERGTE Stand. Seit dem 26.07.-Eintrag unten wurden PR #6 (Liquid-Glass-Tabbar), PR #7 (Zugangs-Wiederherstellung), das Quickstart-Skript, die README-Vereinfachung und drei weitere Bugfix-Commits (Betreiber-Login-Routing, Praxis-anlegen-Formular, sofortiger Übungsfortschritt/Ungelesen-Punkt, natives „Heute"-Fokus-Refresh) gemergt/gepusht – dieser Kopf war zuvor mehrere Commits veraltet, jetzt korrigiert. **Aktuell IN ARBEIT (nicht gemergt):** Branch `claude/full-review-and-appointment-fix-20260731` – Terminfehler behoben (D-117/D-118), Bestandsaufnahme abgeschlossen, s. TASKS.md/DECISIONS.md für Details. GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
+> Stand: 2026-08-01 · `main@3f0ef92` ist der letzte GEMERGTE Stand (PR #8, Terminfehler behoben). **Aktuell IN ARBEIT (nicht gemergt):** Branch `claude/data-flow-docs-20260801` – Phase D (Datenfluss-/API-Dokumentation) abgeschlossen, noch nicht committet/gepusht/gemergt. GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
 
-## Aktueller Auftrag (31.07.2026, IN ARBEIT, Branch `claude/full-review-and-appointment-fix-20260731`)
+## Aktueller Auftrag (großer Review-Auftrag vom 31.07.2026, phasenweise, IN ARBEIT)
 
-Toms Auftrag ist sehr groß (18 Abschnitte: Architektur, Terminfehler, Hosting/AWS, Sicherheit, neue Features, volle Testmatrix, Doku, Obsidian). Priorität laut Tom: Terminfehler zuerst. Umgesetzt: Phase A (Bestandsaufnahme) + Phase B/C (Terminfehler + Regressionstests), s. TASKS.md für den vollständigen Stand. Die übrigen Phasen (D–P) sind bewusst noch nicht begonnen – zu groß/sicherheitskritisch für einen unbeaufsichtigten Durchlauf, Vorschlag an Tom: eine Phase pro Sitzung.
+Toms Auftrag ist sehr groß (18 Abschnitte: Architektur, Terminfehler, Hosting/AWS, Sicherheit, neue Features, volle Testmatrix, Doku, Obsidian). Mit Tom abgestimmte Reihenfolge (er hat zugestimmt): A (Bestandsaufnahme) → B/C (Terminfehler + Tests) → D (Datenfluss-Doku) → F (Hosting/AWS-Vergleich) → E (Sicherheit Nachrichten/Akten/Admin-Grenzen) → H (Architektur-Konsolidierung) → I (Video-Upload beim Übung-Anlegen) → J (globale Suche) → K (Hilfecenter) → M (volle Playwright-Matrix) → N (native iOS/Android-Tests) → O (bebilderte Doku) → P (Abschlussbericht).
 
-**Für eine andere KI, die hier übernimmt:** Lies zuerst `TASKS.md` (Abschnitt „Auftrag vom 31.07.2026") und `DECISIONS.md` (D-117–D-119) für den exakten Stand, dann diesen Auftrag mit Tom fortsetzen – als Nächstes würde Phase D (Datenflüsse/API-Doku) oder eine von Tom gewählte andere Phase folgen.
+**Stand:** A, B/C, D abgeschlossen (jeweils eigener Branch/PR, gemergt bzw. kurz vor Commit). Als Nächstes: Phase F (Hosting/AWS-Vergleich, nur Dokumentation, keine echten Ressourcen ohne Toms Freigabe).
+
+**Für eine andere KI, die hier übernimmt:** Lies zuerst `TASKS.md` (Abschnitte „Auftrag vom 31.07.2026" und die Phasen-Unterabschnitte) und `DECISIONS.md` (D-117 aufwärts) für den exakten Stand, dann mit der nächsten offenen Phase fortfahren. Jede Phase: eigener Branch, committen, pushen, PR öffnen, CI prüfen (der `Mobile`-Job hat einen bekannten, unabhängigen externen Blocker – `expo-doctor` vergleicht mit der jeweils aktuellen npm-Registry, nicht mit dem Code), `pnpm docs:sync`, dann mit Tom die nächste Phase abstimmen statt alles unbeaufsichtigt durchzuziehen.
 
 ## AKTUELLER Auftrag (26.07.2026, IN ARBEIT, Branch `claude/mobile-liquid-glass-tabbar-20260726`): Native Liquid-Glass-Tab-Leiste
 
