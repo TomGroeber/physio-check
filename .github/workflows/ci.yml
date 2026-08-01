@@ -132,6 +132,26 @@ jobs:
           # Verhindert vorsorglich, dass ein systemd-Timer die Datenbank
           # später im selben Job erneut aktualisiert.
           sudo systemctl disable --now clamav-freshclam.timer 2>/dev/null || true
+      - name: Dev-Server vorab starten und Praxisrouten einmal kompilieren
+        # Playwrights eigener webServer (reuseExistingServer: true, unten)
+        # würde sonst den allerersten Aufruf jeder Route mitten im ersten
+        # betroffenen Test kompilieren (Turbopack, kalter Cache) – auf dem
+        # 2-Kern-Runner reichte dafür selbst ein auf 25s angehobenes
+        # expect-Timeout nicht zuverlässig (Phase J/K/M, wiederholt in CI
+        # beobachtet, lokal auf leistungsfähigerer Hardware nie reproduziert
+        # – s. docs/AI_HANDOFF.md). Kompiliert hier einmal vorab, außerhalb
+        # jeder Testzeitmessung; nicht angemeldete Aufrufe reichen dafür,
+        # da die Route dafür bereits ausgeführt (und damit kompiliert)
+        # werden muss, auch wenn sie am Ende zu /login umleitet.
+        run: |
+          nohup pnpm dev > /tmp/ci-server-prewarm.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -sf -o /dev/null http://localhost:3000/login && break
+            sleep 1
+          done
+          for route in /practice /practice/help /practice/patients /practice/exercises /practice/calendar /practice/waitlist /practice/messages /practice/settings; do
+            curl -s -o /dev/null "http://localhost:3000$route" || true
+          done
       - name: E2E-Testsuite (Playwright)
         run: pnpm e2e
       - name: Datenbank und Webserver für isolierten Malware-Scan-Lauf neu starten
