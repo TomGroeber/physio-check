@@ -7,6 +7,7 @@ import { createSupabaseServiceClient } from "@/server/db/service-client";
 import { getSessionContext } from "@/server/services/session";
 import { getPatientDetail } from "@/server/services/practice";
 import { auditDocument, getPracticeDocument, removePatientDocumentFile } from "@/server/services/documents";
+import { isMalwareScanEnabled, scanBufferForMalware } from "@/server/services/malware-scan";
 import {
   archiveDocumentSchema,
   deleteDocumentSchema,
@@ -55,6 +56,12 @@ export async function uploadPatientDocumentAction(
   const bytes = new Uint8Array(await file.arrayBuffer());
   if (!signatureMatches(bytes, fileType.signature)) {
     return { error: "Dateiinhalt und Dateityp stimmen nicht überein." };
+  }
+  if (isMalwareScanEnabled()) {
+    const scanResult = await scanBufferForMalware(bytes);
+    if (!scanResult.clean) {
+      return { error: "Die Datei konnte nicht sicher gespeichert werden." };
+    }
   }
   const context = await authorizedContext(parsed.data.patientId);
   if (!context) return { error: "Kein Zugriff auf diesen Patienten." };

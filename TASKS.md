@@ -34,7 +34,17 @@ Toms Auftrag umfasst 18 Abschnitte (Architektur-Konsolidierung, Terminfehler, Ho
 
 > Hinweis: Phase G („Produktionsarchitektur empfehlen und vorbereiten") überschneidet sich stark mit Phase F und ist durch `docs/PRODUCTION_DEPLOYMENT_PLAN.md` + die Empfehlung in `docs/HOSTING_OPTIONS.md` bereits weitgehend mit abgedeckt – wird nicht als eigene, separate Phase wiederholt.
 
-### Phase E, H–P – noch nicht begonnen
+### Phase E – Sicherheit Nachrichten/Akten/Admin-Grenzen ✅ (01.08.2026, Branch `claude/security-docs-20260801`)
+- [x] Tom hat sich gegen Ende-zu-Ende-Verschlüsselung für Nachrichten entschieden, nach Abwägung der Kompromiss-Tabelle (D-126).
+- [x] Vollständige Code-Recherche: Nachrichten-RLS, Akten-RLS/Storage, Plattform-Admin-Abfragen, Logs, Benachrichtigungsinhalte, Ratenbegrenzung, Aufbewahrung/Löschung, Verschlüsselungsgarantien, MFA-Stand.
+- [x] **Echte Sicherheitslücke gefunden und behoben:** Patientenakten-Upload lief nie durch den Malware-Scan (D-124). Mit echtem `clamscan` lokal verifiziert, neuer Test `e2e/patient-documents.spec.ts`, CI-Workflow ergänzt.
+- [x] Geprüft und bewusst NICHT verändert: ehemalige Praxis behält Aktenzugriff (D-125, konsistent mit Terminen/Übungshistorie) – kein Fehler, sondern dieselbe, bereits getroffene Produktentscheidung.
+- [x] Bestätigt: keine Plattform-Admin-Abfrage berührt patientenbezogene Inhalte (D-127).
+- [x] 9 neue Dokumente: `docs/MESSAGING_SECURITY.md`, `docs/DATA_LOCATION_REGISTER.md`, `docs/ACCESS_CONTROL_MATRIX.md`, `docs/RETENTION_AND_DELETION.md`, `docs/PLATFORM_ADMIN_SECURITY.md`, `docs/ADMIN_DATA_BOUNDARIES.md`, `docs/THREAT_MODEL.md`, `docs/ENCRYPTION_ARCHITECTURE.md`, `docs/INCIDENT_RESPONSE.md`.
+- [x] Vollständig geprüft: Typecheck, Lint, 120 Unit-Tests, 136 RLS-Proben, volle Playwright-Suite grün (ein bekannter, alt-daten-bedingter Flake bei `messaging.spec.ts` auf frischer DB nicht reproduzierbar – bestätigt keine Regression).
+- [ ] Nicht umgesetzt (bewusst außerhalb des Umfangs, s. `docs/THREAT_MODEL.md`): MFA für Praxis-/Admin-Rollen, externe Penetrationstestung, automatisierte Alarmierung bei verdächtigen Zugriffsmustern.
+
+### Phase H–P – noch nicht begonnen
 Hosting/AWS-Dokumentation, Nachrichten-/Akten-Sicherheitsvertiefung, Plattform-Admin-Datentrennung, Übung-mit-Video-Assistent, globale Suche, Hilfecenter, volle Playwright-/native Testmatrix, bebilderte GitHub-Doku: bewusst noch nicht begonnen – zu groß und teils zu sicherheits-/kostenkritisch (AWS-Konten, E2E-Verschlüsselung) für einen unbeaufsichtigten Durchlauf in einer Sitzung. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
 
 ## Phase 0 – Bestand und Planung

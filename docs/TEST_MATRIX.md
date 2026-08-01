@@ -2,6 +2,14 @@
 
 > Stand 31.07.2026. „Grün“ bedeutet tatsächlich lokal ausgeführt (Toms Mac, Supabase/Docker/Mailpit). Letzter vollständiger Lauf: 31.07.2026 auf Branch `claude/full-review-and-appointment-fix-20260731` (Typecheck/Lint/120 Unit-Tests/136 RLS-Proben/41 Playwright-Tests, alle grün).
 
+## Patientenakten-Malware-Scan behoben (01.08.2026, D-124)
+
+| Anforderung | Automatisierte Abdeckung | Status |
+|---|---|---|
+| Echtes PDF wird als Patientenakte angenommen | `e2e/patient-documents.spec.ts` | Grün (01.08.2026) |
+| Getarnte Datei (falscher Inhalt trotz PDF-Deklaration) wird abgelehnt | `e2e/patient-documents.spec.ts` (bestehende Signaturprüfung) | Grün (01.08.2026) |
+| Mit Test-Malware-Signatur markierte Datei wird abgelehnt | `e2e/patient-documents.spec.ts`, nur bei `MALWARE_SCAN_ENABLED=true` | Grün (01.08.2026, lokal mit echtem `clamscan` verifiziert, zusätzlich in CI aufgenommen) |
+
 ## Terminfehler behoben (31.07.2026, D-117/D-118)
 
 | Anforderung | Automatisierte Abdeckung | Status |
