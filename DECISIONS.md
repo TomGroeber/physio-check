@@ -2,6 +2,12 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-08-01 – Phase D: Datenfluss-Dokumentation (Branch `claude/data-flow-docs-20260801`)
+
+**D-120 · Bestätigt: kein Realtime, keine Offline-Warteschlange – ehrlich dokumentiert statt beschönigt.** Recherche im tatsächlichen Code (nicht angenommen) ergab: Nachrichten aktualisieren per Nachfragen (Website alle 8s bei sichtbarem Tab, App bei Vordergrund/Ziehen-zum-Aktualisieren), nicht per Supabase-Realtime-Kanal (keiner im Code gefunden). Die native App hat keine Offline-Warteschlange/Wiederholungslogik – ein Fehlschlag zeigt eine Fehlermeldung, nichts wird lokal als „erledigt" vorgetäuscht. Beides in `docs/DATA_FLOW.md`/`docs/WEB_MOBILE_SYNC.md` als bewusste, vertretbare Kompromisse dokumentiert statt verschwiegen.
+
+**D-121 · Kein unnötiger Direktzugriff der App auf heikle Tabellen gefunden – kein Umbau nötig.** Auf ausdrücklichen Prüfauftrag hin untersucht: die native App liest Tabellen direkt (durch RLS geschützt, das ist der vorgesehene Weg), schreibt Heikles ausschließlich über geprüfte Datenbankfunktionen (`record_exercise_occurrence`, `mark_notification_read`), und nutzt für Service-Role-pflichtige Vorgänge (Malware-Scan, Kontolöschung) bereits eigene `/api/mobile/*`-Routen der Website. Keine Stelle gefunden, an der eine vom Client mitgeschickte Praxis-/Patienten-ID ungeprüft übernommen wird. Kein Codeumbau vorgenommen (Regel „keine unnötige Neuentwicklung funktionierender Features").
+
 ## 2026-07-31 – Umfassender Review-Auftrag: Terminfehler behoben (Branch `claude/full-review-and-appointment-fix-20260731`)
 
 **D-117 · Terminfehler-Ursache: keine Zukunfts-Prüfung beim Anlegen/Bearbeiten eines Termins.** `createAppointmentAction`/`updateAppointmentAction` akzeptierten jeden Zeitpunkt, auch einen bereits verstrichenen. Die Neu-Anlage-Seite (`/practice/calendar/new`) füllt Datum/Uhrzeit standardmäßig mit „heute, 09:00" vor; ein Termin, der später am selben Tag ohne Änderung der Uhrzeit angelegt wurde, landete dadurch sofort und lautlos in der Vergangenheit – beim Patienten dann unter „Vergangene Termine" statt „Kommende Termine". Kein clientseitiger oder serverseitiger Fehler, keine Testabdeckung. Behoben durch eine serverseitige Prüfung `startsAt <= jetzt` (analog zum bereits bestehenden `offer_in_past`-Schutz bei Terminangeboten), mit klarer deutscher Fehlermeldung statt stillem Fehlschlag. `zonedTimeToUtc`/die Zeitzonenumrechnung selbst waren nach Prüfung korrekt (sommerzeitsicher, zweiter Durchlauf) – kein Zeitzonenfehler.
