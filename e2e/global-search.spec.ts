@@ -17,7 +17,7 @@ async function login(page: Page, email: string) {
 test("Schnellsuche öffnet sich per Klick und zeigt Bereiche ohne Eingabe", async ({ page }) => {
   await login(page, "therapeutin@demo.physiocheck.test");
   await page.goto("/practice");
-  await page.getByRole("button", { name: /Suchen/ }).click();
+  await page.getByRole("button", { name: /Schnellsuche/ }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page.getByRole("option", { name: "Patienten" })).toBeVisible();
   await expect(page.getByRole("option", { name: "Kalender" })).toBeVisible();

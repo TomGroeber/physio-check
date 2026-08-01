@@ -440,7 +440,7 @@ export const de = {
       settings: "Einstellungen",
     },
     search: {
-      triggerLabel: "Suchen",
+      triggerLabel: "Schnellsuche",
       shortcutHint: "Strg+K",
       dialogTitle: "Suche",
       dialogDescription: "Schnell zu Patienten, Übungen oder einem Bereich springen.",
