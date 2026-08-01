@@ -68,8 +68,16 @@ Toms Auftrag umfasst 18 Abschnitte (Architektur-Konsolidierung, Terminfehler, Ho
 - [x] Vollständig geprüft: Typecheck, Lint, 120 Unit-Tests, 136 RLS-Proben. Neue Tests einzeln (`--workers=1`) auf beiden Playwright-Projekten (chromium, mobile) grün. Volle Suite mit Standard-Parallelität zeigt auf dieser Maschine wiederholt `page.goto`-Timeouts über mehrere, von dieser Phase unberührte Dateien hinweg (auch nach vollständigem Docker-/Node-Neustart) – Ressourcenkonflikt bei 4 parallelen Chromium-Instanzen + Turbopack + Docker auf dieser Maschine, keine Regression (s. `docs/AI_HANDOFF.md`).
 - [x] In CI zusätzlich einen echten, reproduzierbaren Fehler gefunden (nicht nur die Ressourcenknappheit): der Schnellsuche-Knopf hieß ursprünglich „Suchen" und kollidierte per Teilstring-Namensvergleich mit dem längst bestehenden „Suchen"-Knopf auf `/practice/messages` (D-140). Auf „Schnellsuche" umbenannt, lokal mit beiden betroffenen Test-Dateien zusammen erneut grün geprüft.
 
-### Phase K–P – noch nicht begonnen
-Hilfecenter, volle Playwright-/native Testmatrix, bebilderte GitHub-Doku: bewusst noch nicht begonnen. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
+### Phase K – Hilfecenter für Praxismitarbeitende ✅ (01.08.2026, Branch `claude/help-center-20260801`)
+- [x] Vor dem Schreiben der Texte das tatsächliche Verhalten jedes Bereichs im Code recherchiert statt angenommen (D-141) – u. a. bestätigt, dass eine Praxis eine Patientenverbindung aktuell nicht selbst lösen kann; das Hilfecenter behauptet das bewusst nicht.
+- [x] Neue Seite `/practice/help`: 8 Themenbereiche (Patienten, Termine & Kalender, Warteliste & Terminangebote, Übungsbibliothek & Pläne, Nachrichten, Dokumente & Patientenakte, Einstellungen & Team, Schnellsuche) als aufklappbare Fragen/Antworten, statische Inhalte in `messages-de.ts` (D-142), eigene `<details>`-Elemente statt neuer Akkordeon-Abhängigkeit (D-143).
+- [x] Clientseitiger Filter (kein Server-Roundtrip) blendet nicht passende Themen aus und öffnet Treffer automatisch.
+- [x] In Seitenleiste und Schnellsuche verlinkt („Hilfe").
+- [x] Neue Playwright-Regressionstests `e2e/help-center.spec.ts` (4 Fälle): Themenbereiche sichtbar, Suche blendet aus/öffnet Treffer, kein Treffer zeigt Hinweis, Erreichbarkeit über die Schnellsuche.
+- [x] Vollständig geprüft: Typecheck, Lint, 120 Unit-Tests, 136 RLS-Proben, neue Tests auf chromium und mobile grün.
+
+### Phase M–P – noch nicht begonnen
+Volle Playwright-/native Testmatrix, bebilderte GitHub-Doku, Abschlussbericht: bewusst noch nicht begonnen. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
 
 ## Phase 0 – Bestand und Planung
 

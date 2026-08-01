@@ -12,6 +12,7 @@ import {
   Clock01Icon,
   Message01Icon,
   Settings01Icon,
+  HelpCircleIcon,
 } from "@hugeicons/core-free-icons";
 import { searchWorkspaceAction, type WorkspaceSearchResult } from "@/server/actions/search";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -29,6 +30,7 @@ const quickLinks = [
   { href: "/practice/waitlist", label: de.practice.nav.waitlist, icon: Clock01Icon },
   { href: "/practice/messages", label: de.practice.nav.messages, icon: Message01Icon },
   { href: "/practice/settings", label: de.practice.nav.settings, icon: Settings01Icon },
+  { href: "/practice/help", label: de.practice.nav.help, icon: HelpCircleIcon },
 ] as const;
 
 type FlatItem = { key: string; label: string; sublabel?: string; href: string };
