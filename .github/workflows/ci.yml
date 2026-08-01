@@ -189,6 +189,7 @@ jobs:
         run: |
           MALWARE_SCAN_ENABLED=true pnpm exec playwright test \
             e2e/patient-avatar.spec.ts e2e/phase-j-exercise-management.spec.ts \
+            e2e/patient-documents.spec.ts \
             --project=chromium --workers=1
       - name: Playwright-Bericht bei Fehlschlag hochladen
         if: failure()

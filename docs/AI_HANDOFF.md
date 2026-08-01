@@ -1,12 +1,12 @@
 # PhysioCheck – AI Handoff
 
-> Stand: 2026-08-01 · `main@27d80f5` ist der letzte GEMERGTE Stand (PR #9, Datenfluss-Doku). **Aktuell IN ARBEIT (nicht gemergt):** Branch `claude/hosting-docs-20260801` – Phase F (Hosting-Vergleich) abgeschlossen, noch nicht committet/gepusht/gemergt. GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
+> Stand: 2026-08-01 · `main@df232e8` ist der letzte GEMERGTE Stand (PR #10, Hosting-Doku). **Aktuell IN ARBEIT (nicht gemergt):** Branch `claude/security-docs-20260801` – Phase E (Sicherheit Nachrichten/Akten/Admin-Grenzen) abgeschlossen, inkl. einem echten Sicherheitsfix (Malware-Scan für Patientenakten, D-124), noch nicht committet/gepusht/gemergt. GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
 
 ## Aktueller Auftrag (großer Review-Auftrag vom 31.07.2026, phasenweise, IN ARBEIT)
 
 Toms Auftrag ist sehr groß (18 Abschnitte: Architektur, Terminfehler, Hosting/AWS, Sicherheit, neue Features, volle Testmatrix, Doku, Obsidian). Mit Tom abgestimmte Reihenfolge (er hat zugestimmt): A (Bestandsaufnahme) → B/C (Terminfehler + Tests) → D (Datenfluss-Doku) → F (Hosting/AWS-Vergleich) → E (Sicherheit Nachrichten/Akten/Admin-Grenzen) → H (Architektur-Konsolidierung) → I (Video-Upload beim Übung-Anlegen) → J (globale Suche) → K (Hilfecenter) → M (volle Playwright-Matrix) → N (native iOS/Android-Tests) → O (bebilderte Doku) → P (Abschlussbericht). Phase G ist durch F bereits weitgehend mit abgedeckt (s. TASKS.md-Hinweis).
 
-**Stand:** A, B/C, D, F abgeschlossen (jeweils eigener Branch/PR). Als Nächstes: Phase E (Sicherheit Nachrichten/Akten/Admin-Grenzen) – deutlich sicherheitsrelevanter als D/F, sollte vor dem Fortfahren nochmal mit Tom abgestimmt werden (Ende-zu-Ende-Verschlüsselung ist eine echte Architekturentscheidung, kein reiner Doku-Task).
+**Stand:** A, B/C, D, F, E abgeschlossen (jeweils eigener Branch/PR). Tom hat sich in Phase E explizit gegen Ende-zu-Ende-Verschlüsselung für Nachrichten entschieden (D-126) – das war die einzige echte Zwischenentscheidung, die diese Phase brauchte. Als Nächstes: Phase H (Architektur-Konsolidierung).
 
 **Für eine andere KI, die hier übernimmt:** Lies zuerst `TASKS.md` (Abschnitte „Auftrag vom 31.07.2026" und die Phasen-Unterabschnitte) und `DECISIONS.md` (D-117 aufwärts) für den exakten Stand, dann mit der nächsten offenen Phase fortfahren. Jede Phase: eigener Branch, committen, pushen, PR öffnen, CI prüfen (der `Mobile`-Job hat einen bekannten, unabhängigen externen Blocker – `expo-doctor` vergleicht mit der jeweils aktuellen npm-Registry, nicht mit dem Code), `pnpm docs:sync`, dann mit Tom die nächste Phase abstimmen statt alles unbeaufsichtigt durchzuziehen.
 
