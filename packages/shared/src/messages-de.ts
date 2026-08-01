@@ -439,6 +439,18 @@ export const de = {
       messages: "Nachrichten",
       settings: "Einstellungen",
     },
+    search: {
+      triggerLabel: "Schnellsuche",
+      shortcutHint: "Strg+K",
+      dialogTitle: "Suche",
+      dialogDescription: "Schnell zu Patienten, Übungen oder einem Bereich springen.",
+      placeholder: "Patienten, Übungen oder Bereiche suchen …",
+      sectionQuickLinks: "Bereiche",
+      sectionPatients: "Patienten",
+      sectionExercises: "Übungen",
+      noResults: "Keine Treffer.",
+      minChars: "Mindestens 2 Zeichen eingeben.",
+    },
     dashboard: {
       title: "Übersicht",
       todaysAppointments: "Heutige Termine",

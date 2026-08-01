@@ -1,6 +1,17 @@
 # PhysioCheck – Testmatrix
 
-> Stand 01.08.2026. „Grün“ bedeutet tatsächlich lokal ausgeführt (Toms Mac, Supabase/Docker/Mailpit). Letzter vollständiger Lauf: 01.08.2026 auf Branch `claude/exercise-video-creation-20260801` (Typecheck/Lint/120 Unit-Tests/136 RLS-Proben/volle Playwright-Suite, alle relevanten Tests grün).
+> Stand 01.08.2026. „Grün“ bedeutet tatsächlich lokal ausgeführt (Toms Mac, Supabase/Docker/Mailpit). Letzter vollständiger Lauf: 01.08.2026 auf Branch `claude/global-search-20260801` (Typecheck/Lint/120 Unit-Tests/136 RLS-Proben grün; Playwright-Einzeltests grün auf chromium+mobile, volle Suite mit Standardparallelität zeigt lokale, maschinenbedingte Timeouts über mehrere unberührte Dateien – s. `docs/AI_HANDOFF.md`).
+
+## Praxisweite Schnellsuche (01.08.2026, D-136–D-138)
+
+| Anforderung | Automatisierte Abdeckung | Status |
+|---|---|---|
+| Öffnen per Klick auf den Suchen-Knopf, Bereiche ohne Eingabe sichtbar | `e2e/global-search.spec.ts` | Grün (01.08.2026) |
+| Öffnen per Strg/Cmd+K von überall im Praxisbereich, Schließen per Escape | `e2e/global-search.spec.ts` | Grün (01.08.2026) |
+| Patiententreffer per Name, Sprung zur Patientenseite per Pfeiltaste + Enter | `e2e/global-search.spec.ts` | Grün (01.08.2026) |
+| Übungstreffer per Titel, Sprung zur Übungsseite per Klick | `e2e/global-search.spec.ts` | Grün (01.08.2026) |
+| Hinweis bei zu kurzer Eingabe (< 2 Zeichen), keine verfrühte Serveranfrage | `e2e/global-search.spec.ts` | Grün (01.08.2026) |
+| Leere Trefferliste bei erfundenem Suchbegriff | `e2e/global-search.spec.ts` | Grün (01.08.2026) |
 
 ## Übung anlegen + Video-Upload-Verbesserungen (01.08.2026, D-132–D-135)
 

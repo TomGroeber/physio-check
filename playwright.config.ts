@@ -15,8 +15,13 @@ export default defineConfig({
   // Spitzenlast begrenzen: mit unbegrenzten Workern überschreiten einzelne
   // Server-Action-Roundtrips gelegentlich die 10-s-Erwartung (bekannter
   // Hänger, siehe docs/AI_HANDOFF.md). Vier Worker halten den Lauf schnell
-  // und deutlich stabiler.
-  workers: 4,
+  // und deutlich stabiler – lokal. Der CI-Runner hat nur 2 Kerne (siehe
+  // Kommentar beim isolierten Malware-Scan-Schritt in ci.yml, der genau
+  // deshalb schon länger mit --workers=1 läuft); 4 Worker auf 2 Kernen
+  // führten dort wiederholt zu ChunkLoadErrors/Timeouts in unbeteiligten
+  // Tests (Phase J, 01.08.2026 – per zwei CI-Läufen mit jeweils anderen,
+  // teils unveränderten betroffenen Dateien bestätigt, kein Testfehler).
+  workers: process.env.CI ? 2 : 4,
   reporter: "list",
   // Alle Projekte laufen parallel gegen EINEN lokalen Server; unter
   // Spitzenlast kann eine einzelne Server-Action die 5s-Vorgabe reißen,
