@@ -1,6 +1,18 @@
 # PhysioCheck – Testmatrix
 
-> Stand 01.08.2026. „Grün“ bedeutet tatsächlich lokal ausgeführt (Toms Mac, Supabase/Docker/Mailpit). Letzter vollständiger Lauf: 01.08.2026 auf Branch `claude/help-center-20260801` (Typecheck/Lint/120 Unit-Tests/136 RLS-Proben grün; Playwright-Einzeltests grün auf chromium+mobile).
+> Stand 01.08.2026. „Grün“ bedeutet tatsächlich lokal ausgeführt (Toms Mac, Supabase/Docker/Mailpit). Letzter vollständiger Lauf: 01.08.2026 auf Branch `claude/full-test-matrix-20260801` (Typecheck/Lint/120 Unit-Tests/136 RLS-Proben grün; neue Playwright-Tests auf chromium grün, zusammen mit den bestehenden Terminfehler-Tests erneut geprüft).
+
+## Terminangebote, Konfliktprüfung, Sommer-/Winterzeit, Mitternacht (01.08.2026, D-145–D-148)
+
+| Anforderung | Automatisierte Abdeckung | Status |
+|---|---|---|
+| Angebot senden → annehmen: aus dem Angebot wird ein echter, verbindlicher Termin | `e2e/appointment-offers.spec.ts` | Grün (01.08.2026) |
+| Angebot senden → ablehnen, Praxis sieht Status „Abgelehnt" | `e2e/appointment-offers.spec.ts` | Grün (01.08.2026) |
+| Angebot senden → zurückziehen durch die Praxis | `e2e/appointment-offers.spec.ts` | Grün (01.08.2026) |
+| Konfliktprüfung: doppelte feste Buchung im selben Zeitfenster derselben Person wird abgelehnt | `e2e/appointment-offers.spec.ts` | Grün (01.08.2026) |
+| Termin über den Sommerzeit-Beginn hinweg zeigt die richtige Uhrzeit | `e2e/appointment-timezone-edge-cases.spec.ts` | Grün (01.08.2026) |
+| Termin über den Winterzeit-Beginn hinweg zeigt die richtige Uhrzeit | `e2e/appointment-timezone-edge-cases.spec.ts` | Grün (01.08.2026) |
+| Termin kurz vor Mitternacht bleibt auf dem gewählten Kalendertag | `e2e/appointment-timezone-edge-cases.spec.ts` | Grün (01.08.2026) |
 
 ## Hilfecenter für Praxismitarbeitende (01.08.2026, D-141–D-143)
 
@@ -47,7 +59,8 @@
 | Praxis kann keinen Termin in der Vergangenheit fest buchen (weder Anlegen noch Bearbeiten) | `e2e/appointments.spec.ts` + Server-Prüfung `startsAt <= jetzt` in `createAppointmentAction`/`updateAppointmentAction` | Grün (31.07.2026) |
 | Ein fest gebuchter zukünftiger Termin erscheint sofort (ohne Neuladen) beim Patienten unter „Kommende Termine" | `e2e/appointments.spec.ts` (zwei getrennte Sitzungen: Praxis legt an, Patient prüft) | Grün (31.07.2026) |
 | Zeitzonenumrechnung (`zonedTimeToUtc`, sommerzeitsicher) | Code-Review + bestehende Unit-Tests in `packages/shared` | Grün (bereits vorher) |
-| Terminangebote annehmen/ablehnen/zurückziehen, Konfliktprüfung, Mitternacht/DST als eigene Fälle, native App | Noch nicht als eigene Tests umgesetzt | Offen |
+| Terminangebote annehmen/ablehnen/zurückziehen, Konfliktprüfung, Mitternacht/DST als eigene Fälle | `e2e/appointment-offers.spec.ts`, `e2e/appointment-timezone-edge-cases.spec.ts` (Phase M, 01.08.2026, D-145–D-148) | Grün (01.08.2026) |
+| Native App (iOS/Android-Simulatorlauf) | Eigene Phase (N) | Offen |
 
 ## Zugangs-Wiederherstellung für Praxismitglieder (26.07.2026, D-113 ff.)
 
