@@ -6,6 +6,7 @@ import { signOutAction } from "@/server/actions/auth";
 import { countUnreadPracticeConversations } from "@/server/services/messages";
 import { branding } from "@/config/branding";
 import { SidebarNav } from "@/components/practice/sidebar-nav";
+import { GlobalSearch } from "@/components/practice/global-search";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Logout03Icon } from "@hugeicons/core-free-icons";
 import { de } from "@/messages/de";
@@ -38,6 +39,7 @@ export default async function PracticeLayout({
           <span className="text-lg font-bold">{branding.appName}</span>
         </Link>
         <p className="px-1 text-sm text-sidebar-foreground/70">{practiceName}</p>
+        <GlobalSearch />
         <SidebarNav unreadMessages={unreadMessages} />
         <div className="mt-auto flex flex-col gap-2 border-t border-sidebar-border pt-3">
           <p className="truncate px-1 text-sm text-sidebar-foreground/70">

@@ -60,8 +60,15 @@ Toms Auftrag umfasst 18 Abschnitte (Architektur-Konsolidierung, Terminfehler, Ho
 - [x] Neue Playwright-Regressionstests in `e2e/phase-j-exercise-management.spec.ts`: Abbrechen-Knopf (mit künstlich verzögertem Upload via `page.route`, prüft auch, dass das bestehende Medium bei Abbruch erhalten bleibt), Bestätigungsbanner + Patientenvorschau nach dem Anlegen. Bestehender Test auf den neuen `?created=1`-Parameter angepasst.
 - [x] Vollständig geprüft: Typecheck, Lint, 120 Unit-Tests, 136 RLS-Proben, volle Playwright-Suite. Ein bekannter, umgebungsbedingter Flake bestätigt (Turbopack-Dev-Server wird nach vielen Neustarts/DB-Resets in derselben Sitzung langsam, s. `.claude/skills/verify/SKILL.md`) – per `git stash`-Vergleich als vorbestehend/unabhängig von dieser Phase bestätigt, betrifft `phase-j-exercise-management.spec.ts` („Getarnte…“, unverändert) und `demo-accounts.spec.ts` (unberührte Datei); in Isolation laufen alle betroffenen Tests grün.
 
-### Phase J–P – noch nicht begonnen
-Globale Suche, Hilfecenter, volle Playwright-/native Testmatrix, bebilderte GitHub-Doku: bewusst noch nicht begonnen. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
+### Phase J – Praxisweite Schnellsuche ✅ (01.08.2026, Branch `claude/global-search-20260801`)
+- [x] Neue Server-Aktion `searchWorkspaceAction` + Service `src/server/services/search.ts`: durchsucht Patienten (Name) und Übungen (Titel) der aktuellen Praxis, `practiceId` ausschließlich aus `getSessionContext()` (D-138).
+- [x] Umfang bewusst auf Patienten, Übungen und statische Bereichs-Schnellzugriffe begrenzt – Termine/Warteliste haben keine Freitextsuche im Bestand und Warteliste keine Detailseite (D-136).
+- [x] `GlobalSearch`-Komponente: Dialog über bestehende `dialog.tsx`, eigene Listbox statt neuer `cmdk`-Abhängigkeit (D-137), Strg/Cmd+K öffnet von überall im Praxisbereich, Pfeiltasten + Enter zur Bedienung, Escape schließt.
+- [x] Neue Playwright-Regressionstests `e2e/global-search.spec.ts` (6 Fälle): Öffnen per Klick/Tastenkürzel, Schließen per Escape, Patiententreffer + Sprung per Enter, Übungstreffer + Sprung per Klick, Hinweis bei zu kurzer Eingabe, leere Trefferliste.
+- [x] Vollständig geprüft: Typecheck, Lint, 120 Unit-Tests, 136 RLS-Proben. Neue Tests einzeln (`--workers=1`) auf beiden Playwright-Projekten (chromium, mobile) grün. Volle Suite mit Standard-Parallelität zeigt auf dieser Maschine wiederholt `page.goto`-Timeouts über mehrere, von dieser Phase unberührte Dateien hinweg (auch nach vollständigem Docker-/Node-Neustart) – Ressourcenkonflikt bei 4 parallelen Chromium-Instanzen + Turbopack + Docker auf dieser Maschine, keine Regression (s. `docs/AI_HANDOFF.md`).
+
+### Phase K–P – noch nicht begonnen
+Hilfecenter, volle Playwright-/native Testmatrix, bebilderte GitHub-Doku: bewusst noch nicht begonnen. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
 
 ## Phase 0 – Bestand und Planung
 

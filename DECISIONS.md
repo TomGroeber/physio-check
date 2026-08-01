@@ -2,6 +2,14 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-08-01 – Phase J: Praxisweite Schnellsuche (Branch `claude/global-search-20260801`)
+
+**D-136 · Umfang bewusst auf Patienten, Übungen und Bereichs-Schnellzugriffe begrenzt.** Termine und Warteliste haben aktuell keine Freitextsuche im Code (nur Datum/Status-Filter bzw. gar keinen Filter) und Warteliste hat keine Detailseite zum Verlinken. Statt dafür neue Such-Infrastruktur für Entitäten zu bauen, die dafür nicht angefragt waren, deckt Phase J die beiden bereits durchsuchbaren Kernentitäten ab plus statische Bereichs-Links (Übersicht/Patienten/Übungen/Kalender/Warteliste/Nachrichten/Einstellungen) für rein tastaturgesteuerte Navigation. Erweiterbar, falls gewünscht.
+
+**D-137 · Kein `cmdk` als neue Abhängigkeit – eigene kleine Listbox.** `cmdk` (das übliche shadcn-„Command"-Paket) ist nicht installiert und hätte zusätzlich Icon-Anpassungen erfordert (Standardkomponente nutzt `lucide-react`, dieses Projekt durchgängig `@hugeicons/react`). Stattdessen: `dialog.tsx` (bereits vorhanden) + eigene `<ul role="listbox">`/`<button role="option">`-Struktur mit Pfeiltasten-Navigation und `aria-activedescendant` – kleiner, ohne neue Abhängigkeit, konsistent mit dem bestehenden Icon-Set.
+
+**D-138 · Erste interaktive, tastaturgesteuerte Suche der App.** Bisher lief jede Suche (Patienten, Übungen) über ein serverseitiges `<form method="GET">` mit vollem Seitenaufruf. Die Schnellsuche ist die erste Stelle mit client-seitigem Entprellen (eigener `useDebouncedValue`-Hook, kein bestehender im Projekt) und einem globalen Tastaturkürzel (Strg/Cmd+K). Serverseitige Filterung bleibt beim etablierten Muster: `practiceId` kommt ausschließlich aus `getSessionContext()`, nie vom Client.
+
 ## 2026-08-01 – Phase I: Video-Upload beim Übungsanlegen (Branch `claude/exercise-video-creation-20260801`)
 
 **D-132 · Ursprüngliches Problem live nachgestellt statt angenommen: Übungsanlegen führt schon direkt zur Medienverwaltung.** Toms Auftrag beschrieb ein Problem („Neue Übung anlegen hat keinen Video-Upload im selben Ablauf"), das laut echtem Playwright-Testlauf im aktuellen Code nicht mehr existiert: `createExerciseAction` leitet nach dem Speichern direkt auf die Bearbeitungsseite weiter, die sofort alle vier Medien-Karten (Übungsvideo, Vorschaubild, Alternativbild, Untertitel) zeigt – kein separater Assistent nötig. Statt ungefragt einen vollen 5-Schritt-Assistenten zu bauen oder die Phase stillschweigend zu überspringen, wurde der Befund Tom vorgelegt; er entschied sich für kleine, gezielte Verbesserungen auf der bestehenden Seite statt eines neuen Assistenten.
