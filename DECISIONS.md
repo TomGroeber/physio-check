@@ -2,6 +2,8 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+**D-139 · CI-E2E-Hauptlauf auf 2 Worker begrenzt (nur in CI, lokal unverändert 4).** PR #14 schlug zweimal hintereinander im `Web · RLS + E2E`-Job fehl – beide Male mit einem anderen Satz betroffener, teils von der PR unberührter Tests (`messaging.spec.ts`, `demo-accounts.spec.ts`), also kein reproduzierbarer Fehler in der neuen Suche selbst (die einzeln auf beiden Playwright-Projekten zuverlässig grün läuft). Ursache: der GitHub-Actions-Runner hat nur 2 Kerne (bereits im Workflow selbst dokumentiert, beim isolierten Malware-Scan-Schritt, der genau deshalb schon `--workers=1` nutzt) – der Haupt-E2E-Lauf lief aber weiter mit den lokal sinnvollen 4 Workern aus `playwright.config.ts`. `workers: process.env.CI ? 2 : 4` behebt das strukturell für alle künftigen PRs, ohne die lokal bewusst gewählten 4 Worker zu verändern.
+
 ## 2026-08-01 – Phase J: Praxisweite Schnellsuche (Branch `claude/global-search-20260801`)
 
 **D-136 · Umfang bewusst auf Patienten, Übungen und Bereichs-Schnellzugriffe begrenzt.** Termine und Warteliste haben aktuell keine Freitextsuche im Code (nur Datum/Status-Filter bzw. gar keinen Filter) und Warteliste hat keine Detailseite zum Verlinken. Statt dafür neue Such-Infrastruktur für Entitäten zu bauen, die dafür nicht angefragt waren, deckt Phase J die beiden bereits durchsuchbaren Kernentitäten ab plus statische Bereichs-Links (Übersicht/Patienten/Übungen/Kalender/Warteliste/Nachrichten/Einstellungen) für rein tastaturgesteuerte Navigation. Erweiterbar, falls gewünscht.
