@@ -44,7 +44,15 @@ Toms Auftrag umfasst 18 Abschnitte (Architektur-Konsolidierung, Terminfehler, Ho
 - [x] Vollständig geprüft: Typecheck, Lint, 120 Unit-Tests, 136 RLS-Proben, volle Playwright-Suite grün (ein bekannter, alt-daten-bedingter Flake bei `messaging.spec.ts` auf frischer DB nicht reproduzierbar – bestätigt keine Regression).
 - [ ] Nicht umgesetzt (bewusst außerhalb des Umfangs, s. `docs/THREAT_MODEL.md`): MFA für Praxis-/Admin-Rollen, externe Penetrationstestung, automatisierte Alarmierung bei verdächtigen Zugriffsmustern.
 
-### Phase H–P – noch nicht begonnen
+### Phase H – Architektur-Konsolidierung ✅ (01.08.2026, Branch `claude/architecture-consolidation-20260801`)
+- [x] Vollständiges Audit: `packages/shared`-Nutzung, doppelte Fachlogik Web/App, toter Code, Abhängigkeiten, clientseitige Berechtigungsprüfungen. Ergebnis: Architektur war bereits gut konsolidiert (D-128).
+- [x] Profilbild-Limits von zwei Stellen (Website, native App) nach `packages/shared/src/media-limits.ts` verschoben (D-129).
+- [x] Zwei ungenutzte Abhängigkeiten entfernt: `@hookform/resolvers`, `expo-glass-effect` (D-130).
+- [x] Kein Umbau ohne Not: kein toter Code gefunden, keine Client-only-Berechtigungslücke gefunden – nichts „vorsorglich" umgeschrieben.
+- [x] Vollständig geprüft: Typecheck (Web + Mobile), Lint (Web), 120 Unit-Tests (Web), 16 Unit-Tests (Mobile), 136 RLS-Proben, volle Playwright-Suite (43/43, keine Flakes).
+- [ ] Ein vorbestehender, unabhängiger ESLint-Fehler in `apps/patient-mobile/jest.setup.js` gefunden (D-131) – bewusst nicht mitbehoben (außerhalb des Phasenumfangs), hier nur vermerkt.
+
+### Phase I–P – noch nicht begonnen
 Hosting/AWS-Dokumentation, Nachrichten-/Akten-Sicherheitsvertiefung, Plattform-Admin-Datentrennung, Übung-mit-Video-Assistent, globale Suche, Hilfecenter, volle Playwright-/native Testmatrix, bebilderte GitHub-Doku: bewusst noch nicht begonnen – zu groß und teils zu sicherheits-/kostenkritisch (AWS-Konten, E2E-Verschlüsselung) für einen unbeaufsichtigten Durchlauf in einer Sitzung. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
 
 ## Phase 0 – Bestand und Planung
