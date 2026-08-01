@@ -23,9 +23,13 @@ test("Hilfecenter zeigt alle Themenbereiche und lässt sich per Sidebar erreiche
 test("Suche im Hilfecenter blendet nicht passende Themen aus und öffnet Treffer automatisch", async ({ page }) => {
   await login(page, "therapeutin@demo.physiocheck.test");
   await page.goto("/practice/help");
-  await page.getByLabel("Hilfeartikel durchsuchen").fill("Schadsoftware");
-  await expect(page.getByText(/Werden hochgeladene Dateien auf Schadsoftware geprüft/)).toBeVisible();
+  const input = page.getByLabel("Hilfeartikel durchsuchen");
+  await input.fill("Schadsoftware");
+  // Erst auf das eigentliche Filterergebnis warten (Abschnitt verschwindet) –
+  // die Frage selbst steht auch VOR dem Filtern schon im DOM, wäre also
+  // allein kein verlässliches Signal, dass wirklich gefiltert wurde.
   await expect(page.getByRole("heading", { name: "Termine & Kalender" })).toHaveCount(0);
+  await expect(page.getByText(/Werden hochgeladene Dateien auf Schadsoftware geprüft/)).toBeVisible();
 });
 
 test("Suchbegriff ohne Treffer zeigt einen Hinweis", async ({ page }) => {

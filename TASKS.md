@@ -75,6 +75,7 @@ Toms Auftrag umfasst 18 Abschnitte (Architektur-Konsolidierung, Terminfehler, Ho
 - [x] In Seitenleiste und Schnellsuche verlinkt („Hilfe").
 - [x] Neue Playwright-Regressionstests `e2e/help-center.spec.ts` (4 Fälle): Themenbereiche sichtbar, Suche blendet aus/öffnet Treffer, kein Treffer zeigt Hinweis, Erreichbarkeit über die Schnellsuche.
 - [x] Vollständig geprüft: Typecheck, Lint, 120 Unit-Tests, 136 RLS-Proben, neue Tests auf chromium und mobile grün.
+- [x] CI-`expect`-Timeout für die brandneue, umfangreiche `/practice/help`-Route auf 25s angehoben, nur in CI (D-144) – nach ausführlicher lokaler Gegenprüfung (kein Logikfehler gefunden, s. D-144) statt vorschnell auf Ressourcenknappheit geschoben.
 
 ### Phase M–P – noch nicht begonnen
 Volle Playwright-/native Testmatrix, bebilderte GitHub-Doku, Abschlussbericht: bewusst noch nicht begonnen. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
