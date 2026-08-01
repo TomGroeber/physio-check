@@ -2,6 +2,12 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-08-01 – Phase F: Hosting-Vergleich (Branch `claude/hosting-docs-20260801`)
+
+**D-122 · Empfehlung: Supabase-Backend beibehalten (Option A), kein Umstieg auf vollständiges AWS oder Supabase-Selbsthosting.** Alle drei Optionen verglichen (`docs/HOSTING_OPTIONS.md`): eine vollständige AWS-Architektur würde bedeuten, RLS, signierte Storage-Adressen, Auth-Integration und automatische Sicherungen komplett neu zu bauen und selbst so sicher zusammenzuführen, wie es die bestehende, mit 136 Proben getestete Supabase-Architektur heute bereits tut – ohne konkreten Vorteil für PhysioCheks aktuelle Größe. Selbsthosten von Supabase auf AWS würde den laufenden Wartungsaufwand (Datenbank-Patches, Sicherheits-Updates, Monitoring) allein auf ein kleines Team verlagern, ohne Kostenvorteil. Empfehlung für alle vier Phasen (lokal/Pilot/Produktion/Skalierung): Option A durchgängig, AWS-Bausteine nur bei Bedarf punktuell ergänzen.
+
+**D-123 · Kosten- und Architektur-Dokumente bewusst als Vorschlag/Skizze markiert, nichts umgesetzt.** `docs/AWS_ARCHITECTURE.md`, `docs/COST_ESTIMATE.md`, `docs/PRODUCTION_DEPLOYMENT_PLAN.md`, `docs/STAGING_AND_PRODUCTION.md`, `docs/BACKUP_AND_RECOVERY.md` beschreiben, WIE es liefe – keines der Konten, Domains oder kostenpflichtigen Ressourcen wurde angelegt (ausdrückliche Vorgabe im Auftrag).
+
 ## 2026-08-01 – Phase D: Datenfluss-Dokumentation (Branch `claude/data-flow-docs-20260801`)
 
 **D-120 · Bestätigt: kein Realtime, keine Offline-Warteschlange – ehrlich dokumentiert statt beschönigt.** Recherche im tatsächlichen Code (nicht angenommen) ergab: Nachrichten aktualisieren per Nachfragen (Website alle 8s bei sichtbarem Tab, App bei Vordergrund/Ziehen-zum-Aktualisieren), nicht per Supabase-Realtime-Kanal (keiner im Code gefunden). Die native App hat keine Offline-Warteschlange/Wiederholungslogik – ein Fehlschlag zeigt eine Fehlermeldung, nichts wird lokal als „erledigt" vorgetäuscht. Beides in `docs/DATA_FLOW.md`/`docs/WEB_MOBILE_SYNC.md` als bewusste, vertretbare Kompromisse dokumentiert statt verschwiegen.

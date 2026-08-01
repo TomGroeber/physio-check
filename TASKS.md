@@ -26,7 +26,15 @@ Toms Auftrag umfasst 18 Abschnitte (Architektur-Konsolidierung, Terminfehler, Ho
 - [x] Ehrlich dokumentiert statt beschönigt: kein Realtime (Nachfragen-Muster), keine Offline-Warteschlange in der nativen App.
 - [x] Typecheck/Lint erneut grün nach den Doku-Änderungen (keine Code-Änderungen in dieser Phase).
 
-### Phase E–P – noch nicht begonnen
+### Phase F – Hosting-Vergleich (AWS/Supabase) ✅ (01.08.2026, Branch `claude/hosting-docs-20260801`)
+- [x] 7 neue Dokumente: `docs/HOSTING_FOR_BEGINNERS.md`, `docs/HOSTING_OPTIONS.md`, `docs/AWS_ARCHITECTURE.md`, `docs/COST_ESTIMATE.md`, `docs/PRODUCTION_DEPLOYMENT_PLAN.md`, `docs/STAGING_AND_PRODUCTION.md`, `docs/BACKUP_AND_RECOVERY.md`.
+- [x] Drei Optionen verglichen (Vergleichstabelle in `docs/HOSTING_OPTIONS.md`), klare Empfehlung: Option A (Supabase verwaltet) für alle vier Phasen (lokal/Pilot/Produktion/Skalierung), s. D-122.
+- [x] Keine kostenpflichtigen Ressourcen angelegt, keine Domain gekauft, keine Verträge geschlossen (ausdrückliche Vorgabe eingehalten).
+- [x] Typecheck/Lint grün (keine Code-Änderungen in dieser Phase).
+
+> Hinweis: Phase G („Produktionsarchitektur empfehlen und vorbereiten") überschneidet sich stark mit Phase F und ist durch `docs/PRODUCTION_DEPLOYMENT_PLAN.md` + die Empfehlung in `docs/HOSTING_OPTIONS.md` bereits weitgehend mit abgedeckt – wird nicht als eigene, separate Phase wiederholt.
+
+### Phase E, H–P – noch nicht begonnen
 Hosting/AWS-Dokumentation, Nachrichten-/Akten-Sicherheitsvertiefung, Plattform-Admin-Datentrennung, Übung-mit-Video-Assistent, globale Suche, Hilfecenter, volle Playwright-/native Testmatrix, bebilderte GitHub-Doku: bewusst noch nicht begonnen – zu groß und teils zu sicherheits-/kostenkritisch (AWS-Konten, E2E-Verschlüsselung) für einen unbeaufsichtigten Durchlauf in einer Sitzung. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
 
 ## Phase 0 – Bestand und Planung
