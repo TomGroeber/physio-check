@@ -27,7 +27,13 @@ export default defineConfig({
   // Spitzenlast kann eine einzelne Server-Action die 5s-Vorgabe reißen,
   // ohne dass etwas kaputt ist. 15s hält das Signal, entfernt das Rauschen
   // (bei inzwischen >50 Fällen reichte 10s nicht mehr zuverlässig).
-  expect: { timeout: 15_000 },
+  // In CI zusätzlich angehoben: eine brandneue Route (erster Turbopack-
+  // Kompilierlauf, kalter Cache) kostet dort spürbar mehr Zeit als lokal –
+  // ein lokaler Stresstest mit 2 Workern + 3 gleichzeitigen Testdateien
+  // zeigte Laufzeiten bis knapp an die 15s heran, aber nie darüber (Phase
+  // K, 01.08.2026); auf dem schwächeren 2-Kern-CI-Runner reichte das nicht
+  // mehr. Kein Testfehler, reine Kompilier-/Laufzeit unter Spitzenlast.
+  expect: { timeout: process.env.CI ? 25_000 : 15_000 },
   // Testtimeout (Default 30s) anheben: page.goto fällt nicht unter den
   // expect-Timeout, und einzelne Navigationen können unter Spitzenlast
   // >30s dauern. Achtung: Hängen Navigationen trotzdem dauerhaft und

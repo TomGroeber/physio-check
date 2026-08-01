@@ -438,6 +438,7 @@ export const de = {
       waitlist: "Warteliste",
       messages: "Nachrichten",
       settings: "Einstellungen",
+      help: "Hilfe",
     },
     search: {
       triggerLabel: "Schnellsuche",
@@ -450,6 +451,167 @@ export const de = {
       sectionExercises: "Übungen",
       noResults: "Keine Treffer.",
       minChars: "Mindestens 2 Zeichen eingeben.",
+    },
+    /**
+     * Hilfecenter für Praxismitarbeitende (Phase K). Beschreibt bewusst nur
+     * tatsächlich vorhandenes Verhalten (z. B. gibt es aktuell KEINE
+     * Möglichkeit, eine Patientenverbindung von der Praxis aus zu lösen –
+     * das darf hier nicht behauptet werden).
+     */
+    help: {
+      title: "Hilfecenter",
+      intro:
+        "Antworten zu den häufigsten Fragen der Praxisverwaltung. Nichts hier ersetzt eine medizinische Einschätzung – es geht ausschließlich um die Bedienung der App.",
+      searchLabel: "Hilfeartikel durchsuchen",
+      searchPlaceholder: "z. B. Termin, Übung, Nachricht …",
+      noResults: "Keine Hilfeartikel zu diesem Suchbegriff gefunden.",
+      contactHint: "Frage nicht dabei? Schreiben Sie uns – Kontakt steht in den Praxis-Einstellungen.",
+      sections: [
+        {
+          id: "patients",
+          title: "Patienten",
+          items: [
+            {
+              q: "Wie verbinde ich eine neue Patientin oder einen neuen Patienten?",
+              a: "Legen Sie unter „Patienten“ eine Einladung an. Sie erhalten einen Code bzw. Link, der 7 Tage gültig und nur einmal einlösbar ist – geben Sie ihn direkt weiter, er wird danach nicht erneut angezeigt. Offene Einladungen können Sie jederzeit widerrufen oder erneuern.",
+            },
+            {
+              q: "Kann ich eine Patientenverbindung von der Praxis aus lösen?",
+              a: "Nein – die Verbindung wird ausschließlich von der Patientenseite verwaltet: Wechselt jemand zu einer anderen Praxis, endet die bisherige Verbindung automatisch. Die Praxis selbst hat aktuell keine Möglichkeit, eine Verbindung zu entfernen.",
+            },
+            {
+              q: "Was bedeutet „Kalenderfarbe“ bei einem Patienten?",
+              a: "Eine rein interne Farbmarkierung (z. B. Petrol, Indigo, Bernstein), damit Sie Termine im Kalender schneller zuordnen können. Der Name steht immer zusätzlich dabei – die Farbe ist nie das einzige Erkennungsmerkmal und für Patienten nicht sichtbar.",
+            },
+            {
+              q: "Wofür ist die „Markierung“ bei einem Patienten?",
+              a: "Ein internes Anheften mit optionaler kurzer Notiz (max. 200 Zeichen), z. B. für Patienten, die gerade besondere Aufmerksamkeit brauchen. Nur für die Praxis sichtbar, keine Gesundheitsdaten in der Notiz.",
+            },
+            {
+              q: "Was ist das „Interne Kurzprofil“?",
+              a: "Ein freier Text (max. 2000 Zeichen) je Patient, den nur Ihre Praxis sieht – Patienten sehen ihn nicht. Gedacht für organisatorische Notizen, bewusst ohne Diagnosen.",
+            },
+            {
+              q: "Was passiert beim „Archivieren“ bei einem Patienten?",
+              a: "„Archivieren“ gibt es bei einer Verordnung (Behandlungskontingent), nicht beim Patienten selbst – eine archivierte Verordnung zählt keine weiteren Sitzungen mehr an, bleibt aber in der Historie sichtbar. Patientendaten werden nie hart gelöscht.",
+            },
+          ],
+        },
+        {
+          id: "appointments",
+          title: "Termine & Kalender",
+          items: [
+            {
+              q: "Was ist der Unterschied zwischen „Termin fest buchen“ und einem Terminangebot?",
+              a: "Fest gebucht heißt: der Termin steht sofort und verbindlich, sichtbar für Patient und Praxis. Ein Terminangebot (auf der Warteliste-Seite) ist dagegen ein Vorschlag für einen freigewordenen Slot – die Patientin oder der Patient muss ihn erst aktiv annehmen, bevor daraus ein echter Termin wird.",
+            },
+            {
+              q: "Was ist der Unterschied zwischen „Stornieren“ und „Als abgeschlossen markieren“?",
+              a: "Stornieren sagt einen Termin ab (mit Grund, informiert die Patientenseite) – die verordnete Sitzung wird NICHT angerechnet. Abschließen markiert einen wahrgenommenen Termin und rechnet dabei genau eine Sitzung der aktiven Verordnung an, falls eine vorhanden ist. Ein Abschluss lässt sich bei Bedarf wieder rückgängig machen.",
+            },
+            {
+              q: "Kann ein Termin in der Vergangenheit angelegt werden?",
+              a: "Nein, ein fest gebuchter Termin muss in der Zukunft liegen – das wird beim Speichern geprüft.",
+            },
+          ],
+        },
+        {
+          id: "waitlist",
+          title: "Warteliste & Terminangebote",
+          items: [
+            {
+              q: "Wofür ist die Warteliste?",
+              a: "Eine interne Liste von Patientinnen und Patienten, die gerne früher einen Termin hätten – mit Wunschzeiten, Priorität und einer optionalen Notiz. Pro Patient ist immer nur ein offener Eintrag möglich.",
+            },
+            {
+              q: "Wie wird ein freigewordener Termin an die Warteliste vergeben?",
+              a: "Wird ein Termin storniert, erscheint der freie Slot auf der Warteliste-Seite. Von dort aus können Sie ihn gezielt als Terminangebot an eine gewartelistete Person schicken – das geschieht nicht automatisch, sondern ist immer ein bewusster Schritt.",
+            },
+          ],
+        },
+        {
+          id: "exercises",
+          title: "Übungsbibliothek & Pläne",
+          items: [
+            {
+              q: "Wie füge ich einer neuen Übung ein Video hinzu?",
+              a: "Nach dem Anlegen landen Sie direkt auf der Bearbeitungsseite der Übung – dort steht sofort die Medienverwaltung für Video, Vorschaubild, Alternativbild und Untertitel bereit, im selben Arbeitsschritt wie das Anlegen.",
+            },
+            {
+              q: "Was ist der Unterschied zwischen „Deaktivieren“ und „Archivieren“ bei einer Übung?",
+              a: "Deaktiviert erscheint eine Übung nicht mehr in NEUEN Plänen, bestehende Pläne bleiben unverändert. Archiviert ist eine Übung komplett aus der Bibliothek ausgeblendet. In beiden Fällen bleiben alte Pläne und Dokumentationen vollständig lesbar – Übungen werden nie endgültig gelöscht.",
+            },
+            {
+              q: "Was passiert, wenn ich einen veröffentlichten Übungsplan bearbeite?",
+              a: "Jede Veröffentlichung legt eine neue, unveränderliche Planversion an. Bereits dokumentierte Durchführungen bleiben dabei an ihre damalige Version gebunden (per „Verordnungs-Schnappschuss“) – eine spätere Planänderung kann frühere Dokumentationen also nie nachträglich verfälschen.",
+            },
+          ],
+        },
+        {
+          id: "messages",
+          title: "Nachrichten",
+          items: [
+            {
+              q: "Wie viele Unterhaltungen gibt es pro Patient?",
+              a: "Genau eine gemeinsame Unterhaltung je Patient und Praxis – alle Nachrichten landen an einem Ort.",
+            },
+            {
+              q: "Was passiert mit Nachrichten, wenn ein Patient die Praxis wechselt?",
+              a: "Die bisherige Unterhaltung bleibt erhalten, aber Ihre Praxis verliert ab dem Wechsel sowohl Lese- als auch Antwortrecht – ein Antwortversuch wird dann abgelehnt.",
+            },
+            {
+              q: "Gibt es ein Limit für Nachrichten?",
+              a: "Ja, aus Missbrauchsschutz maximal 20 Nachrichten pro Minute je Unterhaltung und Absender.",
+            },
+          ],
+        },
+        {
+          id: "documents",
+          title: "Dokumente & Patientenakte",
+          items: [
+            {
+              q: "Welche Dokumentkategorien gibt es?",
+              a: "Verordnung, Befund, Patientenakte, Therapiebericht und Sonstiges.",
+            },
+            {
+              q: "Werden hochgeladene Dateien auf Schadsoftware geprüft?",
+              a: "Dateityp, Größe und der tatsächliche Dateiinhalt (nicht nur die Endung) werden immer serverseitig geprüft; ein zusätzlicher Virenscan läuft dort, wo er in der Betriebsumgebung aktiviert ist. Erlaubt sind PDF, JPEG und PNG bis 20 MB.",
+            },
+            {
+              q: "Wie lösche ich ein Dokument endgültig?",
+              a: "Zweistufig mit Absicht: erst archivieren, danach kann ein bereits archiviertes Dokument endgültig gelöscht werden. Ein direktes Löschen ohne vorheriges Archivieren ist nicht möglich.",
+            },
+          ],
+        },
+        {
+          id: "settings",
+          title: "Einstellungen & Team",
+          items: [
+            {
+              q: "Was dürfen Admins, was Therapeutinnen und Therapeuten?",
+              a: "Im laufenden Praxisalltag (Patienten, Termine, Übungen, Dokumente, Nachrichten, Warteliste) haben beide Rollen dieselben Rechte. Nur die Praxis-Einstellungen und die Teamverwaltung (neue Mitarbeitende einladen, Rollen ändern) sind Admins vorbehalten – Therapeutinnen und Therapeuten sehen diese Seite nur lesend.",
+            },
+            {
+              q: "Wie lade ich eine neue Kollegin oder einen neuen Kollegen ein?",
+              a: "Nur als Admin: in den Einstellungen eine Team-Einladung mit E-Mail-Adresse und Rolle (Admin oder Therapeut:in) anlegen. Der Einladungslink ist 7 Tage gültig; die Anmeldung funktioniert nur mit genau der eingeladenen E-Mail-Adresse.",
+            },
+          ],
+        },
+        {
+          id: "search",
+          title: "Schnellsuche",
+          items: [
+            {
+              q: "Wie öffne ich die Schnellsuche?",
+              a: "Mit Strg+K (Windows/Linux) bzw. Cmd+K (Mac) von jeder Praxisseite aus, oder über den Suchen-Knopf oberhalb der Navigation.",
+            },
+            {
+              q: "Was findet die Schnellsuche?",
+              a: "Patienten (nach Name) und Übungen (nach Titel) Ihrer Praxis, dazu alle Hauptbereiche als schnelle Sprungziele. Termine, Dokumente, Nachrichten und Warteliste werden aktuell nicht durchsucht.",
+            },
+          ],
+        },
+      ],
     },
     dashboard: {
       title: "Übersicht",

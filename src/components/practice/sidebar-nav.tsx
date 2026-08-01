@@ -11,6 +11,7 @@ import {
   Clock01Icon,
   Message01Icon,
   Settings01Icon,
+  HelpCircleIcon,
 } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import { de } from "@/messages/de";
@@ -23,6 +24,7 @@ const items = [
   { href: "/practice/waitlist", label: de.practice.nav.waitlist, icon: Clock01Icon },
   { href: "/practice/messages", label: de.practice.nav.messages, icon: Message01Icon },
   { href: "/practice/settings", label: de.practice.nav.settings, icon: Settings01Icon },
+  { href: "/practice/help", label: de.practice.nav.help, icon: HelpCircleIcon },
 ] as const;
 
 /**

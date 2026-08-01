@@ -1,6 +1,15 @@
 # PhysioCheck – Testmatrix
 
-> Stand 01.08.2026. „Grün“ bedeutet tatsächlich lokal ausgeführt (Toms Mac, Supabase/Docker/Mailpit). Letzter vollständiger Lauf: 01.08.2026 auf Branch `claude/global-search-20260801` (Typecheck/Lint/120 Unit-Tests/136 RLS-Proben grün; Playwright-Einzeltests grün auf chromium+mobile, volle Suite mit Standardparallelität zeigt lokale, maschinenbedingte Timeouts über mehrere unberührte Dateien – s. `docs/AI_HANDOFF.md`).
+> Stand 01.08.2026. „Grün“ bedeutet tatsächlich lokal ausgeführt (Toms Mac, Supabase/Docker/Mailpit). Letzter vollständiger Lauf: 01.08.2026 auf Branch `claude/help-center-20260801` (Typecheck/Lint/120 Unit-Tests/136 RLS-Proben grün; Playwright-Einzeltests grün auf chromium+mobile).
+
+## Hilfecenter für Praxismitarbeitende (01.08.2026, D-141–D-143)
+
+| Anforderung | Automatisierte Abdeckung | Status |
+|---|---|---|
+| Alle Themenbereiche sichtbar, über die Seitenleiste erreichbar | `e2e/help-center.spec.ts` | Grün (01.08.2026) |
+| Suche blendet nicht passende Themen aus, öffnet Treffer automatisch | `e2e/help-center.spec.ts` | Grün (01.08.2026) |
+| Erfundener Suchbegriff zeigt einen Hinweis statt einer leeren Seite | `e2e/help-center.spec.ts` | Grün (01.08.2026) |
+| Erreichbarkeit auch über die Schnellsuche (Bereichs-Schnellzugriff) | `e2e/help-center.spec.ts` | Grün (01.08.2026) |
 
 ## Praxisweite Schnellsuche (01.08.2026, D-136–D-138)
 
