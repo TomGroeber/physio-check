@@ -2,6 +2,16 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-08-01 – Phase H: Architektur-Konsolidierung (Branch `claude/architecture-consolidation-20260801`)
+
+**D-128 · Architektur-Audit: schon gut konsolidiert, wenig zu tun gefunden.** Vollständige Codeprüfung (packages/shared-Nutzung, doppelte Fachlogik, toter Code, Abhängigkeiten, clientseitige Berechtigungsprüfungen) ergab: `packages/shared` wird bereits echt genutzt (nicht nur angelegt), kein toter Code gefunden, keine Stelle, an der eine Server Action einer clientseitigen Berechtigungsprüfung vertraut statt selbst zu prüfen. Nur zwei konkrete, sichere Punkte gefunden und behoben (statt einer großen Umbauaktion, die nicht nötig war).
+
+**D-129 · Profilbild-Limits (`MAX_AVATAR_MB`, erlaubte Dateitypen) nach `packages/shared/src/media-limits.ts` verschoben.** Waren wortgleich an zwei Stellen dupliziert (`src/config/media.ts` und `apps/patient-mobile/src/app/(tabs)/profile.tsx`). `src/config/media.ts` reicht die Werte jetzt nur noch aus dem gemeinsamen Paket weiter (keine Importe an anderer Stelle mussten sich ändern). Der Rest von `media.ts` (Speicherpfad-/Signaturprüfung, Übungsmedien-Limits) bleibt unverändert – das ist größtenteils serverseitige Logik, kein Duplizierungsfall.
+
+**D-130 · Zwei ungenutzte Abhängigkeiten entfernt.** `@hookform/resolvers` (Wurzel-`package.json`, nirgendwo importiert, `react-hook-form` wird direkt ohne Resolver verwendet) und `expo-glass-effect` (bereits laut D-107 nie verwendet, `@callstack/liquid-glass` ist die tatsächlich eingesetzte Bibliothek – jetzt auch aus `package.json` entfernt, nicht nur ungenutzt liegen gelassen).
+
+**D-131 · Bewusst NICHT verändert:** ein vorbestehender ESLint-Fehler in `apps/patient-mobile/jest.setup.js` (`jest` als undefined gemeldet) wurde gefunden, existierte aber nachweislich schon vor dieser Phase (per `git stash`-Vergleich bestätigt) und betrifft keine doppelte/veraltete Komponente – außerhalb des Phasenumfangs, daher nur hier vermerkt statt ungefragt mitbehoben.
+
 ## 2026-08-01 – Phase E: Sicherheit Nachrichten/Akten/Admin-Grenzen (Branch `claude/security-docs-20260801`)
 
 **D-124 · Echte Sicherheitslücke gefunden und behoben: Patientenakten liefen nie durch den Malware-Scan.** `uploadPatientDocumentAction` (`src/server/actions/documents.ts`) prüfte Dateityp, Größe und echte Dateisignatur, rief aber – anders als Profilbild- und Übungsmedien-Uploads, die dieselbe Infrastruktur längst nutzen – nie `scanBufferForMalware()` auf. Die Erfolgsmeldung „Dokument sicher hochgeladen" war dadurch bei aktiviertem Scan irreführend. Behoben durch denselben Aufruf wie bei den anderen beiden Upload-Pfaden, direkt auf den bereits im Speicher vorliegenden Bytes (kein zweiter Storage-Umweg nötig, da diese Aktion – anders als der zweistufige Übungsmedien-Upload – die Datei ohnehin schon vollständig im Arbeitsspeicher hat, bevor sie hochgeladen wird). Mit echtem `clamscan` lokal verifiziert (Test-Signatur in die lokale ClamAV-Datenbank kopiert, Scan-Ablehnung bestätigt, Testsignatur danach wieder entfernt) – nicht nur angenommen. Neuer Test `e2e/patient-documents.spec.ts`, zusätzlich in den isolierten CI-Malware-Scan-Lauf aufgenommen.

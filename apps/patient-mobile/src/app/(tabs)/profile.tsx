@@ -3,6 +3,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, Switch, Text, View } from "react-native";
+import { AVATAR_MIME_TYPES, MAX_AVATAR_MB } from "@physio-check/shared";
 import { TAB_BAR_CONTENT_HEIGHT } from "@/components/tab-bar";
 import {
   AppButton,
@@ -37,8 +38,6 @@ import { useThemeSetting } from "@/lib/theme";
 import { useLoad } from "@/lib/use-load";
 
 const t = web.patient.profile;
-const MAX_AVATAR_MB = 5;
-const ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 function LabeledValue({ label, value }: { label: string; value: string }) {
   return (
@@ -119,7 +118,7 @@ export default function Profile() {
     if (result.canceled || !result.assets[0]) return;
     const asset = result.assets[0];
     const mimeType = asset.mimeType ?? "image/jpeg";
-    if (!ALLOWED_AVATAR_TYPES.includes(mimeType)) {
+    if (!(AVATAR_MIME_TYPES as readonly string[]).includes(mimeType)) {
       setMessage({ kind: "error", text: t.avatar.unsupportedType });
       return;
     }

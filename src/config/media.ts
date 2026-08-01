@@ -3,16 +3,14 @@
  * Hartkodierung in Komponenten; bei Bedarf hier anpassen.
  */
 
+// Avatar-Limits kommen aus dem gemeinsamen Paket (mit der nativen App
+// geteilt, s. packages/shared/src/media-limits.ts) – hier nur
+// weitergereicht, damit bestehende Importe aus "@/config/media"
+// unverändert bleiben.
+export { MAX_AVATAR_MB, AVATAR_MIME_TYPES, isAllowedAvatarSize } from "@physio-check/shared";
+
 export const EXERCISE_MEDIA_BUCKET = "exercise-media";
 export const PATIENT_AVATAR_BUCKET = "patient-avatars";
-
-/** Maximale Profilbildgröße in Megabyte. */
-export const MAX_AVATAR_MB = 5;
-export const AVATAR_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
-
-export function isAllowedAvatarSize(bytes: number): boolean {
-  return Number.isInteger(bytes) && bytes > 0 && bytes <= MAX_AVATAR_MB * 1024 * 1024;
-}
 
 /**
  * Prüft, dass ein Avatar-Objektpfad exakt in den eigenen Profilordner
