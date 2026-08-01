@@ -638,7 +638,17 @@ export const de = {
         unsupportedType: "Dieser Dateityp wird nicht unterstützt.",
         tooLarge: (limit: string) => `Die Datei ist größer als ${limit}.`,
         uploadFailed: "Der Upload ist fehlgeschlagen.",
+        cancelUpload: "Abbrechen",
+        uploadCancelled: "Der Upload wurde abgebrochen.",
         openCaptions: "Untertiteldatei öffnen",
+      },
+      createdBanner: {
+        title: "Übung angelegt",
+        body: "Fügen Sie jetzt direkt ein Video oder Bild hinzu – die Übung ist bereits gespeichert.",
+      },
+      preview: {
+        heading: "So sehen Patient:innen diese Übung",
+        hint: "Vorschau mit den Standardvorgaben. Zeitplan und Hinweise werden erst im Übungsplan des Patienten festgelegt.",
       },
     },
     plans: {

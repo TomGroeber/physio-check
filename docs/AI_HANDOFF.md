@@ -1,14 +1,16 @@
 # PhysioCheck – AI Handoff
 
-> Stand: 2026-08-01 · `main@682f5d5` ist der letzte GEMERGTE Stand (PR #11, Sicherheits-Fix + Doku). **Aktuell IN ARBEIT (nicht gemergt):** Branch `claude/architecture-consolidation-20260801` – Phase H (Architektur-Konsolidierung) abgeschlossen, noch nicht committet/gepusht/gemergt. GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
+> Stand: 2026-08-01 · `main@ba6f726` ist der letzte GEMERGTE Stand (PR #12, Architektur-Konsolidierung). **Aktuell IN ARBEIT (nicht gemergt):** Branch `claude/exercise-video-creation-20260801` – Phase I (Video-Upload beim Übung-Anlegen) abgeschlossen, noch nicht committet/gepusht/gemergt. GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
 
 ## Aktueller Auftrag (großer Review-Auftrag vom 31.07.2026, phasenweise, IN ARBEIT)
 
 Toms Auftrag ist sehr groß (18 Abschnitte: Architektur, Terminfehler, Hosting/AWS, Sicherheit, neue Features, volle Testmatrix, Doku, Obsidian). Mit Tom abgestimmte Reihenfolge (er hat zugestimmt): A (Bestandsaufnahme) → B/C (Terminfehler + Tests) → D (Datenfluss-Doku) → F (Hosting/AWS-Vergleich) → E (Sicherheit Nachrichten/Akten/Admin-Grenzen) → H (Architektur-Konsolidierung) → I (Video-Upload beim Übung-Anlegen) → J (globale Suche) → K (Hilfecenter) → M (volle Playwright-Matrix) → N (native iOS/Android-Tests) → O (bebilderte Doku) → P (Abschlussbericht). Phase G ist durch F bereits weitgehend mit abgedeckt (s. TASKS.md-Hinweis).
 
-**Stand:** A, B/C, D, F, E, H abgeschlossen (jeweils eigener Branch/PR). Phase H fand die Architektur bereits gut konsolidiert – nur zwei kleine, sichere Aufräumpunkte (D-129/D-130), kein großer Umbau nötig. Als Nächstes: Phase I (Video-Upload direkt beim Übung-Anlegen).
+**Stand:** A, B/C, D, F, E, H, I abgeschlossen (jeweils eigener Branch/PR). Phase I fand live per Playwright, dass Toms ursprünglich beschriebenes Problem (kein Video-Upload direkt beim Anlegen) im aktuellen Code nicht mehr existiert – Tom entschied sich für kleine, gezielte Verbesserungen (Abbrechen-Knopf, Bestätigungsbanner, Patientenvorschau) statt eines neuen Assistenten (D-132–D-135). Beim Testen des Abbrechen-Knopfs (künstlich verzögerter Upload) einen echten, kleinen Fehler gefunden und behoben (D-133). Als Nächstes: Phase J (globale Suche).
 
 **Für eine andere KI, die hier übernimmt:** Lies zuerst `TASKS.md` (Abschnitte „Auftrag vom 31.07.2026" und die Phasen-Unterabschnitte) und `DECISIONS.md` (D-117 aufwärts) für den exakten Stand, dann mit der nächsten offenen Phase fortfahren. Jede Phase: eigener Branch, committen, pushen, PR öffnen, CI prüfen (der `Mobile`-Job hat einen bekannten, unabhängigen externen Blocker – `expo-doctor` vergleicht mit der jeweils aktuellen npm-Registry, nicht mit dem Code), `pnpm docs:sync`, dann mit Tom die nächste Phase abstimmen statt alles unbeaufsichtigt durchzuziehen.
+
+**Lokale Playwright-Läufe bei vielen DB-Resets/Server-Neustarts in derselben Sitzung:** der Turbopack-Dev-Server (`pnpm dev`, von Playwright selbst als `webServer` gestartet – siehe `playwright.config.ts` und `.github/workflows/ci.yml`, beide nutzen `pnpm dev`, NIE `pnpm start`) wird nach vielen Neustarts spürbar langsam und lässt vereinzelt Navigationen/Uploads in einer langen lokalen Sitzung timeouten. Kein Code-Fehler (per `git stash`-Vergleich in Phase I bestätigt: reproduziert identisch auf unverändertem Code). Abhilfe: betroffene Tests einzeln (`-g "Testname"`) laufen lassen, oder Docker/Node-Prozesse einmal sauber durchstarten. In CI (frischer Runner pro Lauf) bisher nicht beobachtet.
 
 ## AKTUELLER Auftrag (26.07.2026, IN ARBEIT, Branch `claude/mobile-liquid-glass-tabbar-20260726`): Native Liquid-Glass-Tab-Leiste
 

@@ -2,6 +2,16 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-08-01 – Phase I: Video-Upload beim Übungsanlegen (Branch `claude/exercise-video-creation-20260801`)
+
+**D-132 · Ursprüngliches Problem live nachgestellt statt angenommen: Übungsanlegen führt schon direkt zur Medienverwaltung.** Toms Auftrag beschrieb ein Problem („Neue Übung anlegen hat keinen Video-Upload im selben Ablauf"), das laut echtem Playwright-Testlauf im aktuellen Code nicht mehr existiert: `createExerciseAction` leitet nach dem Speichern direkt auf die Bearbeitungsseite weiter, die sofort alle vier Medien-Karten (Übungsvideo, Vorschaubild, Alternativbild, Untertitel) zeigt – kein separater Assistent nötig. Statt ungefragt einen vollen 5-Schritt-Assistenten zu bauen oder die Phase stillschweigend zu überspringen, wurde der Befund Tom vorgelegt; er entschied sich für kleine, gezielte Verbesserungen auf der bestehenden Seite statt eines neuen Assistenten.
+
+**D-133 · Abbrechen-Knopf beim Medien-Upload.** `uploadWithProgress` gibt jetzt zusätzlich das laufende `XMLHttpRequest`-Objekt zurück, damit ein Klick auf „Abbrechen" es per `abort()` stoppen kann; der Server-Ticket wird über die bereits vorhandene `discardExerciseMediaUploadAction` verworfen (kein verwaister Storage-Eintrag). Beim Testen mit künstlich verzögertem Upload (`page.route` mit 2s Verzögerung) zeigte sich ein echter Fehler: ein Klick auf „Abbrechen" **während** des Server-Roundtrips von `prepareExerciseMediaUploadAction` (bevor der XHR überhaupt existiert) blieb wirkungslos – der Upload lief einfach unbemerkt weiter. Behoben durch eine zusätzliche Prüfung von `cancelledByUser` direkt nach diesem Roundtrip, bevor der XHR gestartet wird.
+
+**D-134 · Bestätigungsbanner direkt nach dem Anlegen.** `createExerciseAction` leitet jetzt mit `?created=1` weiter; die Bearbeitungsseite zeigt bei diesem Parameter einen kurzen Hinweis („Übung angelegt – fügen Sie jetzt direkt ein Video oder Bild hinzu"). Reiner Anzeigezustand über die URL, kein zusätzlicher Datenbankstatus.
+
+**D-135 · Patientenvorschau auf der Bearbeitungsseite ergänzt.** Neue Komponente `exercise-patient-preview.tsx` zeigt Video/Bild und die Standard-Dosierungs-Chips (Sätze, Wiederholungen, Haltezeit, Dauer, Pause, Hilfsmittel) – dieselbe Chip-Logik wie in der Patientenansicht (`exercise-view.tsx`), aber mit den Bibliotheks-Standardwerten statt planbezogener Daten, da Zeitplan/Hinweis für eine noch keinem Plan zugewiesene Übung nicht existieren.
+
 ## 2026-08-01 – Phase H: Architektur-Konsolidierung (Branch `claude/architecture-consolidation-20260801`)
 
 **D-128 · Architektur-Audit: schon gut konsolidiert, wenig zu tun gefunden.** Vollständige Codeprüfung (packages/shared-Nutzung, doppelte Fachlogik, toter Code, Abhängigkeiten, clientseitige Berechtigungsprüfungen) ergab: `packages/shared` wird bereits echt genutzt (nicht nur angelegt), kein toter Code gefunden, keine Stelle, an der eine Server Action einer clientseitigen Berechtigungsprüfung vertraut statt selbst zu prüfen. Nur zwei konkrete, sichere Punkte gefunden und behoben (statt einer großen Umbauaktion, die nicht nötig war).

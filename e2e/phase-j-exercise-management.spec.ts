@@ -38,7 +38,7 @@ test("Praxis legt eine Übung an, bearbeitet, dupliziert und archiviert sie", as
   await page.getByLabel("Kurzbeschreibung").fill("Fiktive E2E-Testübung.");
   await page.getByLabel("Kategorie / Körperregion").fill("E2E-Test");
   await page.getByRole("button", { name: "Übung anlegen" }).click();
-  await expect(page).toHaveURL(/\/practice\/exercises\/[0-9a-f-]+$/);
+  await expect(page).toHaveURL(/\/practice\/exercises\/[0-9a-f-]+\?created=1$/);
   await expect(page.getByLabel("Titel")).toHaveValue(originalTitle);
 
   await page.getByLabel("Titel").fill(editedTitle);
@@ -182,5 +182,68 @@ test("Ersetzen entfernt die alte Videodatei", async ({ page, request }) => {
 
   const oldObjectResponse = await request.get(firstUrl!);
   expect(oldObjectResponse.ok()).toBe(false);
+});
+
+test("Abbrechen-Knopf bricht einen laufenden Upload ohne Datenverlust ab", async ({ page }) => {
+  await login(page, "therapeutin@demo.physiocheck.test");
+  await page.goto("/practice/exercises");
+  await page.getByText("Brücke (Beckenheben)", { exact: true }).click();
+
+  const videoCard = videoCardOf(page);
+  const existingUrl = await videoCard.locator("video source").getAttribute("src");
+  expect(existingUrl).toBeTruthy();
+
+  // Signierten Speicher-Upload künstlich verzögern, damit der Abbrechen-
+  // Knopf zuverlässig sichtbar ist, bevor der Request von selbst fertig
+  // wird (lokal sonst zu schnell für einen stabilen Test).
+  await page.route("**/storage/v1/object/upload/sign/**", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await route.continue().catch(() => {});
+  });
+
+  const validMp4Header = Buffer.from([
+    0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70,
+    0x69, 0x73, 0x6f, 0x6d, 0x00, 0x00, 0x00, 0x00,
+  ]);
+  await videoCard.getByLabel("Neue Datei zum Ersetzen auswählen").setInputFiles({
+    name: "wird-abgebrochen.mp4",
+    mimeType: "video/mp4",
+    buffer: validMp4Header,
+  });
+  await videoCard.getByRole("button", { name: "Datei ersetzen" }).click();
+  await expect(videoCard.getByRole("button", { name: "Abbrechen" })).toBeVisible();
+  await videoCard.getByRole("button", { name: "Abbrechen" }).click();
+  await expect(videoCard.getByText("Der Upload wurde abgebrochen.")).toBeVisible();
+
+  // Das bestehende Video bleibt unverändert – kein Datenverlust durch den Abbruch.
+  await expect(videoCard.locator("video source")).toHaveAttribute("src", existingUrl!);
+});
+
+test("Neu angelegte Übung zeigt Bestätigungsbanner und Patientenvorschau", async ({ page }) => {
+  await login(page, "therapeutin@demo.physiocheck.test");
+  await page.goto("/practice/exercises/new");
+  const title = `E2E Vorschau ${Date.now().toString(36)}`;
+  await page.getByLabel("Titel").fill(title);
+  await page.getByLabel("Benötigte Hilfsmittel").fill("Theraband");
+  await page.getByLabel("Standard-Sätze").fill("3");
+  await page.getByLabel("Standard-Wiederholungen").fill("12");
+  await page.getByRole("button", { name: "Übung anlegen" }).click();
+
+  await expect(page).toHaveURL(/\/practice\/exercises\/[0-9a-f-]+\?created=1$/);
+  await expect(page.getByText("Übung angelegt")).toBeVisible();
+  await expect(page.getByText("So sehen Patient:innen diese Übung")).toBeVisible();
+  await expect(page.getByText("3 Sätze", { exact: true })).toBeVisible();
+  await expect(page.getByText("12 Wiederholungen", { exact: true })).toBeVisible();
+  await expect(page.getByText("Hilfsmittel: Theraband", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Für diese Übung ist noch kein Video hinterlegt.")
+  ).toBeVisible();
+
+  // Ohne den created-Parameter erscheint der Banner nicht (z. B. nach
+  // normalem Aufruf der Bibliothek).
+  await page.goto("/practice/exercises");
+  await page.getByText(title, { exact: true }).click();
+  await expect(page.getByText("Übung angelegt")).toHaveCount(0);
+  await expect(page.getByText("So sehen Patient:innen diese Übung")).toBeVisible();
 });
 

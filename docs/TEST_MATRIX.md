@@ -1,6 +1,16 @@
 # PhysioCheck – Testmatrix
 
-> Stand 31.07.2026. „Grün“ bedeutet tatsächlich lokal ausgeführt (Toms Mac, Supabase/Docker/Mailpit). Letzter vollständiger Lauf: 31.07.2026 auf Branch `claude/full-review-and-appointment-fix-20260731` (Typecheck/Lint/120 Unit-Tests/136 RLS-Proben/41 Playwright-Tests, alle grün).
+> Stand 01.08.2026. „Grün“ bedeutet tatsächlich lokal ausgeführt (Toms Mac, Supabase/Docker/Mailpit). Letzter vollständiger Lauf: 01.08.2026 auf Branch `claude/exercise-video-creation-20260801` (Typecheck/Lint/120 Unit-Tests/136 RLS-Proben/volle Playwright-Suite, alle relevanten Tests grün).
+
+## Übung anlegen + Video-Upload-Verbesserungen (01.08.2026, D-132–D-135)
+
+| Anforderung | Automatisierte Abdeckung | Status |
+|---|---|---|
+| Abbrechen-Knopf stoppt einen laufenden Medien-Upload ohne Datenverlust (bestehendes Medium bleibt erhalten) | `e2e/phase-j-exercise-management.spec.ts` (`page.route` verzögert den Signed-Upload künstlich, damit der Knopf zuverlässig sichtbar ist) | Grün (01.08.2026) |
+| Abbrechen-Klick während des Server-Roundtrips (vor Existenz des XHR) wirkt zuverlässig, nicht nur nach XHR-Start | Derselbe Test, deckt genau dieses Zeitfenster ab (dort wurde beim Implementieren ein echter Fehler gefunden und behoben, D-133) | Grün (01.08.2026) |
+| Neu angelegte Übung zeigt Bestätigungsbanner („Übung angelegt") | `e2e/phase-j-exercise-management.spec.ts` | Grün (01.08.2026) |
+| Patientenvorschau zeigt Standard-Dosierungs-Chips und Video-/Bild-Vorschau (bzw. Leerzustand ohne Medium) | `e2e/phase-j-exercise-management.spec.ts` | Grün (01.08.2026) |
+| Banner erscheint nur direkt nach dem Anlegen (`?created=1`), nicht bei normalem Aufruf aus der Bibliothek | `e2e/phase-j-exercise-management.spec.ts` | Grün (01.08.2026) |
 
 ## Patientenakten-Malware-Scan behoben (01.08.2026, D-124)
 
