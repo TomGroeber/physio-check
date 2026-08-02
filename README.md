@@ -103,10 +103,11 @@ pnpm db:reset     # Datenbank neu aufbauen (Migrationen)
 pnpm seed         # Demo-Daten neu anlegen
 ```
 
-Klick-Anleitungen für einzelne Funktionen (Übungsdokumentation, Kalender, Patientenakte …): **`docs/MANUAL_TESTING_GUIDE.md`**.
+Klick-Anleitungen für einzelne Funktionen (Übungsdokumentation, Kalender, Patientenakte …): **`docs/MANUAL_TESTING_GUIDE.md`**. Bebildertes Handbuch mit jeder Praxisfunktion (Screenshot + Erklärung): **`docs/PRACTICE_HANDBOOK.md`**.
 
 ## Wichtige Dokumente
 
+- `docs/PRACTICE_HANDBOOK.md` – Handbuch für Praxismitarbeitende: jede Funktion mit Bildschirmfoto und Erklärung
 - `docs/PLATFORM_ADMIN_GUIDE.md` – Betreiberportal für Tom: Praxis anlegen, Zugang zurücksetzen, was global/praxisweit konfigurierbar ist
 - `docs/FEATURE_STATUS.md` – jede Funktion mit Prüfstatus
 - `docs/CHANGELOG.md` – Änderungsverlauf

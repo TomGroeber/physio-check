@@ -2,6 +2,10 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-08-02 – Phase O (Fortsetzung): Bebildertes Praxishandbuch (Branch `claude/practice-handbook-20260802`)
+
+**D-156 · SVG-Overlay statt externem Bildbearbeitungstool für Pfeile/Kreise in Screenshots.** Ein wiederverwendbares Playwright-Hilfsskript zeichnet vor dem Screenshot ein `<svg>` direkt ins Seiten-DOM (`position:fixed`, über dem gesamten Viewport) und positioniert Ellipse/Pfeil exakt über `locator.boundingBox()`. Präziser und reproduzierbarer als nachträgliches Einzeichnen in einem Bildbearbeitungsprogramm, weil die Koordinaten aus Playwrights eigenem Layout-Wissen kommen statt manuell abgeschätzt zu werden. Einzige Falle dabei (in dieser Phase zweimal aufgetreten, s. `docs/AI_HANDOFF.md`): die Ellipse bleibt bei `position:fixed` an derselben Bildschirmstelle stehen, wenn nach dem Zeichnen weitergescrollt wird, ohne sie vorher zu entfernen – muss vor jeder neuen Annotation auf derselben Seite explizit zurückgesetzt werden.
+
 ## 2026-08-02 – Phase O: Bebilderte Doku mit echten Screenshots (Branch `claude/illustrated-docs-20260802`)
 
 **D-154 · Echte Screenshots aus der laufenden Demo-Umgebung statt Mockups.** 13 Aufnahmen (`docs/screenshots/`) per Playwright gegen `pnpm build && pnpm start` + frisch gesäte Demo-Daten erzeugt – Praxisoberfläche (Übersicht, Schnellsuche, Patientenliste, Kalender, Übungsbibliothek, Übung mit Video-Upload und Patientenvorschau, Nachrichten, Hilfecenter) und Patientenoberfläche (Heute, Übungsansicht, Termine, Profil), dazu ein Screenshot des Betreiberportal-Formulars „Neue Praxis anlegen". Für die Nachrichten-Aufnahme wurde vorher wirklich eine Nachricht als Patient gesendet, damit die Ansicht nicht leer aussieht – kein manuell eingefügter Text.

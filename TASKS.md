@@ -106,6 +106,13 @@ Toms Auftrag umfasst 18 Abschnitte (Architektur-Konsolidierung, Terminfehler, Ho
 - [x] HTML-Tabellen mit `<img width="100%">` statt reiner Markdown-Bildsyntax, damit die Bilder zuverlässig auf Spaltenbreite skalieren (D-155).
 - [x] `docs/MANUAL_TESTING_GUIDE.md` bewusst nicht bebildert – kurze, textbasierte Klick-Checkliste für Toms eigene QA, Bilder hätten dort keinen Mehrwert.
 
+### Phase O (Fortsetzung) – Bebildertes Praxishandbuch ✅ (02.08.2026, Branch `claude/practice-handbook-20260802`)
+- [x] Tom fand die README-Screenshots gut, wollte aber zusätzlich eine vollständige, bebilderte Anleitung für jede Praxisfunktion mit erklärendem Text und Pfeilen/Kreisen im Bild, wo das hilft.
+- [x] `docs/PRACTICE_HANDBOOK.md` neu erstellt: jede Praxisfunktion (Patient einladen, Verordnungen/Sitzungen, Markierung, Kalenderfarbe, internes Kurzprofil, Dokumente, Übungsplan, Termine anlegen/abschließen/stornieren, Warteliste, Übungsbibliothek anlegen/Medien-Upload/duplizieren-deaktivieren-archivieren, Nachrichten, Praxiseinstellungen, Mitarbeiter:in einladen, Schnellsuche, Hilfecenter, Übersicht) mit echtem Screenshot und erklärendem Text.
+- [x] 16 neue, gezielt annotierte Screenshots (`docs/screenshots/handbook-*.png`) per Playwright + eigener SVG-Overlay-Technik erzeugt (Pfeile/Kreise exakt auf Knöpfe/Felder positioniert über `boundingBox()`, kein externes Bildbearbeitungstool nötig).
+- [x] Beim Prüfen zwei fehlerhafte Screenshots gefunden und korrigiert, bevor die Texte dazu geschrieben wurden: Einladungsformular zeigte fälschlich einen Kreis um „Abmelden" statt „Einladungscode erzeugen" (falscher Locator-Fallback), internes Kurzprofil zeigte einen stehengebliebenen Kreis von der vorherigen Kalenderfarben-Aufnahme (Annotation vor dem Scrollen nicht zurückgesetzt).
+- [x] `README.md` verlinkt jetzt auf `docs/PRACTICE_HANDBOOK.md`.
+
 ### Phase P – noch nicht begonnen
 Abschlussbericht: bewusst noch nicht begonnen. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
 
