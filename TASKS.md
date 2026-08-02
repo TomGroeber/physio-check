@@ -86,6 +86,11 @@ Toms Auftrag umfasst 18 Abschnitte (Architektur-Konsolidierung, Terminfehler, Ho
 - [x] Lehre aus der Testentwicklung dokumentiert (D-148): feste Uhrzeiten in mutierenden E2E-Tests kollidieren zwischen Testläufen/Retries – auf pro Lauf abgeleitete Minuten umgestellt (bestehendes Muster aus `appointments.spec.ts`).
 - [x] Vollständig geprüft: Typecheck, Lint, 120 Unit-Tests, 136 RLS-Proben, neue Tests auf chromium grün (mobile bewusst übersprungen, gleiches „mutierender Ablauf läuft nur einmal"-Muster wie `appointments.spec.ts`); zusammen mit den bestehenden Terminfehler-Tests erneut grün geprüft.
 
+### Nachtrag (02.08.2026): CI-Flake help-center/global-search ursächlich behoben (Branch `claude/ci-prewarm-routes-20260802`)
+- [x] PR #16 zeigte dreimal in Folge denselben CI-Fehlschlag bei bereits gemergten, unveränderten Tests (`help-center.spec.ts`, `global-search.spec.ts`) – die neuen Phase-M-Tests selbst nie betroffen. Auf Toms Wunsch vor Phase N genauer untersucht statt nur erneut die Zeitgrenze anzuheben.
+- [x] Ursache gefunden (D-149): der allererste Aufruf einer neuen Route löst mitten im ersten betroffenen Test einen kalten Turbopack-Kompilierlauf aus – auf dem 2-Kern-CI-Runner offenbar länger als die bereits auf 25s angehobene Zeitgrenze.
+- [x] Behoben durch Vorab-Kompilieren aller Praxisrouten in einem neuen CI-Schritt vor dem eigentlichen Testlauf (D-150), nicht durch weiteres Anheben der Zeitgrenze. Lokal verifiziert: betroffene Tests liefen danach unter künstlicher Last in unter 1–3s statt vorher 12–14s.
+
 ### Phase N–P – noch nicht begonnen
 Native iOS/Android-Tests, bebilderte GitHub-Doku, Abschlussbericht: bewusst noch nicht begonnen. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
 
