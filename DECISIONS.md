@@ -2,6 +2,10 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-08-02 – Phase P: Abschlussbericht (Branch `claude/final-report-20260802`)
+
+**D-157 · Abschlussbericht mit real erhobenen Zahlen statt aus früheren Dokumenten übernommenen Ständen.** Vor dem Schreiben von `docs/REVIEW_FINAL_REPORT.md` wurden Test-/Migrationszahlen frisch nachgeschlagen statt aus älteren Dokumenten kopiert: `pnpm test` real ausgeführt (120/120, 24 Dateien – vorheriger Stand in CLAUDE.md war 115), Migrationsanzahl per `ls supabase/migrations` gezählt (31), E2E-Spezifikationsdateien per `find` gezählt (14), alle 14 gemergten PRs dieses Auftrags per `gh pr list` chronologisch abgeglichen. RLS-Probenzahl (125) aus `docs/TEST_MATRIX.md` übernommen, da ein vollständiger `pnpm test:rls`-Lauf eine laufende Supabase-Instanz vorausgesetzt hätte, die für einen reinen Doku-Abschlussbericht nicht extra gestartet wurde – im Bericht als Quellenangabe kenntlich gemacht, nicht als selbst verifizierte Zahl ausgegeben.
+
 ## 2026-08-02 – Phase O (Fortsetzung): Bebildertes Praxishandbuch (Branch `claude/practice-handbook-20260802`)
 
 **D-156 · SVG-Overlay statt externem Bildbearbeitungstool für Pfeile/Kreise in Screenshots.** Ein wiederverwendbares Playwright-Hilfsskript zeichnet vor dem Screenshot ein `<svg>` direkt ins Seiten-DOM (`position:fixed`, über dem gesamten Viewport) und positioniert Ellipse/Pfeil exakt über `locator.boundingBox()`. Präziser und reproduzierbarer als nachträgliches Einzeichnen in einem Bildbearbeitungsprogramm, weil die Koordinaten aus Playwrights eigenem Layout-Wissen kommen statt manuell abgeschätzt zu werden. Einzige Falle dabei (in dieser Phase zweimal aufgetreten, s. `docs/AI_HANDOFF.md`): die Ellipse bleibt bei `position:fixed` an derselben Bildschirmstelle stehen, wenn nach dem Zeichnen weitergescrollt wird, ohne sie vorher zu entfernen – muss vor jeder neuen Annotation auf derselben Seite explizit zurückgesetzt werden.
