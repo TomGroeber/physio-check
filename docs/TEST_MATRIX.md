@@ -1,6 +1,25 @@
 # PhysioCheck – Testmatrix
 
-> Stand 01.08.2026. „Grün“ bedeutet tatsächlich lokal ausgeführt (Toms Mac, Supabase/Docker/Mailpit). Letzter vollständiger Lauf: 01.08.2026 auf Branch `claude/full-test-matrix-20260801` (Typecheck/Lint/120 Unit-Tests/136 RLS-Proben grün; neue Playwright-Tests auf chromium grün, zusammen mit den bestehenden Terminfehler-Tests erneut geprüft).
+> Stand 02.08.2026. „Grün“ bedeutet tatsächlich lokal ausgeführt (Toms Mac, Supabase/Docker/Mailpit). Letzter vollständiger Lauf: 02.08.2026 auf Branch `claude/native-testing-20260802`.
+
+## Phase N: Echter Simulatorlauf mit echten Taps (02.08.2026)
+
+> Erster Simulatorlauf dieser App mit echter Tap-/Texteingabe-Interaktion statt nur Deep-Link-Navigation – Tom hat die macOS-Bedienungshilfen-Berechtigung erteilt, die das bisher blockierte (s. `docs/MOBILE_DEVELOPMENT.md`). Tom hat die Taps im iPhone-17-Pro-Simulator (iOS 26.5, nativer Dev-Client via `npx expo run:ios`) selbst ausgeführt und Bildschirmfotos geschickt; die KI hat Ergebnisse ausgewertet und die nächsten Schritte angesagt (token-effizienter als koordinatenbasierte Automatisierung).
+
+| Anforderung | Automatisierte/manuelle Abdeckung | Status |
+|---|---|---|
+| Praxis-Konto wird in der Patienten-App erkannt und abgemeldet | Echter Tap-Test: Login mit `therapeutin@…` zeigt „Diese App ist für Patientinnen und Patienten" und meldet ab | Grün (02.08.2026) |
+| Patienten-Login | Echter Tap-Test mit `patientin@…` | Grün (02.08.2026) |
+| Heute-Übersicht zeigt geplante Übungen mit Fortschritt | Echter Tap-Test | Grün (02.08.2026) |
+| Übungsansicht zeigt korrekten Leerzustand ohne Video | Echter Tap-Test („Für diese Übung ist noch kein Video hinterlegt.") | Grün (02.08.2026) |
+| Übung dokumentieren (Selbstauskunft „Geschafft") | Echter Tap-Test: Fortschritt aktualisiert sich sofort (0→1 von 3), Liste ordnet sich um | Grün (02.08.2026) |
+| Termine-Liste zeigt kommende Termine mit Ort/Zeit | Echter Tap-Test | Grün (02.08.2026) |
+| Nachricht an die Praxis senden | Echter Tap-Test: Nachricht erscheint sofort mit Zeitstempel | Grün (02.08.2026) |
+| Profil zeigt Name/E-Mail/Telefon, Passwort-ändern-Link | Echter Tap-Test | Grün (02.08.2026) |
+| Hell/Dunkel-Umschaltung wirkt sofort | Echter Tap-Test | Grün (02.08.2026) |
+| Native Terminangebot-Ansicht hat nicht denselben Fehler wie die Web-Komponente vor D-145 | Code-Review (`apps/patient-mobile/src/app/(tabs)/appointments.tsx`): Erfolgsmeldung ist unabhängiger Zustand, kein „leere Liste → return null"-Muster | Grün (02.08.2026) |
+| Profilbild-Upload (Malware-Scan-Pfad), Terminabsage-Anfrage, Terminangebot annehmen/ablehnen auf nativ | Noch nicht getestet – Toms eigene Priorisierung für eine spätere Sitzung | Offen |
+| Android-Simulatorlauf | Kein Android Studio installiert | Offen |
 
 ## Terminangebote, Konfliktprüfung, Sommer-/Winterzeit, Mitternacht (01.08.2026, D-145–D-148)
 

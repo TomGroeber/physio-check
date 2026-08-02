@@ -91,8 +91,16 @@ Toms Auftrag umfasst 18 Abschnitte (Architektur-Konsolidierung, Terminfehler, Ho
 - [x] Ursache gefunden (D-149): der allererste Aufruf einer neuen Route löst mitten im ersten betroffenen Test einen kalten Turbopack-Kompilierlauf aus – auf dem 2-Kern-CI-Runner offenbar länger als die bereits auf 25s angehobene Zeitgrenze.
 - [x] Behoben durch Vorab-Kompilieren aller Praxisrouten in einem neuen CI-Schritt vor dem eigentlichen Testlauf (D-150), nicht durch weiteres Anheben der Zeitgrenze. Lokal verifiziert: betroffene Tests liefen danach unter künstlicher Last in unter 1–3s statt vorher 12–14s.
 
-### Phase N–P – noch nicht begonnen
-Native iOS/Android-Tests, bebilderte GitHub-Doku, Abschlussbericht: bewusst noch nicht begonnen. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
+### Phase N – Native iOS-Tests mit echten Taps ✅ (Kernumfang, 02.08.2026, Branch `claude/native-testing-20260802`)
+- [x] Blocker aus vorheriger Sitzung behoben: Tom hat die macOS-Bedienungshilfen-Berechtigung erteilt (D-151) – Simulator-Tap-Automatisierung ist jetzt möglich, praktisch aber Tom-gestützt (er tippt, KI wertet Screenshots aus) statt koordinatenbasierter `cliclick`-Automatisierung (fehleranfällig, token-teuer).
+- [x] Unterwegs gefunden und behoben: Dockers eigene virtuelle Festplatte war voll, blockierte `supabase start` (D-152) – gezielt Build-Cache gelöscht, keine Images/Container angerührt.
+- [x] Echter Dev-Client-Build (`npx expo run:ios`) auf iPhone-17-Pro-Simulator (iOS 26.5) installiert und per echten Taps durchgespielt (D-153): Rollen-Aussperrung, Patienten-Login, Heute-Übersicht, Übungsansicht (korrekter Leerzustand), Übung dokumentieren, Termine, Nachricht senden, Profil, Hell/Dunkel-Umschaltung – alles fehlerfrei, keine Abweichung zur Web-Oberfläche.
+- [x] Per Code-Review zusätzlich geprüft: native Terminangebot-Ansicht hat nicht denselben Fehler wie die Web-Komponente vor D-145.
+- [ ] Noch nicht getestet (Toms eigene Priorisierung, er dokumentiert Offenes selbst in Trello): Profilbild-Upload, Terminabsage-Anfrage, Terminangebot annehmen/ablehnen auf nativ.
+- [ ] Android-Simulatorlauf weiterhin offen: kein Android Studio installiert, nicht ohne Toms Zustimmung nachgeholt.
+
+### Phase O–P – noch nicht begonnen
+Bebilderte GitHub-Doku, Abschlussbericht: bewusst noch nicht begonnen. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
 
 ## Phase 0 – Bestand und Planung
 
