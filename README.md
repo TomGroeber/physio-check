@@ -2,7 +2,43 @@
 
 App für Physiotherapiepraxen und ihre Patientinnen und Patienten: Heimübungspläne mit Videos, Termine, verordnete Sitzungen und selbst dokumentierte Durchführung (Adhärenz).
 
-> **Stand 27.07.2026 (`main`):** Alles unten Beschriebene ist umgesetzt und geprüft (CI grün). Ausführlicher Funktionsstatus: `docs/FEATURE_STATUS.md` · Änderungsverlauf: `docs/CHANGELOG.md`.
+> **Stand 02.08.2026 (`main`):** Alles unten Beschriebene ist umgesetzt und geprüft (CI grün). Ausführlicher Funktionsstatus: `docs/FEATURE_STATUS.md` · Änderungsverlauf: `docs/CHANGELOG.md`.
+
+## Screenshots
+
+Alle Bilder sind echte Aufnahmen aus der laufenden Demo-Umgebung (`docs/screenshots/`), keine Mockups.
+
+### Praxisoberfläche (Web)
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/practice-dashboard.png" width="100%" alt="Übersicht"><br>Übersicht mit Übungsfortschritt, heutigen Terminen und Rückmeldungen</td>
+<td width="50%"><img src="docs/screenshots/practice-global-search.png" width="100%" alt="Praxisweite Schnellsuche"><br>Schnellsuche (Strg/Cmd+K) für Patienten, Übungen und Bereiche</td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/practice-patients.png" width="100%" alt="Patientenliste"><br>Patientenliste mit Einladungsverwaltung</td>
+<td width="50%"><img src="docs/screenshots/practice-calendar.png" width="100%" alt="Kalender"><br>Kalender mit farblich markierten Patienten</td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/practice-exercises.png" width="100%" alt="Übungsbibliothek"><br>Übungsbibliothek der Praxis</td>
+<td width="50%"><img src="docs/screenshots/practice-exercise-detail.png" width="100%" alt="Übung bearbeiten mit Video-Upload und Patientenvorschau"><br>Übung anlegen: Video-/Bild-Upload direkt im selben Schritt, inklusive Vorschau, wie Patient:innen die Übung sehen werden</td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/practice-messages.png" width="100%" alt="Nachrichten"><br>Nachrichten zwischen Praxis und Patient:in</td>
+<td width="50%"><img src="docs/screenshots/practice-help-center.png" width="100%" alt="Hilfecenter"><br>Durchsuchbares Hilfecenter für Praxismitarbeitende</td>
+</tr>
+</table>
+
+### Patientenoberfläche (mobile-first, Web und native App optisch identisch)
+
+<table>
+<tr>
+<td width="25%"><img src="docs/screenshots/patient-today.png" width="100%" alt="Heute-Ansicht"><br>Heute: geplante Übungen mit Fortschritt</td>
+<td width="25%"><img src="docs/screenshots/patient-exercise-view.png" width="100%" alt="Übungsansicht"><br>Video-first-Übungsansicht mit Vorgaben</td>
+<td width="25%"><img src="docs/screenshots/patient-appointments.png" width="100%" alt="Termine"><br>Kommende Termine mit Adresse</td>
+<td width="25%"><img src="docs/screenshots/patient-profile.png" width="100%" alt="Profil"><br>Profil mit Profilbild, Kontaktdaten und Sicherheit</td>
+</tr>
+</table>
 
 ## Voraussetzungen (einmalig)
 

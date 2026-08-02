@@ -2,6 +2,12 @@
 
 > Kurze, datierte Einträge. Neueste oben.
 
+## 2026-08-02 – Phase O: Bebilderte Doku mit echten Screenshots (Branch `claude/illustrated-docs-20260802`)
+
+**D-154 · Echte Screenshots aus der laufenden Demo-Umgebung statt Mockups.** 13 Aufnahmen (`docs/screenshots/`) per Playwright gegen `pnpm build && pnpm start` + frisch gesäte Demo-Daten erzeugt – Praxisoberfläche (Übersicht, Schnellsuche, Patientenliste, Kalender, Übungsbibliothek, Übung mit Video-Upload und Patientenvorschau, Nachrichten, Hilfecenter) und Patientenoberfläche (Heute, Übungsansicht, Termine, Profil), dazu ein Screenshot des Betreiberportal-Formulars „Neue Praxis anlegen". Für die Nachrichten-Aufnahme wurde vorher wirklich eine Nachricht als Patient gesendet, damit die Ansicht nicht leer aussieht – kein manuell eingefügter Text.
+
+**D-155 · Screenshots in HTML-Tabellen (`<table><img width="100%">`) statt reiner Markdown-Bildsyntax.** Reine `![]()`-Syntax hätte die 1280px breiten Praxis-Screenshots in einer Markdown-Tabelle in voller Originalgröße gerendert (unschön, erzwingt horizontales Scrollen). HTML-`<img>` mit `width="100%"` im `<td>` skaliert zuverlässig auf die Spaltenbreite – etabliertes, auf GitHub verlässlich funktionierendes README-Muster.
+
 ## 2026-08-02 – Phase N: Echter Simulatorlauf mit echten Taps (Branch `claude/native-testing-20260802`)
 
 **D-151 · macOS-Bedienungshilfen-Berechtigung erteilt – Simulator-Tap-Automatisierung ab jetzt technisch möglich, praktisch aber Tom-gestützt.** Tom hat Terminal die Berechtigung erteilt (Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen). Koordinatenbasiertes Tippen per `cliclick` funktioniert grundsätzlich (Simulator-Fensterposition/-größe per `System Events` vermessen, Gerätepunkte umgerechnet), erwies sich aber als fehleranfällig (Skalierungsfehler bei den ersten Versuchen führten zu Fehltipps) und token-teuer für Claude. Auf Toms eigenen Vorschlag hin stattdessen: Tom tippt selbst im Simulator, schickt Bildschirmfotos, die KI wertet aus und sagt den nächsten Schritt an – deutlich effizienter für diese Art Test.

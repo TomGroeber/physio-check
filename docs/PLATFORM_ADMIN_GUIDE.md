@@ -75,6 +75,8 @@ pnpm platform-admin grant --email deine@email.tld --yes
 
 ### Schritt 1 – Praxis anlegen
 
+![Formular „Neue Praxis anlegen" mit Praxisdaten und erster Admin-Person](screenshots/admin-new-practice-form.png)
+
 1. Im Portal auf **„Praxen"** klicken, dann **„Neue Praxis anlegen"** (`/admin/practices/new`).
 2. Abschnitt **„1. Praxisdaten"** ausfüllen: Praxisname (Pflichtfeld), Adresse, Zeitzone (Pflichtfeld, ist vorausgefüllt), Telefon, Kontakt-E-Mail der Praxis, Anfangsstatus (**„Testphase"** oder **„Sofort aktiv"**; bei Testphase zusätzlich das Enddatum).
 3. Abschnitt **„2. Erste:r Praxisadmin"** ausfüllen: Name und E-Mail-Adresse der Person, die als Erste:r Zugang zur Praxis bekommen soll.
