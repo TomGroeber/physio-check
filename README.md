@@ -110,6 +110,7 @@ Klick-Anleitungen für einzelne Funktionen (Übungsdokumentation, Kalender, Pati
 ## Wichtige Dokumente
 
 - `docs/PRACTICE_HANDBOOK.md` – Handbuch für Praxismitarbeitende: jede Funktion mit Bildschirmfoto und Erklärung
+- `docs/REVIEW_FINAL_REPORT.md` – Abschlussbericht des großen Review-Auftrags (31.07.–02.08.2026)
 - `docs/PLATFORM_ADMIN_GUIDE.md` – Betreiberportal für Tom: Praxis anlegen, Zugang zurücksetzen, was global/praxisweit konfigurierbar ist
 - `docs/FEATURE_STATUS.md` – jede Funktion mit Prüfstatus
 - `docs/CHANGELOG.md` – Änderungsverlauf

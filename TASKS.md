@@ -113,8 +113,9 @@ Toms Auftrag umfasst 18 Abschnitte (Architektur-Konsolidierung, Terminfehler, Ho
 - [x] Beim Prüfen zwei fehlerhafte Screenshots gefunden und korrigiert, bevor die Texte dazu geschrieben wurden: Einladungsformular zeigte fälschlich einen Kreis um „Abmelden" statt „Einladungscode erzeugen" (falscher Locator-Fallback), internes Kurzprofil zeigte einen stehengebliebenen Kreis von der vorherigen Kalenderfarben-Aufnahme (Annotation vor dem Scrollen nicht zurückgesetzt).
 - [x] `README.md` verlinkt jetzt auf `docs/PRACTICE_HANDBOOK.md`.
 
-### Phase P – noch nicht begonnen
-Abschlussbericht: bewusst noch nicht begonnen. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
+### Phase P – Abschlussbericht ✅ (02.08.2026, Branch `claude/final-report-20260802`)
+- [x] `docs/REVIEW_FINAL_REPORT.md` erstellt: Zusammenfassung aller Phasen (A–O + Zusatzwünsche), aktueller Qualitätsstand, bekannte CI-Eigenheiten, bewusst offen gebliebene Punkte, Empfehlung.
+- [x] Letzte Phase des großen Auftrags vom 31.07.2026 – Auftrag damit vollständig abgearbeitet, soweit ohne Toms externe Entscheidungen (Konten/Recht/Hosting) technisch möglich.
 
 ## Phase 0 – Bestand und Planung
 
