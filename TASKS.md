@@ -99,8 +99,15 @@ Toms Auftrag umfasst 18 Abschnitte (Architektur-Konsolidierung, Terminfehler, Ho
 - [ ] Noch nicht getestet (Toms eigene Priorisierung, er dokumentiert Offenes selbst in Trello): Profilbild-Upload, Terminabsage-Anfrage, Terminangebot annehmen/ablehnen auf nativ.
 - [ ] Android-Simulatorlauf weiterhin offen: kein Android Studio installiert, nicht ohne Toms Zustimmung nachgeholt.
 
-### Phase O–P – noch nicht begonnen
-Bebilderte GitHub-Doku, Abschlussbericht: bewusst noch nicht begonnen. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
+### Phase O – Bebilderte GitHub-Doku ✅ (02.08.2026, Branch `claude/illustrated-docs-20260802`)
+- [x] 13 echte Screenshots aus der laufenden Demo-Umgebung erzeugt (D-154), keine Mockups – Praxisoberfläche (Übersicht, Schnellsuche, Patientenliste, Kalender, Übungsbibliothek, Übung mit Video-Upload/Patientenvorschau, Nachrichten, Hilfecenter), Patientenoberfläche (Heute, Übungsansicht, Termine, Profil), Betreiberportal (Neue Praxis anlegen).
+- [x] `README.md`: neuer Abschnitt „Screenshots" direkt nach der Kurzbeschreibung, Datumsangabe „Stand" auf den aktuellen Tag aktualisiert (war seit 27.07.2026 veraltet).
+- [x] `docs/PLATFORM_ADMIN_GUIDE.md`: Screenshot beim Formular „Neue Praxis anlegen" ergänzt – erfüllt das im `README.md` bereits gegebene Versprechen „Vollständige Anleitung mit allen Details und Screens", das vorher nicht eingehalten war.
+- [x] HTML-Tabellen mit `<img width="100%">` statt reiner Markdown-Bildsyntax, damit die Bilder zuverlässig auf Spaltenbreite skalieren (D-155).
+- [x] `docs/MANUAL_TESTING_GUIDE.md` bewusst nicht bebildert – kurze, textbasierte Klick-Checkliste für Toms eigene QA, Bilder hätten dort keinen Mehrwert.
+
+### Phase P – noch nicht begonnen
+Abschlussbericht: bewusst noch nicht begonnen. Vorschlag an Tom: pro Sitzung eine Phase, in der von ihm selbst priorisierten Reihenfolge.
 
 ## Phase 0 – Bestand und Planung
 
