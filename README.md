@@ -40,6 +40,8 @@ Alle Bilder sind echte Aufnahmen aus der laufenden Demo-Umgebung (`docs/screensh
 </tr>
 </table>
 
+> 📖 **Ausführliches, bebildertes Handbuch für Praxismitarbeitende:** Jede einzelne Funktion, die eine Praxis nutzen kann, mit Screenshot und erklärendem Text (Pfeile/Kreise markieren dabei den wichtigsten Knopf) – **[`docs/PRACTICE_HANDBOOK.md`](docs/PRACTICE_HANDBOOK.md)**.
+
 ## Voraussetzungen (einmalig)
 
 1. **Node.js 22** (empfohlen über [nvm](https://github.com/nvm-sh/nvm)): `nvm install 22`
