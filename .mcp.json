@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "projectatlas": {
+      "command": "/Users/tomgroeber/.cargo/bin/projectatlas",
+      "args": [
+        "--require-version",
+        "0.4.5",
+        "--db",
+        "/Users/tomgroeber/physio-check/.projectatlas/projectatlas.db",
+        "--config",
+        "/Users/tomgroeber/physio-check/.projectatlas/config.toml",
+        "mcp"
+      ]
+    }
+  }
+}

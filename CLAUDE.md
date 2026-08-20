@@ -36,6 +36,19 @@ Next.js 16 (App Router, TS strict) · Tailwind v4 · shadcn/ui · Supabase (`@su
 
 `pnpm dev` · `pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm build` · `pnpm e2e` · `supabase db reset` (Migrationen + Seeds). Nach jeder Etappe mindestens Typecheck, Lint und relevante Tests; vor Meilensteinen zusätzlich Build + kritische E2E.
 
+## Codebasis-Navigation (ProjectAtlas)
+
+Für dieses Repo ist ProjectAtlas (MCP-Server, Index in `.projectatlas/`) eingerichtet, um Token-Verbrauch bei der Codebasis-Navigation zu senken. Vor breiten Datei-Lesevorgängen:
+
+1. Einmal zu Beginn einer Aufgabe `atlas_session_brief` mit `compact: true` aufrufen.
+2. Der Rückgabe folgen: `atlas_search`/`atlas_relation`/`atlas_files` nutzen statt eigenständig im Repo zu suchen.
+3. Ziel bestätigt? Dann nur den relevanten Ausschnitt mit `atlas_slice` lesen, nicht die ganze Datei.
+4. Zurückgegebene Selektoren in Folgeaufrufen weiterverwenden statt Discovery zu wiederholen.
+5. Bei Unsicherheit, ob der Index aktuell ist (z. B. nach größeren Änderungen): `watch --once` laufen lassen, bevor man sich auf Zusammenfassungen verlässt.
+6. Wirkt eine Ordner-/Datei-Purpose veraltet oder falsch: nach Sichtung sofort mit `atlas_purpose_set` korrigieren.
+
+Gilt zusätzlich zu, nicht statt, den harten Regeln oben – insbesondere Datenschutz (Regel 4): auch Purpose-Texte und Zusammenfassungen dürfen keine echten Patientendaten oder Gesundheitsdaten enthalten.
+
 ## Dokumente
 
 `docs/PRODUCT_SPEC.md` (Umfang + Akzeptanz) · `docs/ARCHITECTURE.md` · `docs/DATA_MODEL.md` · `docs/PRIVACY_SECURITY.md` (ab Phase 1) · `docs/CUSTOMIZATION_GUIDE.md` (Phase 4, Deutsch, für Nicht-Programmierer) · `docs/PLATFORM_ADMIN_GUIDE.md` (Betreiberportal: was global/praxisweit konfigurierbar ist und was nie per UI editierbar sein darf) · `docs/ROADMAP.md` · `TASKS.md` · `DECISIONS.md`.

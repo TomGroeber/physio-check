@@ -54,3 +54,6 @@ next-env.d.ts
 
 # supabase local state
 /supabase/.temp/
+
+# ProjectAtlas local index (regenerierbar via `projectatlas init`, maschinenspezifisch)
+/.projectatlas/
