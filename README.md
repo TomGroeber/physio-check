@@ -69,7 +69,7 @@ Das ist der einzige Befehl, den du zum lokalen Testen brauchst. Er läuft komple
 
 Das ursprüngliche Terminal-Fenster (in dem `pnpm quickstart` gestartet wurde) wird danach nicht mehr gebraucht und kann geschlossen werden – Website und Handy-Simulator laufen jetzt in ihren eigenen Fenstern weiter. Nur für den lokalen Test gedacht – kein produktives Deployment, keine echten Daten.
 
-**Einmal gestartet, willst du nur den Handy-Simulator neu öffnen** (z. B. weil du ihn geschlossen hattest, ohne alles andere neu aufzusetzen)? Dann reicht später:
+**Einmal gestartet, willst du nur den Handy-Simulator neu öffnen** (z. B. weil du ihn geschlossen hattest, ohne alles andere neu aufzusetzen)? Wichtig: dafür immer zuerst in den Projektordner wechseln, sonst meldet das Terminal „Command not found". Am einfachsten ein neues Terminal-Fenster öffnen und genau das hier eintippen:
 
 ```bash
 cd ~/physio-check
@@ -111,6 +111,8 @@ Vollständige Anleitung mit allen Details und Screens: **`docs/PLATFORM_ADMIN_GU
 **Praxismitglied hat Passwort und E-Mail vergessen?** Im Betreiberportal bei der Person auf „Zugang zurücksetzen" klicken, neue E-Mail-Adresse eintragen, Link verschicken – die Mitgliedschaft (Rolle, Praxis, alle Daten) bleibt dabei erhalten. Details ebenfalls in `docs/PLATFORM_ADMIN_GUIDE.md`.
 
 ## Häufigste Befehle
+
+Immer zuerst `cd ~/physio-check`, sonst meldet das Terminal „Command not found" (jeder Befehl hier setzt voraus, dass man sich im Projektordner befindet).
 
 ```bash
 pnpm dev          # Entwicklungsserver
