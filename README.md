@@ -46,7 +46,7 @@ Alle Bilder sind echte Aufnahmen aus der laufenden Demo-Umgebung (`docs/screensh
 
 1. **Node.js 22** (empfohlen über [nvm](https://github.com/nvm-sh/nvm)): `nvm install 22`
 2. **pnpm**: `npm install -g corepack@latest && corepack enable pnpm`
-3. **Docker Desktop** (für die lokale Datenbank): [docker.com](https://www.docker.com/products/docker-desktop/) – muss laufen.
+3. **Docker Desktop** (für die lokale Datenbank): installiert `pnpm quickstart` bei Bedarf automatisch über Homebrew und startet es selbst – nur nötig, wenn kein Homebrew vorhanden ist: [docker.com](https://www.docker.com/products/docker-desktop/)
 4. **Supabase CLI**: `brew install supabase/tap/supabase`
 
 ## Schnellstart (ein Befehl)
@@ -57,7 +57,7 @@ cd physio-check
 pnpm quickstart
 ```
 
-Das erledigt automatisch: Abhängigkeiten installieren, lokale Datenbank/Auth/Storage starten, `.env.local` selbst befüllen, Demodaten anlegen, Server starten. Am Ende läuft die App unter http://localhost:3000. Nur für den lokalen Test – kein produktives Deployment, keine echten Daten.
+Das erledigt automatisch: Docker Desktop bei Bedarf installieren und starten, Abhängigkeiten installieren, lokale Datenbank/Auth/Storage starten, `.env.local` selbst befüllen, Demodaten anlegen, Server starten. Am Ende läuft die App unter http://localhost:3000. Nur für den lokalen Test – kein produktives Deployment, keine echten Daten.
 
 **Alternative mit einzelnen Schritten** (zum Verstehen/Anpassen):
 
