@@ -72,6 +72,7 @@ Das ursprüngliche Terminal-Fenster (in dem `pnpm quickstart` gestartet wurde) w
 **Einmal gestartet, willst du nur den Handy-Simulator neu öffnen** (z. B. weil du ihn geschlossen hattest, ohne alles andere neu aufzusetzen)? Dann reicht später:
 
 ```bash
+cd ~/physio-check
 pnpm mobile:ios
 ```
 
