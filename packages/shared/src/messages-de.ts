@@ -815,6 +815,8 @@ export const de = {
         cancelUpload: "Abbrechen",
         uploadCancelled: "Der Upload wurde abgebrochen.",
         openCaptions: "Untertiteldatei öffnen",
+        existingPreviewAlt: (label: string) => `Aktuelles ${label}`,
+        selectedPreviewAlt: (label: string) => `Ausgewähltes ${label} (noch nicht hochgeladen)`,
       },
       createdBanner: {
         title: "Übung angelegt",

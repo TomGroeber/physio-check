@@ -95,9 +95,14 @@ function ExistingPreview({
     );
   }
   if (media.kind === "thumbnail" || media.kind === "fallback_image") {
+    const label = de.practice.exercises.media.kind[media.kind];
     return (
       // eslint-disable-next-line @next/next/no-img-element -- signed storage URL has no stable loader host.
-      <img src={media.url} alt="" className="max-h-56 w-full rounded-lg border object-contain" />
+      <img
+        src={media.url}
+        alt={de.practice.exercises.media.existingPreviewAlt(label)}
+        className="max-h-56 w-full rounded-lg border object-contain"
+      />
     );
   }
   return (
@@ -112,9 +117,14 @@ function SelectedPreview({ kind, file, url }: { kind: UploadableMediaKind; file:
     return <video controls preload="metadata" src={url} className="w-full rounded-lg border bg-black" />;
   }
   if (kind === "thumbnail" || kind === "fallback_image") {
+    const label = de.practice.exercises.media.kind[kind];
     return (
       // eslint-disable-next-line @next/next/no-img-element -- local blob preview.
-      <img src={url} alt="" className="max-h-56 w-full rounded-lg border object-contain" />
+      <img
+        src={url}
+        alt={de.practice.exercises.media.selectedPreviewAlt(label)}
+        className="max-h-56 w-full rounded-lg border object-contain"
+      />
     );
   }
   return <p className="text-sm text-muted-foreground">{file.name}</p>;
