@@ -96,6 +96,22 @@ export function dayRangeUtc(
   return { start, end };
 }
 
+/**
+ * Reines Kalenderdatum (JJJJ-MM-TT, z. B. Stand eines Rechtstexts) als
+ * langes deutsches Datum, z. B. "22. Juli 2026". Bewusst ohne Date/
+ * Zeitzone: ein reines Kalenderdatum hat keine Uhrzeit, eine
+ * Umrechnung würde je nach lokaler Zeitzone auf den falschen Tag
+ * springen können.
+ */
+export function formatIsoDateLongDe(isoDate: string): string {
+  const [year, month, day] = isoDate.split("-").map(Number);
+  const months = [
+    "Januar", "Februar", "März", "April", "Mai", "Juni",
+    "Juli", "August", "September", "Oktober", "November", "Dezember",
+  ];
+  return `${day}. ${months[month - 1]} ${year}`;
+}
+
 /** Langes Datum, z. B. "Freitag, 11. Juli 2026". */
 export function formatDateLong(date: Date, timeZone: string): string {
   return new Intl.DateTimeFormat(LOCALE, {

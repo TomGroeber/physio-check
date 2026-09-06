@@ -102,6 +102,27 @@ export function RegisterForm({
           {t.passwordHint}
         </p>
       </div>
+      <label className="flex min-h-12 cursor-pointer items-start gap-3 rounded-lg border px-4 py-3 has-checked:border-primary has-checked:bg-primary/10">
+        <input
+          type="checkbox"
+          name="consent"
+          required
+          aria-required="true"
+          className="mt-1 size-5 shrink-0 accent-primary"
+        />
+        <span className="text-base">
+          {t.consentIntro}{" "}
+          <Link
+            href="/privacy"
+            target="_blank"
+            rel="noreferrer"
+            className="font-semibold text-primary underline underline-offset-4"
+          >
+            {t.consentPrivacyLink}
+          </Link>{" "}
+          {t.consentSuffix}
+        </span>
+      </label>
       <Button type="submit" disabled={isPending} className="h-12 w-full text-lg">
         {isPending ? de.common.loading : t.submit}
       </Button>

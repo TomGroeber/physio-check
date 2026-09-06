@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LegalLinks } from "@/components/legal-links";
 import { branding } from "@/config/branding";
@@ -7,24 +6,24 @@ import { legalDocuments } from "@/config/legal";
 import { formatIsoDateLongDe } from "@/lib/datetime";
 import { de } from "@/messages/de";
 
-export const metadata: Metadata = { title: de.legal.privacyPolicy.heading };
+export const metadata: Metadata = { title: de.legal.imprint.heading };
 
 /**
- * Öffentlich erreichbare Datenschutzerklärung (Store-Pflicht für App
- * Privacy/Data Safety, siehe docs/RELEASE_READINESS.md A6). Der Text
- * ist ein ehrlicher technischer Entwurf (Basis: docs/PRIVACY_SECURITY.md),
- * KEINE rechtlich geprüfte Fassung – das macht `draftNotice` explizit,
- * statt Rechtskonformität zu behaupten (CLAUDE.md-Regel).
+ * ACHTUNG: Reiner Entwurf mit Platzhaltern statt echter Firmendaten
+ * (siehe draftNotice). Darf nicht live gehen, bevor Tom die
+ * eckigen Klammern durch echte Angaben ersetzt hat UND eine
+ * rechtliche Prüfung stattgefunden hat (CLAUDE.md-Regel: keine
+ * Rechtskonformität behaupten, die nicht bestätigt wurde).
  */
-export default function PrivacyPolicyPage() {
-  const t = de.legal.privacyPolicy;
+export default function ImprintPage() {
+  const t = de.legal.imprint;
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-10 text-lg">
       <h1 className="text-3xl font-bold tracking-tight">{t.heading}</h1>
       <p className="text-sm text-muted-foreground">
-        {t.lastUpdated}: {formatIsoDateLongDe(legalDocuments.privacyPolicy.version)}
+        {t.lastUpdated}: {formatIsoDateLongDe(legalDocuments.imprint.version)}
       </p>
-      <Alert className="border-warning bg-warning/15 px-4 py-3">
+      <Alert className="border-destructive bg-destructive/10 px-4 py-3">
         <AlertDescription className="text-base text-foreground">
           {t.draftNotice}
         </AlertDescription>
@@ -45,15 +44,8 @@ export default function PrivacyPolicyPage() {
             {branding.supportEmail}
           </a>
         </p>
-        <p>
-          Informationen zur Kontolöschung finden Sie{" "}
-          <Link href="/account-deletion" className="font-semibold text-primary underline">
-            hier
-          </Link>
-          .
-        </p>
       </section>
-      <LegalLinks current="/privacy" />
+      <LegalLinks current="/impressum" />
     </main>
   );
 }

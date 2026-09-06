@@ -39,6 +39,12 @@ test("Registrierung ist ohne Einladung erreichbar", async ({ page }) => {
   await expect(page.getByLabel("Vor- und Nachname")).toBeVisible();
   await expect(page.getByLabel("E-Mail-Adresse")).toBeVisible();
   await expect(page.getByLabel("Passwort")).toBeVisible();
+  await expect(page.getByRole("checkbox")).toBeVisible();
+  // required, wie die übrigen Pflichtfelder: verhindert die native
+  // Formularabsendung bereits im Browser (siehe registerSchema.test.ts
+  // für die serverseitige Absicherung des gleichen Felds).
+  await expect(page.getByRole("checkbox")).toHaveAttribute("required", "");
+  await expect(page.getByRole("link", { name: "Datenschutzerklärung" })).toBeVisible();
 });
 
 test("Verbindungsbereich verlangt Anmeldung", async ({ page }) => {

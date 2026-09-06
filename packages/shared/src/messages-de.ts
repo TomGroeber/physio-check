@@ -68,6 +68,10 @@ export const de = {
       email: "E-Mail-Adresse",
       password: "Passwort",
       passwordHint: "Mindestens 10 Zeichen.",
+      consentIntro: "Ich habe die",
+      consentPrivacyLink: "Datenschutzerklärung",
+      consentSuffix:
+        "gelesen und bin mit der dort beschriebenen Verarbeitung meiner Daten – einschließlich meiner Gesundheitsdaten zur Übungsdokumentation – einverstanden.",
       submit: "Konto erstellen",
       hasAccount: "Sie haben schon ein Konto?",
       loginLink: "Zur Anmeldung",
@@ -75,6 +79,8 @@ export const de = {
         "Mit dieser E-Mail-Adresse gibt es bereits ein Konto. Sie können sich anmelden oder das Passwort zurücksetzen.",
       errorWeakPassword:
         "Bitte wählen Sie ein längeres Passwort (mindestens 10 Zeichen).",
+      errorConsentRequired:
+        "Bitte bestätigen Sie, dass Sie die Datenschutzerklärung gelesen haben, um fortzufahren.",
       success:
         "Fast geschafft! Wir haben Ihnen eine E-Mail geschickt. Bitte öffnen Sie die E-Mail und klicken Sie auf den Bestätigungslink.",
     },
@@ -1141,6 +1147,147 @@ export const de = {
         {
           title: "9. Kontakt",
           body: "Bei Fragen zum Datenschutz oder zur Ausübung Ihrer Rechte schreiben Sie uns an die Support-E-Mail-Adresse dieser App.",
+        },
+      ],
+    },
+    nav: {
+      privacyPolicy: "Datenschutzerklärung",
+      imprint: "Impressum",
+      termsOfUse: "Nutzungsbedingungen",
+      cookiePolicy: "Cookie-Richtlinie",
+    },
+    /**
+     * Entwurf für das Impressum (/impressum). Enthält BEWUSST keine
+     * erfundenen Firmendaten – jedes [In eckigen Klammern] muss Tom mit
+     * echten Angaben füllen, bevor diese Seite jemals live geht. Welche
+     * Angaben für PhysioCheck (Sitz Luxemburg) tatsächlich verpflichtend
+     * sind, ist als offene Rechtsfrage markiert.
+     */
+    imprint: {
+      heading: "Impressum",
+      draftNotice:
+        "Dieser Entwurf ist unvollständig und darf NICHT veröffentlicht werden: Er enthält Platzhalter statt echter Firmendaten und wurde nicht rechtlich geprüft. Welche Angaben für PhysioCheck nach luxemburgischem Recht verpflichtend sind, ist noch offen.",
+      lastUpdated: "Stand",
+      sections: [
+        {
+          title: "Diensteanbieter",
+          body: "[Vollständiger Name/Firma – von Tom zu ergänzen], [Rechtsform, falls zutreffend], [Anschrift des Sitzes], [Land]. Diese Angaben sind nach den Vorschriften zur Anbieterkennzeichnung (in Luxemburg u. a. Gesetz vom 14. August 2000 über den elektronischen Handel) verpflichtend – die konkrete Formulierung sollte juristisch geprüft werden.",
+        },
+        {
+          title: "Kontakt",
+          body: "E-Mail: siehe unten. [Telefonnummer – optional, von Tom zu ergänzen, falls für schnelle elektronische Kontaktaufnahme verlangt].",
+        },
+        {
+          title: "Registereintrag",
+          body: "[Handelsregisternummer (RCS Luxembourg), falls eine Gesellschaft besteht – von Tom zu ergänzen. Falls PhysioCheck (noch) als Einzelperson ohne Gesellschaft betrieben wird, entfällt dieser Punkt – bitte von einer sachkundigen Person bestätigen lassen].",
+        },
+        {
+          title: "Umsatzsteuer-Identifikationsnummer",
+          body: "[USt-ID/TVA-Nummer, falls vorhanden – von Tom zu ergänzen, sonst entfällt dieser Punkt].",
+        },
+        {
+          title: "Verantwortlich für den Inhalt",
+          body: "[Name der verantwortlichen Person – von Tom zu ergänzen].",
+        },
+        {
+          title: "Zuständige Aufsichtsbehörde (Datenschutz)",
+          body: "Bei Sitz in Luxemburg ist dies voraussichtlich die Commission Nationale pour la Protection des Données (CNPD) – dies muss aber erst anhand des tatsächlichen Firmensitzes bestätigt werden, bevor es hier als Tatsache steht.",
+        },
+        {
+          title: "Physiotherapie-Berufsrecht",
+          body: "PhysioCheck selbst ist eine Software-Plattform und erbringt keine physiotherapeutischen Behandlungen; die berufsrechtlichen Impressumspflichten (z. B. Berufsbezeichnung, zuständige Kammer) treffen voraussichtlich die einzelnen Praxen, nicht die Plattform. Diese Einschätzung ist keine Rechtsberatung und sollte bestätigt werden.",
+        },
+        {
+          title: "Streitbeilegung",
+          body: "Angaben zur Online-Streitbeilegungsplattform der EU-Kommission bzw. zu einer Verbraucherschlichtungsstelle folgen, sobald geklärt ist, ob und in welcher Form sie für PhysioCheck greifen.",
+        },
+      ],
+    },
+    /**
+     * Entwurf für Nutzungsbedingungen (/agb). Bewusst als reine
+     * Nutzungsbedingungen (kein Kaufvertrag/Fernabsatz-AGB), weil im
+     * Code keine In-App-Zahlung/kein Warenverkauf gefunden wurde – das
+     * muss Tom bestätigen, falls sich das Geschäftsmodell (z. B.
+     * Praxis-Abo außerhalb der App) anders darstellt.
+     */
+    termsOfUse: {
+      heading: "Nutzungsbedingungen",
+      draftNotice:
+        "Dies ist ein technischer Entwurf auf Basis des tatsächlichen Funktionsumfangs, KEINE rechtlich geprüfte Fassung. Ob und in welcher Form zusätzlich eine Fernabsatz-Widerrufsbelehrung nötig ist, hängt vom tatsächlichen Geschäftsmodell ab (siehe Abschnitt 7) und ist noch offen.",
+      lastUpdated: "Stand",
+      sections: [
+        {
+          title: "1. Geltungsbereich",
+          body: "Diese Nutzungsbedingungen gelten für die Nutzung von PhysioCheck durch Patient:innen und Physiotherapiepraxen. [Name des Diensteanbieters – von Tom zu ergänzen, siehe Impressum].",
+        },
+        {
+          title: "2. Was PhysioCheck ist – und was nicht",
+          body: "PhysioCheck stellt Übungspläne, Termine und Rückmeldungen zwischen einer Physiotherapiepraxis und ihren Patient:innen dar. Die App trifft keine Diagnosen, gibt keine automatisierten Therapieempfehlungen und ersetzt keine physiotherapeutische oder ärztliche Behandlung. Dokumentierte Übungen sind eine Selbstauskunft der Patientin/des Patienten, keine geprüfte medizinische Tatsache.",
+        },
+        {
+          title: "3. Konto und Praxisverbindung",
+          body: "Ein Konto ist erst nach Verbindung mit einer Praxis über einen von dieser Praxis ausgegebenen Code nutzbar. Zugangsdaten sind nicht übertragbar und geheim zu halten.",
+        },
+        {
+          title: "4. Verantwortung für hochgeladene Inhalte",
+          body: "Praxen sind allein dafür verantwortlich, dass sie an allen von ihnen hochgeladenen Übungsvideos, Bildern und Untertiteln die erforderlichen Rechte besitzen (eigene Aufnahmen oder wirksam lizenzierte Inhalte). PhysioCheck prüft hochgeladene Dateien nicht auf Urheber- oder Persönlichkeitsrechte Dritter.",
+        },
+        {
+          title: "5. Keine Notfallfunktion",
+          body: "Die Nachrichtenfunktion und Erinnerungen werden nicht durchgehend überwacht und sind kein Ersatz für einen Notruf. Bei gesundheitlichen Notfällen ist der reguläre Notruf zu kontaktieren.",
+        },
+        {
+          title: "6. Verfügbarkeit und Haftung",
+          body: "Für die Verfügbarkeit der App wird keine bestimmte Zeitgarantie übernommen. Eine Haftungsbeschränkung nach anwendbarem Recht ist vorgesehen, aber inhaltlich noch nicht juristisch ausformuliert.",
+        },
+        {
+          title: "7. Zahlungen und Widerrufsrecht",
+          body: "Nach aktuellem Stand findet innerhalb der App kein Verkauf und keine Zahlungsabwicklung statt (kein Zahlungsanbieter im Code gefunden). Eine Fernabsatz-Widerrufsbelehrung ist deshalb hier nicht enthalten. Falls Praxen PhysioCheck künftig gegen Entgelt nutzen (z. B. Abo außerhalb der App) oder sich das ändert, muss dieser Abschnitt ergänzt werden – das ist eine offene Geschäftsmodell-Frage, keine technische Lücke.",
+        },
+        {
+          title: "8. Kündigung/Kontolöschung",
+          body: "Die Kontolöschung ist jederzeit möglich (siehe /account-deletion). Einzelheiten zur Aufbewahrung praxisbezogener Behandlungsdaten nach Löschung: siehe Datenschutzerklärung.",
+        },
+        {
+          title: "9. Anwendbares Recht und Gerichtsstand",
+          body: "[Anwendbares Recht und Gerichtsstand – von Tom/juristischer Prüfung zu bestätigen; naheliegend ist luxemburgisches Recht bei Sitz in Luxemburg, aber bei Verbraucher:innen in anderen EU-Ländern gelten zusätzlich zwingende Verbraucherschutzvorschriften ihres Wohnsitzlandes].",
+        },
+        {
+          title: "10. Kontakt",
+          body: "Fragen zu diesen Nutzungsbedingungen richten Sie an die Support-E-Mail-Adresse dieser App.",
+        },
+      ],
+    },
+    /**
+     * Entwurf für die Cookie-Richtlinie (/cookies). Listet die
+     * TATSÄCHLICH gesetzten Cookies (Stand: Code-Review 06.09.2026) –
+     * keine erfundene Cookie-Tabelle.
+     */
+    cookiePolicy: {
+      heading: "Cookie-Richtlinie",
+      draftNotice:
+        "Dieser Entwurf beschreibt ehrlich, welche Cookies die App tatsächlich setzt. Die rechtliche Einordnung (insbesondere, ob wirklich keine Einwilligung nötig ist) wurde noch nicht abschließend juristisch geprüft.",
+      lastUpdated: "Stand",
+      sections: [
+        {
+          title: "1. Was diese App NICHT einsetzt",
+          body: "Keine Analyse-, Tracking- oder Werbe-Cookies, keine Cookies von Drittanbietern (verifiziert: kein entsprechendes Skript oder Paket im Code). Es gibt daher aktuell keinen Cookie-Banner mit Ablehnen/Zustimmen-Auswahl, weil ausschließlich die unten genannten, technisch notwendigen bzw. funktionalen Cookies gesetzt werden.",
+        },
+        {
+          title: "2. Anmelde-/Sitzungscookies",
+          body: "Namensmuster \"sb-*-auth-token\" (gesetzt von unserem Backend-Anbieter Supabase über @supabase/ssr). Technisch notwendig, um Sie nach der Anmeldung eingeloggt zu halten. Ohne diese Cookies ist keine Nutzung mit Konto möglich.",
+        },
+        {
+          title: "3. Anzeige-Einstellung (Hell/Dunkel)",
+          body: "Cookie \"pc-theme\", 1 Jahr Gültigkeit, nur lesbar von dieser App. Speichert Ihre Wahl zwischen hellem und dunklem Design der Patientenoberfläche. Nach derzeitiger Einschätzung ein funktionales Cookie für eine von Ihnen ausdrücklich gewählte Anzeigeoption, keine Fremdzwecke – eine abschließende rechtliche Bewertung, ob hierfür dennoch eine gesonderte Einwilligung nötig wäre, steht noch aus.",
+        },
+        {
+          title: "4. Einwilligung zur Datenverarbeitung",
+          body: "Unabhängig von Cookies fragen wir bei der Kontoerstellung eine ausdrückliche Bestätigung ab, dass Sie unsere Datenschutzerklärung gelesen haben; diese Bestätigung wird mit Datum und Textversion gespeichert (siehe Datenschutzerklärung, Abschnitt 4 zur Rechtsgrundlage).",
+        },
+        {
+          title: "5. Kontakt",
+          body: "Fragen zu Cookies richten Sie an die Support-E-Mail-Adresse dieser App.",
         },
       ],
     },

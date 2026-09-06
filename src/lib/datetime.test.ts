@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   dayRangeUtc,
   formatDateLong,
+  formatIsoDateLongDe,
   formatTime,
   isoDateInTimeZone,
   isoWeekdayInTimeZone,
@@ -80,5 +81,10 @@ describe("Formatierung", () => {
 
   it("formatiert lange Datumsangaben auf Deutsch", () => {
     expect(formatDateLong(date, TZ)).toBe("Samstag, 11. Juli 2026");
+  });
+
+  it("formatiert ein reines Kalenderdatum ohne Zeitzonenumrechnung", () => {
+    expect(formatIsoDateLongDe("2026-07-22")).toBe("22. Juli 2026");
+    expect(formatIsoDateLongDe("2026-01-01")).toBe("1. Januar 2026");
   });
 });
