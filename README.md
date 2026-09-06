@@ -68,6 +68,16 @@ pnpm db:reset && pnpm seed && pnpm dev
 
 `.env.local`-Werte kommen aus `supabase status` (API URL, anon key, service_role key).
 
+## 📱 Handy-Simulator (native Patienten-App)
+
+Voraussetzung: Website läuft bereits (siehe Schnellstart oben) und Xcode ist installiert. Einmalig `apps/patient-mobile/.env` aus `.env.example` anlegen und mit den Werten aus `supabase status` befüllen.
+
+```bash
+pnpm mobile:ios
+```
+
+Startet den Metro-Bundler und öffnet automatisch den iOS-Simulator mit der App – ganz ohne manuelles Verbinden. Für Android (`pnpm mobile:android`, benötigt Android Studio), Tunnel-Modus bei Netzwerkproblemen und weitere Details: `docs/MOBILE_DEVELOPMENT.md`.
+
 ## Demo-Zugänge (nur lokal, frei erfunden)
 
 | Rolle | E-Mail | Passwort |
