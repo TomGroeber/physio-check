@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { branding } from "@/config/branding";
+import { LegalLinks } from "@/components/legal-links";
 
 /**
  * Layout für alle Auth-Seiten: ruhige, zentrierte Karte mit Logo.
@@ -27,6 +28,9 @@ export default function AuthLayout({
       </Link>
       <div className="w-full max-w-md rounded-xl border bg-card p-6 shadow-sm sm:p-8">
         {children}
+      </div>
+      <div className="mt-8">
+        <LegalLinks />
       </div>
     </main>
   );

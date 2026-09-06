@@ -29,10 +29,22 @@ export const fullNameSchema = z
   .min(2, "Bitte geben Sie Ihren Vor- und Nachnamen ein.")
   .max(200, "Der Name ist zu lang.");
 
+/**
+ * Checkbox-Felder kommen aus FormData nur als "on" (angehakt) oder
+ * gar nicht (String "null" bei uncontrolled fehlt der Key komplett,
+ * formData.get liefert dann null). preprocess normalisiert das zu
+ * einem Bool, bevor literal(true) prüft.
+ */
+export const consentSchema = z.preprocess(
+  (value) => value === "on",
+  z.literal(true, de.auth.register.errorConsentRequired)
+);
+
 export const registerSchema = z.object({
   fullName: fullNameSchema,
   email: emailSchema,
   password: passwordSchema,
+  consent: consentSchema,
 });
 
 export const forgotPasswordSchema = z.object({

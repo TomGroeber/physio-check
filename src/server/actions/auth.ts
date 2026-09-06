@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/server/db/server-client";
+import { createSupabaseServiceClient } from "@/server/db/service-client";
 import { getSessionContext, homeRouteFor } from "@/server/services/session";
 import {
   changeEmailSchema,
@@ -11,6 +12,7 @@ import {
   registerSchema,
   resetPasswordSchema,
 } from "@/lib/validation/auth";
+import { legalDocuments } from "@/config/legal";
 import { de } from "@/messages/de";
 import { getPendingInvite } from "@/server/services/invites";
 import { getPendingStaffInviteFromSession } from "@/server/services/staff-invites";
@@ -77,6 +79,7 @@ export async function registerAction(
     fullName: formData.get("fullName"),
     email: formData.get("email"),
     password: formData.get("password"),
+    consent: formData.get("consent"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message };
@@ -92,7 +95,7 @@ export async function registerAction(
   const nextPath = pendingStaffInvite ? "/staff-invite/confirm" : "/connect";
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
@@ -109,6 +112,31 @@ export async function registerAction(
       return { error: de.auth.register.errorWeakPassword };
     }
     return { error: de.common.error };
+  }
+
+  // Einwilligung muss ab dem Moment der Registrierung nachweisbar sein,
+  // aber die E-Mail ist noch nicht bestätigt -> es gibt noch keine
+  // Sitzung, unter der die "own insert"-RLS-Policy von consent_records
+  // greifen könnte. Der Trigger `on_auth_user_created` legt die
+  // profiles-Zeile aber synchron mit auth.users an, data.user.id ist
+  // also bereits gültig. Deshalb hier bewusst der eng begrenzte
+  // Service-Role-Client, ausschließlich für diesen einen Insert.
+  if (data.user) {
+    const service = createSupabaseServiceClient();
+    const { error: consentError } = await service.from("consent_records").insert({
+      profile_id: data.user.id,
+      document_type: legalDocuments.privacyPolicy.type,
+      document_version: legalDocuments.privacyPolicy.version,
+    });
+    if (consentError) {
+      // Das Konto besteht bereits (auth.users + profiles) und kann nicht
+      // rückgängig gemacht werden, ohne die Registrierung selbst kaputt
+      // zu machen. Ein fehlender Consent-Log-Eintrag ist real, aber es
+      // gibt aktuell keine Monitoring-/Alerting-Infrastruktur (siehe
+      // docs/PRIVACY_SECURITY.md, offener Punkt "Fehlerüberwachung"), an
+      // die dieser Fehler gemeldet werden könnte.
+      console.error("consent_records insert fehlgeschlagen:", consentError.message);
+    }
   }
 
   return { success: de.auth.register.success };

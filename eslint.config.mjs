@@ -16,6 +16,9 @@ const eslintConfig = defineConfig([
     "PHYSIOCHECK_PHASE_B/**",
     "__MACOSX/**",
     "test-results/**",
+    // Versehentlich verschachtelter Repo-Klon (nicht Teil des Projekts,
+    // siehe docs/AI_HANDOFF.md):
+    "physio-check/**",
     // Eigene Lint-Konfigurationen: App (expo lint) und geteiltes Paket.
     "apps/**",
     "packages/**",

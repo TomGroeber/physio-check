@@ -67,6 +67,7 @@ test("Code wird vor Kontoerstellung geprüft und erst nach Bestätigung eingelö
   await page.getByLabel("Vor- und Nachname").fill(invitedName);
   await page.getByLabel("E-Mail-Adresse").fill(invitedEmail);
   await page.getByLabel("Passwort").fill(PASSWORD);
+  await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "Konto erstellen" }).click();
   await expect(page.getByText(/Fast geschafft/)).toBeVisible();
 

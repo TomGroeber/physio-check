@@ -64,6 +64,7 @@ test("Konto ohne Einladung registrieren und E-Mail bestätigen", async ({ page }
   await page.getByLabel("Vor- und Nachname").fill(patientName);
   await page.getByLabel("E-Mail-Adresse").fill(patientEmail);
   await page.getByLabel("Passwort").fill(PASSWORD);
+  await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "Konto erstellen" }).click();
   await expect(page.getByText(/Fast geschafft/)).toBeVisible();
 
