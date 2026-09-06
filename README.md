@@ -46,10 +46,10 @@ Alle Bilder sind echte Aufnahmen aus der laufenden Demo-Umgebung (`docs/screensh
 
 1. **Node.js 22** (empfohlen über [nvm](https://github.com/nvm-sh/nvm)): `nvm install 22`
 2. **pnpm**: `npm install -g corepack@latest && corepack enable pnpm`
-3. **Docker Desktop** (für die lokale Datenbank): [docker.com](https://www.docker.com/products/docker-desktop/) – muss laufen.
+3. **Docker Desktop** (für die lokale Datenbank): installiert `pnpm quickstart` bei Bedarf automatisch über Homebrew und startet es selbst – nur nötig, wenn kein Homebrew vorhanden ist: [docker.com](https://www.docker.com/products/docker-desktop/)
 4. **Supabase CLI**: `brew install supabase/tap/supabase`
 
-## Schnellstart (ein Befehl)
+## 🚀 Schnellstart – EIN Befehl startet wirklich alles
 
 ```bash
 git clone https://github.com/TomGroeber/physio-check.git
@@ -57,9 +57,27 @@ cd physio-check
 pnpm quickstart
 ```
 
-Das erledigt automatisch: Abhängigkeiten installieren, lokale Datenbank/Auth/Storage starten, `.env.local` selbst befüllen, Demodaten anlegen, Server starten. Am Ende läuft die App unter http://localhost:3000. Nur für den lokalen Test – kein produktives Deployment, keine echten Daten.
+Das ist der einzige Befehl, den du zum lokalen Testen brauchst. Er läuft komplett automatisch durch und öffnet am Ende von selbst alles, was zum Ausprobieren nötig ist – du musst nichts weiter tippen. Im Einzelnen, in der Reihenfolge, in der es passiert:
 
-**Alternative mit einzelnen Schritten** (zum Verstehen/Anpassen):
+1. **Docker prüfen:** Ist Docker Desktop nicht installiert, wird es automatisch nachinstalliert (über Homebrew) und gestartet. Läuft es schon, wird das übersprungen.
+2. **Abhängigkeiten installieren** für Website, native App und das gemeinsam genutzte Textpaket.
+3. **Lokale Datenbank/Anmeldung/Dateispeicher starten** (das ist, wofür Docker gebraucht wird – läuft komplett auf deinem Rechner, nichts geht ins Internet).
+4. **Zugangsdaten automatisch eintragen:** legt `.env.local` (Website) und `apps/patient-mobile/.env` (native App) an und befüllt beide selbst mit den passenden Werten der gerade gestarteten lokalen Datenbank.
+5. **Demo-Daten anlegen** (fiktive Praxis, fiktive Patientin/Therapeutin/Admins – siehe Tabelle unten).
+6. **Website-Server öffnen:** startet automatisch in einem NEUEN Terminal-Fenster unter http://localhost:3000.
+7. **Handy-Simulator öffnen:** startet automatisch in einem weiteren NEUEN Terminal-Fenster den iOS-Simulator mit der nativen App – vorausgesetzt, Xcode ist installiert; falls nicht, wird dieser Schritt übersprungen und im Terminal angezeigt, wie er später nachgeholt werden kann.
+
+Das ursprüngliche Terminal-Fenster (in dem `pnpm quickstart` gestartet wurde) wird danach nicht mehr gebraucht und kann geschlossen werden – Website und Handy-Simulator laufen jetzt in ihren eigenen Fenstern weiter. Nur für den lokalen Test gedacht – kein produktives Deployment, keine echten Daten.
+
+**Einmal gestartet, willst du nur den Handy-Simulator neu öffnen** (z. B. weil du ihn geschlossen hattest, ohne alles andere neu aufzusetzen)? Dann reicht später:
+
+```bash
+pnpm mobile:ios
+```
+
+Für Android (`pnpm mobile:android`, benötigt Android Studio), Tunnel-Modus bei Netzwerkproblemen und weitere Details: `docs/MOBILE_DEVELOPMENT.md`.
+
+**Alternative mit einzelnen Schritten** (zum Verstehen/Anpassen, ohne die Automatik):
 
 ```bash
 pnpm install && supabase start && cp .env.example .env.local
@@ -67,16 +85,6 @@ pnpm db:reset && pnpm seed && pnpm dev
 ```
 
 `.env.local`-Werte kommen aus `supabase status` (API URL, anon key, service_role key).
-
-## 📱 Handy-Simulator (native Patienten-App)
-
-Voraussetzung: Website läuft bereits (siehe Schnellstart oben) und Xcode ist installiert. Einmalig `apps/patient-mobile/.env` aus `.env.example` anlegen und mit den Werten aus `supabase status` befüllen.
-
-```bash
-pnpm mobile:ios
-```
-
-Startet den Metro-Bundler und öffnet automatisch den iOS-Simulator mit der App – ganz ohne manuelles Verbinden. Für Android (`pnpm mobile:android`, benötigt Android Studio), Tunnel-Modus bei Netzwerkproblemen und weitere Details: `docs/MOBILE_DEVELOPMENT.md`.
 
 ## Demo-Zugänge (nur lokal, frei erfunden)
 

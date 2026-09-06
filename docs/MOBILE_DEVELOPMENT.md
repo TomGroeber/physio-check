@@ -8,7 +8,7 @@
 - Xcode ist installiert (verifiziert: Xcode 26.6, iOS-Simulator-Laufzeiten inkl. iPhone 17 Pro) – **kein Blocker mehr**, s. Verifikation unten
 - Lokale Supabase läuft (`supabase start`), Datenbank frisch: `pnpm db:reset && pnpm seed`
 - Für die wenigen Server-Endpunkte (`/api/mobile/*`, z. B. Übungsvideos und Profilbild-Upload) muss die Website laufen: `pnpm dev` **oder** stabiler `pnpm build && pnpm start`
-- Einmalig: `cp apps/patient-mobile/.env.example apps/patient-mobile/.env` und die Werte aus `supabase status` eintragen (`API_URL` → `EXPO_PUBLIC_SUPABASE_URL`, `PUBLISHABLE_KEY` → `EXPO_PUBLIC_SUPABASE_KEY`). Auf einem echten Gerät statt `127.0.0.1` die LAN-IP des Macs verwenden.
+- Einmalig: `cp apps/patient-mobile/.env.example apps/patient-mobile/.env` und die Werte aus `supabase status` eintragen (`API_URL` → `EXPO_PUBLIC_SUPABASE_URL`, `PUBLISHABLE_KEY` → `EXPO_PUBLIC_SUPABASE_KEY`). Auf einem echten Gerät statt `127.0.0.1` die LAN-IP des Macs verwenden. **Wird von `pnpm quickstart` (README, Abschnitt "Schnellstart") automatisch erledigt** – dieser Schritt ist nur für den manuellen Ablauf unten oder falls die Datei später einmal neu erzeugt werden muss.
 
 ## Lokal starten (verifizierter Ablauf)
 
