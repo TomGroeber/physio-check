@@ -65,7 +65,7 @@ Das ist der einzige Befehl, den du zum lokalen Testen brauchst. Er läuft komple
 4. **Zugangsdaten automatisch eintragen:** legt `.env.local` (Website) und `apps/patient-mobile/.env` (native App) an und befüllt beide selbst mit den passenden Werten der gerade gestarteten lokalen Datenbank.
 5. **Demo-Daten anlegen** (fiktive Praxis, fiktive Patientin/Therapeutin/Admins – siehe Tabelle unten).
 6. **Website-Server öffnen:** startet automatisch in einem NEUEN Terminal-Fenster unter http://localhost:3000.
-7. **Handy-Simulator öffnen:** startet automatisch in einem weiteren NEUEN Terminal-Fenster den iOS-Simulator mit der nativen App – vorausgesetzt, Xcode ist installiert; falls nicht, wird dieser Schritt übersprungen und im Terminal angezeigt, wie er später nachgeholt werden kann.
+7. **Handy-Simulator öffnen:** startet automatisch in einem weiteren NEUEN Terminal-Fenster den iOS-Simulator mit der nativen App – vorausgesetzt, Xcode ist installiert; falls nicht, wird dieser Schritt übersprungen und im Terminal angezeigt, wie er später nachgeholt werden kann. **Der allererste Durchlauf baut dabei die App wirklich einmal komplett (echter Xcode-Build) und kann mehrere Minuten dauern** – das Terminal-Fenster zeigt währenddessen Build-Ausgaben, das ist normal und kein Fehler. Spätere Durchläufe sind deutlich schneller.
 
 Das ursprüngliche Terminal-Fenster (in dem `pnpm quickstart` gestartet wurde) wird danach nicht mehr gebraucht und kann geschlossen werden – Website und Handy-Simulator laufen jetzt in ihren eigenen Fenstern weiter. Nur für den lokalen Test gedacht – kein produktives Deployment, keine echten Daten.
 

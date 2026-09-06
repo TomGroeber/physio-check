@@ -21,8 +21,9 @@ pnpm mobile:start                   # Metro-Bundler (Port 8081)
 
 Im iOS-Simulator (App „Simulator“ vorher öffnen, z. B. `open -a Simulator`):
 
-- Am einfachsten: im Metro-Terminal `i` drücken (öffnet automatisch im zuletzt gebooteten Simulator).
-- Falls Metro und Simulator sich nicht direkt finden (z. B. Netzwerk-/Firewall-Eigenheiten): Expo-Tunnel verwenden – `pnpm --dir apps/patient-mobile exec expo start --tunnel` und den angezeigten QR-Code bzw. die `exp://`-URL im Simulator über `xcrun simctl openurl booted "exp://<tunnel-host>"` öffnen. **So wurde die App in dieser Sitzung erstmals erfolgreich geladen** (Toms Netzwerk brauchte den Tunnel).
+- **Wichtig, sonst Absturz:** Die App nutzt native Module ohne JS-Fallback (`@callstack/liquid-glass` für die Tab-Leiste). Ein bloßer `expo start`/Expo Go kennt dieses Modul nicht und stürzt sofort mit `TurboModuleRegistry.getEnforcing(...): 'NativeLiquidGlassModule' could not be found` ab. Erforderlich ist ein **nativer Dev-Client**, den nur `npx expo run:ios` (= `pnpm mobile:ios`, Repo-Root) baut und installiert – erster Lauf auf einer neuen/leeren Maschine mehrere Minuten (echter Xcode-/CocoaPods-Build), danach dank Xcode-Inkrementalbuild meist deutlich schneller. `apps/patient-mobile/ios` wird dabei automatisch erzeugt (gitignored, kein manuelles `expo prebuild` nötig).
+- **Erst NACH mindestens einem erfolgreichen `pnpm mobile:ios`-Lauf** ist der Dev-Client auf dem Simulator installiert; ab dann reicht für schnelle Metro-only-Neustarts im Metro-Terminal `i` drücken (öffnet automatisch im zuletzt gebooteten Simulator, ohne erneuten nativen Build).
+- Falls Metro und Simulator sich nicht direkt finden (z. B. Netzwerk-/Firewall-Eigenheiten): Expo-Tunnel verwenden – `pnpm --dir apps/patient-mobile exec expo start --tunnel` und den angezeigten QR-Code bzw. die `exp://`-URL im Simulator über `xcrun simctl openurl booted "exp://<tunnel-host>"` öffnen. **So wurde die App in dieser Sitzung erstmals erfolgreich geladen** (Toms Netzwerk brauchte den Tunnel) – setzt aber ebenfalls einen bereits installierten Dev-Client voraus.
 - Direktes Ansteuern einer Route ohne Tippen (nützlich zum Nachvollziehen von Screenshots): `xcrun simctl openurl booted "exp://127.0.0.1:8081/--/<route>"`, z. B. `--/today`, `--/appointments`, `--/profile`.
 
 ## Befehle (vom Repo-Root)
@@ -30,7 +31,7 @@ Im iOS-Simulator (App „Simulator“ vorher öffnen, z. B. `open -a Simulator`)
 | Befehl | Zweck |
 |---|---|
 | `pnpm mobile:start` | Expo-Dev-Server (QR-Code für Expo Go / Dev-Client) |
-| `pnpm mobile:ios` | Start im iOS-Simulator |
+| `pnpm mobile:ios` | Nativer Dev-Client-Build + Start im iOS-Simulator (`expo run:ios`, erster Lauf mehrere Minuten) |
 | `pnpm mobile:android` | Start im Android-Emulator (benötigt Android Studio) |
 | `pnpm mobile:typecheck` | TypeScript strict |
 | `pnpm mobile:lint` | `expo lint` (eslint-config-expo, inkl. React-Compiler-Regeln) |
