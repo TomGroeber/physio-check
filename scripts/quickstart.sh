@@ -105,6 +105,7 @@ echo "   (macOS fragt hierfür beim allerersten Mal evtl. einmalig um Erlaubnis,
 osascript -e "tell application \"Terminal\" to do script \"cd '${REPO_ROOT}' && pnpm dev\"" >/dev/null
 
 echo "7/7 Native App im iOS-Simulator wird in einem weiteren Terminal-Fenster gestartet…"
+echo "   (Baut die App dort einmal echt mit Xcode - kann beim allerersten Mal mehrere Minuten dauern, das ist normal.)"
 if command -v xcrun >/dev/null 2>&1 && xcrun simctl list >/dev/null 2>&1; then
   osascript -e "tell application \"Terminal\" to do script \"cd '${REPO_ROOT}' && pnpm mobile:ios\"" >/dev/null
 else
