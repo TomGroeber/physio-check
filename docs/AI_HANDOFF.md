@@ -1,6 +1,22 @@
 # PhysioCheck – AI Handoff
 
 > Stand: 2026-08-02 · `main` (PR #8–#21: großer Review-Auftrag Phasen A–P) ist gemergt. **Aktuell IN ARBEIT (nicht gemergt):** Branch `claude/final-report-20260802` – Phase P (Abschlussbericht) abgeschlossen, noch nicht committet/gepusht/gemergt. GitHub-Remote: `TomGroeber/physio-check` (öffentlich, D-036; keine Secrets/echten Daten)
+>
+> **Hinweis 06.09.2026:** `main` steht laut lokalem `git log` inzwischen bereits bei Commit `84d7948` (mehrere weitere PRs seit obigem Stand gemergt) – die obige Stand-Zeile war zu Beginn der unten beschriebenen Sitzung bereits veraltet. Nicht im Rahmen dieses Audits vollständig nachgezogen; bei Bedarf `git log --oneline` auf `main` als Quelle der Wahrheit nutzen statt dieser Datei.
+
+## AKTUELLER Auftrag (06.09.2026, IN ARBEIT, Branch `legal-privacy-a11y-audit-20260906`): Rechtliches/Datenschutz-/Barrierefreiheits-Audit
+
+**Für eine andere KI, die hier übernimmt:** Vollständiger, ehrlicher Auftrag von Tom: rechtliche Pflichtseiten, Cookie-/Consent-Handling, Datensparsamkeit, Tracking, Drittanbieter-Embeds, Barrierefreiheit, Vertrauenswürdigkeit der Inhalte, Bildrechte, Impressumspflichten, anwendbares Recht – mit besonderer Sorgfalt für Art. 9 DSGVO (Gesundheitsdaten). Alle Befunde parallel auf dem Trello-Board „PhysioCheck – Release Readiness" gepflegt (Suche nach "06.09.2026" in Kartentexten findet alle).
+
+**Zentrale Befunde:**
+- Es gab **keine** Impressum-, AGB- oder Cookie-Richtlinie-Seite – nur `/privacy` existierte. Alle drei jetzt als klar gekennzeichnete Entwürfe unter `/impressum`, `/agb`, `/cookies` angelegt (siehe `src/config/legal.ts`, `packages/shared/src/messages-de.ts` Abschnitt `legal`). Impressum enthält bewusst Platzhalter statt erfundener Firmendaten – darf nicht live gehen.
+- Die Tabelle `consent_records` existierte seit der ersten Migration, wurde aber von KEINER Code-Stelle je beschrieben. Registrierung erfasst jetzt eine Pflicht-Einwilligung (Checkbox + Link zu `/privacy`) und schreibt sie serverseitig in `consent_records` (`src/server/actions/auth.ts`).
+- Kein Analytics-/Tracking-/Werbe-Code im Projekt gefunden (bestätigt bereits dokumentierte Aussage in `docs/PRIVACY_SECURITY.md`). Einzige Cookies: Supabase-Auth-Session + ein first-party Theme-Präferenz-Cookie (`pc-theme`). Keine Fake-Bewertungen/unbelegten Heilsversprechen in UI-Texten gefunden.
+- Zwei echte Barrierefreiheits-Bugs behoben: `exercise-media-manager.tsx` zeigte hochgeladene Übungsbilder mit `alt=""` statt echtem Alt-Text (jetzt korrigiert + getestet).
+- Ein untracked, versehentlich verschachtelter Doppel-Klon des gesamten Repos (`./physio-check/`) verfälschte `pnpm typecheck`/`pnpm lint` (tausende Fremdfehler aus einer kaputten Kopie von `apps/patient-mobile`). Aus `tsconfig.json`/`eslint.config.mjs` ausgeschlossen; der Ordner selbst liegt unverändert auf der Platte – Tom sollte entscheiden, ob er gelöscht wird.
+- Größtes offenes Risiko (nicht technisch lösbar): welche Rechtsgrundlage für Gesundheitsdatenverarbeitung nach Art. 9 DSGVO greift, ob PhysioCheck als Medizinprodukt gelten könnte, und die luxemburgischen Impressums-/Berufsrechtsanforderungen – alle als eigene Karten in „Blockiert – Extern"/„Blockiert – Tom erforderlich" erfasst.
+
+**Nicht erledigt in dieser Sitzung:** E2E-Tests der Registrierung konnten nicht laufen (Docker/lokales Supabase nicht gestartet) – vor Merge `pnpm e2e` nachholen. Branch ist gepusht, aber NICHT gemergt (Toms Freigabe aussteht).
 
 ## Großer Review-Auftrag vom 31.07.2026 – ABGESCHLOSSEN (alle Phasen A–P gemergt, PR #8–#21)
 
